@@ -1,0 +1,2170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Attendance Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #0f172a; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #1e293b; }
+        ::-webkit-scrollbar-thumb { background: #eab308; border-radius: 3px; }
+    </style>
+</head>
+<body class="text-slate-200 min-h-screen flex flex-col selection:bg-amber-500 selection:text-slate-900">
+
+    <div id="login-page" class="flex-1 flex flex-col justify-center items-center p-4">
+        <div class="w-full max-w-md bg-slate-800/80 backdrop-blur-md border border-amber-500/40 rounded-2xl p-8 shadow-2xl relative overflow-hidden">
+            <div class="absolute -top-24 -left-24 w-48 h-48 bg-amber-500/10 rounded-full blur-3xl"></div>
+            <div class="absolute -bottom-24 -right-24 w-48 h-48 bg-blue-500/10 rounded-full blur-3xl"></div>
+            <div class="flex flex-col items-center mb-8 relative z-10">
+                <div class="w-16 h-16 bg-slate-900 border-2 border-amber-500 rounded-full flex items-center justify-center shadow-lg mb-4">
+                    <i data-lucide="crown" class="w-8 h-8 text-amber-500"></i>
+                </div>
+                <h1 class="text-2xl font-bold tracking-tight text-center text-slate-100">Attendance Management System</h1>
+                <p class="text-xs text-slate-400 mt-1">Executive Dashboard</p>
+            </div>
+            <form id="login-form" class="space-y-4 relative z-10" onsubmit="handleLogin(event)">
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Admin Email Address</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-500">
+                            <i data-lucide="mail" class="w-4 h-4"></i>
+                        </span>
+                        <input type="email" id="admin-email" required class="w-full pl-10 pr-4 py-3 bg-slate-900/90 border border-slate-700 rounded-xl focus:outline-none focus:border-amber-500 transition-colors placeholder:text-slate-500 text-sm" placeholder="Enter admin email">
+                    </div>
+                </div>
+                <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-semibold py-3 px-4 rounded-xl shadow-lg shadow-amber-500/10 hover:shadow-amber-500/20 active:scale-[0.99] transition-all text-sm flex items-center justify-center gap-2">
+                    <i data-lucide="log-in" class="w-4 h-4"></i> Login Dashboard
+                </button>
+            </form>
+            <div class="relative flex py-5 items-center my-2 relative z-10">
+                <div class="flex-grow border-t border-slate-700/60"></div>
+                <span class="flex-shrink mx-4 text-slate-500 text-xs font-bold tracking-widest uppercase">OR</span>
+                <div class="flex-grow border-t border-slate-700/60"></div>
+            </div>
+            <button onclick="handleViewOnly()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-xl shadow-lg shadow-blue-600/10 active:scale-[0.99] transition-all text-sm flex items-center justify-center gap-2 relative z-10">
+                <i data-lucide="eye" class="w-4 h-4"></i> View-Only Access
+            </button>
+        </div>
+    </div>
+
+    <div id="app-container" class="hidden flex-1 flex flex-col">
+        <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-40 shadow-xl">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between h-16">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-slate-800 border border-amber-500 rounded-full flex items-center justify-center shadow">
+                            <i data-lucide="crown" class="w-5 h-5 text-amber-500"></i>
+                        </div>
+                        <div>
+                            <div class="text-sm font-bold tracking-wide text-slate-200">Swara Jauhari Attendance</div>
+                            <div id="user-display" class="text-xs text-slate-400 font-medium truncate max-w-[180px] sm:max-w-xs">MOF Sabah</div>
+                        </div>
+                    </div>
+                    <div>
+                        <button onclick="handleLogout()" class="bg-transparent hover:bg-red-500/10 text-red-500 border border-red-500/30 px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5">
+                            <i data-lucide="log-out" class="w-3.5 h-3.5"></i> Exit
+                        </button>
+                    </div>
+                </div>
+
+                <nav class="flex space-x-1 pb-3 overflow-x-auto" aria-label="Tabs">
+                    <button onclick="switchTab('attendance')" id="tab-attendance" class="tab-btn px-4 py-2 text-xs rounded-lg flex items-center gap-2 transition-all whitespace-nowrap bg-amber-500 text-slate-950 font-semibold shadow-md">
+                        <i data-lucide="calendar-check" class="w-4 h-4"></i> Attendance
+                    </button>
+                    <button onclick="switchTab('students')" id="tab-students" class="tab-btn px-4 py-2 text-xs font-medium text-slate-400 hover:text-slate-200 rounded-lg flex items-center gap-2 transition-all whitespace-nowrap">
+                        <i data-lucide="users" class="w-4 h-4"></i> Students
+                    </button>
+                    <button onclick="switchTab('payments')" id="tab-payments" class="tab-btn px-4 py-2 text-xs font-medium text-slate-400 hover:text-slate-200 rounded-lg flex items-center gap-2 transition-all whitespace-nowrap">
+                        <i data-lucide="dollar-sign" class="w-4 h-4"></i> Payments
+                    </button>
+                    <button onclick="switchTab('analytics')" id="tab-analytics" class="tab-btn px-4 py-2 text-xs font-medium text-slate-400 hover:text-slate-200 rounded-lg flex items-center gap-2 transition-all whitespace-nowrap">
+                        <i data-lucide="pie-chart" class="w-4 h-4"></i> Executive Analytics
+                    </button>
+                    <button onclick="switchTab('reportcard')" id="tab-reportcard" class="tab-btn px-4 py-2 text-xs font-medium text-slate-400 hover:text-slate-200 rounded-lg flex items-center gap-2 transition-all whitespace-nowrap">
+                        <i data-lucide="clipboard-list" class="w-4 h-4"></i> Report Card
+                    </button>
+                </nav>
+            </div>
+        </header>
+
+        <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-8">
+            
+            <!-- GLOBAL HEADER WIDGET: TODAY'S DATE & COUNTDOWNS -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
+                <div class="bg-slate-800 border border-slate-700/80 rounded-xl p-4 flex items-center justify-between shadow-md">
+                    <div>
+                        <p class="text-[10px] text-amber-500 font-bold uppercase tracking-widest">Today's Date</p>
+                        <h4 id="global-today-date" class="text-sm font-semibold text-slate-100 mt-1">--</h4>
+                        <p id="global-today-day" class="text-xs text-slate-400">--</p>
+                    </div>
+                    <div class="w-10 h-10 bg-amber-500/10 border border-amber-500/30 rounded-xl flex items-center justify-center text-amber-500">
+                        <i data-lucide="calendar" class="w-5 h-5"></i>
+                    </div>
+                </div>
+
+                <div class="bg-slate-800 border border-slate-700/80 rounded-xl p-4 flex items-center justify-between shadow-md">
+                    <div>
+                        <p class="text-[10px] text-amber-500 font-bold uppercase tracking-widest">Upcoming Event Target</p>
+                        <h4 class="text-sm font-semibold text-slate-200 mt-1">Pelancaran Hari Kebangsaan</h4>
+                        <p class="text-xs text-slate-400">1st August 2026</p>
+                    </div>
+                    <div class="text-right">
+                        <span id="countdown-1" class="text-3xl font-extrabold text-slate-100">--</span>
+                        <span class="text-[10px] text-slate-400 block uppercase tracking-widest mt-1">Days</span>
+                    </div>
+                </div>
+
+                <div class="bg-slate-800 border border-slate-700/80 rounded-xl p-4 flex items-center justify-between shadow-md">
+                    <div>
+                        <p class="text-[10px] text-amber-500 font-bold uppercase tracking-widest">Upcoming Event Target</p>
+                        <h4 class="text-sm font-semibold text-slate-200 mt-1">Persembahan Perarakan Hari Kebangsaan</h4>
+                        <p class="text-xs text-slate-400">31st August 2026</p>
+                    </div>
+                    <div class="text-right">
+                        <span id="countdown-2" class="text-3xl font-extrabold text-slate-100">--</span>
+                        <span class="text-[10px] text-slate-400 block uppercase tracking-widest mt-1">Days</span>
+                    </div>
+                </div>
+            </div>
+
+            <section id="view-attendance" class="tab-content space-y-6">
+                <div class="flex flex-wrap items-center justify-between gap-4">
+                    <h2 class="text-lg font-bold text-slate-200 tracking-wide flex items-center gap-2">
+                        <i data-lucide="calendar-days" class="w-5 h-5 text-amber-500"></i> Attendance Register
+                    </h2>
+                    <button onclick="downloadPDF('view-attendance', 'Attendance Register')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2 rounded-xl text-xs transition-all flex items-center gap-1.5 shadow-md shadow-indigo-600/20">
+                        <i data-lucide="download-cloud" class="w-4 h-4"></i> Export PDF
+                    </button>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2 bg-slate-800 border border-slate-700/60 rounded-xl p-5 space-y-4 shadow-md">
+                        <h3 class="text-sm font-semibold tracking-wider text-amber-500 uppercase flex items-center gap-2">
+                            <i data-lucide="sliders" class="w-4 h-4"></i> Schedule Configuration
+                        </h3>
+                        <div class="flex flex-wrap items-end gap-4">
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Target Month</label>
+                                <select id="config-month" onchange="fetchDashboardData()" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500">
+                                    <option value="June 2026">June 2026</option>
+                                    <option value="July 2026">July 2026</option>
+                                    <option value="August 2026">August 2026</option>
+                                    <option value="September 2026">September 2026</option>
+                                </select>
+                            </div>
+                            <div id="date-pickers-container" class="flex flex-wrap gap-2"></div>
+                            <button id="admin-add-date-btn" onclick="addNewLessonDateInput()" class="bg-slate-700 hover:bg-slate-600 border border-slate-600 text-amber-500 font-medium py-1.5 px-3 rounded-lg text-xs transition-all flex items-center gap-1 hidden">
+                                <i data-lucide="calendar-plus" class="w-3.5 h-3.5"></i> + Add Date
+                            </button>
+                        </div>
+                    </div>
+                    <div id="admin-actions-card" data-pdf-omit class="bg-slate-800 border border-slate-700/60 rounded-xl p-5 flex flex-col justify-center items-start shadow-md hidden">
+                        <p class="text-xs text-slate-400 mb-3">Sync global attendance roster via text or CSV import.</p>
+                        <button onclick="openBulkImportModal('Attendance')" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-xl text-xs transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-600/10">
+                            <i data-lucide="file-spreadsheet" class="w-4 h-4"></i> Bulk Import Attendance
+                        </button>
+                    </div>
+                </div>
+                <div class="bg-slate-800 border border-slate-700/60 rounded-xl shadow-lg overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full min-w-[600px] text-left text-sm">
+                            <thead class="text-xs text-slate-400 uppercase bg-slate-900/40 border-b border-slate-700/40">
+                                <tr></tr>
+                            </thead>
+                            <tbody id="attendance-table-body" class="divide-y divide-slate-700/40"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <section id="view-students" class="tab-content space-y-6 hidden">
+                <div class="flex flex-wrap items-center justify-between gap-4">
+                    <h2 class="text-lg font-bold text-slate-200 tracking-wide flex items-center gap-2">
+                        <i data-lucide="folder-user" class="w-5 h-5 text-amber-500"></i> Active Master Roster
+                    </h2>
+                    <div id="admin-student-controls" class="flex items-center gap-2 hidden">
+                        <button onclick="openAddStudentModal()" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-semibold px-4 py-2 rounded-xl text-xs transition-all flex items-center gap-1.5 shadow-md shadow-amber-500/5">
+                            <i data-lucide="user-plus" class="w-4 h-4"></i> Add Single
+                        </button>
+                        <button onclick="openBulkImportModal('Students')" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-xl text-xs transition-all flex items-center gap-1.5 shadow-md shadow-blue-600/5">
+                            <i data-lucide="upload-cloud" class="w-4 h-4"></i> Bulk Import
+                        </button>
+                        <button onclick="downloadPDF('view-students', 'Master Roster Dashboard')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2 rounded-xl text-xs transition-all flex items-center gap-1.5 shadow-md shadow-indigo-600/20">
+                            <i data-lucide="download-cloud" class="w-4 h-4"></i> Export PDF
+                        </button>
+                    </div>
+                </div>
+                <div class="bg-slate-800 border border-slate-700/60 rounded-xl shadow-lg overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full min-w-[600px] text-left text-sm">
+                            <thead class="text-xs text-slate-400 uppercase bg-slate-900/40 border-b border-slate-700/40">
+                                <tr>
+                                    <th class="px-6 py-3.5 font-semibold">Student Name</th>
+                                    <th class="px-6 py-3.5 font-semibold">Vocal Grade</th>
+                                    <th class="px-6 py-3.5 font-semibold">Vocal Section</th>
+                                    <th id="student-action-header" class="px-6 py-3.5 text-right font-semibold hidden">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="students-table-body" class="divide-y divide-slate-700/40"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <section id="view-payments" class="tab-content space-y-6 hidden">
+                <div class="flex flex-wrap items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-200 tracking-wide flex items-center gap-2">
+                            <i data-lucide="receipt" class="w-5 h-5 text-emerald-500"></i> Financial Ledger
+                        </h2>
+                        <p id="payments-roster-note" class="text-[11px] text-slate-400 mt-1">Roster synced automatically from the Master Roster.</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div id="admin-payment-controls" class="hidden items-center gap-2 flex">
+                            <button onclick="openBulkImportModal('Payments')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-4 py-2 rounded-xl text-xs transition-all flex items-center gap-1.5 shadow-lg shadow-emerald-600/10">
+                                <i data-lucide="file-check-2" class="w-4 h-4"></i> Bulk Import Payments
+                            </button>
+                        </div>
+                        <button onclick="downloadPDF('view-payments', 'Financial Ledger')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2 rounded-xl text-xs transition-all flex items-center gap-1.5 shadow-md shadow-indigo-600/20">
+                            <i data-lucide="download-cloud" class="w-4 h-4"></i> Export PDF
+                        </button>
+                    </div>
+                </div>
+
+                <div data-pdf-omit class="bg-slate-800 border border-slate-700 rounded-xl px-5 py-3 shadow-md">
+                    <p class="text-[10px] text-slate-400 uppercase tracking-widest font-mono">
+                        <span class="font-bold text-slate-300">How to record:</span>
+                        Enter only the <span class="text-amber-500 font-bold">day of the month</span> in a column
+                        (e.g. <span class="text-amber-500 font-bold">6</span> under June &rarr; paid on 6 June 2026),
+                        then pick <span class="text-emerald-400 font-semibold">Cash</span> or
+                        <span class="text-blue-400 font-semibold">Online</span>. Clear the day to mark a month unpaid.
+                    </p>
+                </div>
+
+                <div class="bg-slate-800 border border-slate-700/60 rounded-xl shadow-lg overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full min-w-[900px] text-left text-sm">
+                            <thead class="text-xs text-slate-400 uppercase bg-slate-900/40 border-b border-slate-700/40">
+                                <tr id="payments-head-row"></tr>
+                            </thead>
+                            <tbody id="payments-table-body" class="divide-y divide-slate-700/40"></tbody>
+                            <tfoot class="bg-slate-900/60 font-bold border-t border-slate-600 text-xs">
+                                <tr id="payments-foot-row"></tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <section id="view-analytics" class="tab-content space-y-6 hidden">
+                
+                <div class="flex flex-wrap justify-between items-end border-b border-slate-700 pb-2 gap-4">
+                    <h2 class="text-xl font-bold text-slate-100 uppercase tracking-widest flex items-center gap-2">
+                        <i data-lucide="bar-chart-3" class="w-6 h-6 text-blue-500"></i> Performance Dashboard
+                    </h2>
+                    <div class="flex gap-2">
+                        <button onclick="saveAnalyticsToHistory()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-4 py-2 rounded-xl text-xs transition-all flex items-center gap-1.5 shadow-md shadow-emerald-600/20">
+                            <i data-lucide="pen-tool" class="w-4 h-4"></i> Digitally Sign & Save
+                        </button>
+                        <button onclick="downloadPDF('view-analytics', 'Executive Analytics Report')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2 rounded-xl text-xs transition-all flex items-center gap-1.5 shadow-md shadow-indigo-600/20">
+                            <i data-lucide="download-cloud" class="w-4 h-4"></i> Export PDF
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="bg-slate-800/80 border border-slate-700 p-4 rounded-xl shadow-md text-center">
+                        <p class="text-[10px] text-slate-400 uppercase font-bold tracking-widest">Diagnostic Performance</p>
+                        <p id="kpi-diagnostic" class="text-3xl font-extrabold text-blue-500 mt-1">0%</p>
+                    </div>
+                    <div class="bg-slate-800/80 border border-slate-700 p-4 rounded-xl shadow-md text-center">
+                        <p class="text-[10px] text-slate-400 uppercase font-bold tracking-widest">Repertoire Progress</p>
+                        <p id="kpi-repertoire" class="text-3xl font-extrabold text-emerald-500 mt-1">0%</p>
+                    </div>
+                    <div class="bg-slate-800/80 border border-slate-700 p-4 rounded-xl shadow-md text-center">
+                        <p class="text-[10px] text-slate-400 uppercase font-bold tracking-widest">Sessions Completed</p>
+                        <p id="kpi-sessions" class="text-3xl font-extrabold text-slate-200 mt-1">0 / 0</p>
+                    </div>
+                    <div class="bg-slate-800/80 border border-slate-700 p-4 rounded-xl shadow-md text-center border-l-2 border-l-rose-500">
+                        <p class="text-[10px] text-slate-400 uppercase font-bold tracking-widest text-rose-400">Unpaid Balances</p>
+                        <p id="kpi-unpaid" class="text-3xl font-extrabold text-rose-500 mt-1">0</p>
+                    </div>
+                </div>
+
+                <!-- OVERALL CHOIR SESSION PROGRESS SECTION -->
+                <div class="bg-slate-800 border border-slate-700 rounded-xl shadow-md overflow-hidden">
+                    <div class="bg-slate-900/60 p-4 border-b border-slate-700 flex justify-between items-center">
+                        <div>
+                            <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Overall Choir Session Progress</h3>
+                            <p class="text-[10px] text-slate-400 mt-0.5">Track repertoire ratings and historic coaching feedback timelines</p>
+                        </div>
+                        <button onclick="addSong()" class="text-xs bg-blue-500/10 text-blue-400 border border-blue-500/30 hover:bg-blue-500 hover:text-white px-3 py-1.5 rounded-lg transition-all font-semibold flex items-center gap-1.5">+ Add Song Track</button>
+                    </div>
+                    <div class="px-5 py-2.5 bg-slate-800/50 border-b border-slate-700/50">
+                        <p class="text-[10px] text-slate-400 uppercase tracking-widest font-mono">
+                            <span class="font-bold text-slate-300">Legend Metric Matrix:</span> 1 = Not fully effective | 2 = Capable | 3 = Proficient | 4 = Impressive
+                        </p>
+                    </div>
+                    <div id="songs-container" class="p-5 space-y-6"></div>
+                    
+                    <div class="bg-slate-900/80 p-4 border-t border-slate-700/60 flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-5">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Accumulated Repertoire Marks:</span>
+                            <span id="repertoire-aggregated-raw" class="text-sm font-mono font-bold text-amber-500">0 / 0 Pts</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Scaled Total Progress:</span>
+                            <span id="repertoire-aggregated-percent" class="text-sm font-mono font-bold text-blue-400">0%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTIONAL GROUP PROGRESS LEDGER -->
+                <div class="bg-slate-800 border border-slate-700 rounded-xl shadow-md overflow-hidden">
+                    <div class="bg-slate-900/60 p-4 border-b border-slate-700">
+                        <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Sectional Group Progress Ledger</h3>
+                        <p class="text-[10px] text-slate-400 uppercase tracking-widest font-mono mt-1">
+                            <span class="font-bold text-slate-300">Section Score Metric Scale:</span> 0-4 (Needs Work) | 5-7 (Developing) | 8-10 (Performance Ready)
+                        </p>
+                    </div>
+                    <div class="p-5 grid grid-cols-1 md:grid-cols-2 gap-6" id="section-comments-container"></div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2 bg-slate-800 border border-slate-700 rounded-xl shadow-md overflow-hidden">
+                        <div class="bg-slate-900/60 p-4 border-b border-slate-700 flex justify-between items-center">
+                            <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Voice Section Breakdown Table</h3>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-sm">
+                                <thead class="text-[10px] text-slate-400 uppercase bg-slate-900/30">
+                                    <tr>
+                                        <th class="px-5 py-3">Section</th>
+                                        <th class="px-5 py-3 text-center">Active Singers</th>
+                                        <th class="px-5 py-3 text-center">Checkmarks Earned</th>
+                                        <th class="px-5 py-3 text-right">Progress Toward Term Goal</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="analytics-section-table" class="divide-y divide-slate-700/50"></tbody>
+                                <tfoot class="bg-slate-900/60 font-bold border-t border-slate-600">
+                                    <tr>
+                                        <td class="px-5 py-3 text-slate-200">Total Choir</td>
+                                        <td id="analytics-total-singers" class="px-5 py-3 text-center text-slate-200">0</td>
+                                        <td id="analytics-total-checks" class="px-5 py-3 text-center text-slate-200">0</td>
+                                        <td id="analytics-total-progress" class="px-5 py-3 text-right text-blue-400">0%</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="space-y-6">
+                        <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-md">
+                            <h3 class="text-xs font-bold text-emerald-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                                <i data-lucide="award" class="w-4 h-4"></i> Highest Attendance
+                            </h3>
+                            <div id="analytics-top-performers" class="space-y-2"></div>
+                        </div>
+
+                        <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-md border-t-2 border-t-amber-500">
+                            <h3 class="text-xs font-bold text-amber-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                                <i data-lucide="alert-triangle" class="w-4 h-4"></i> Requires Attention
+                            </h3>
+                            <div id="analytics-needs-improvement" class="space-y-2"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="view-reportcard" class="tab-content space-y-6 hidden">
+                <div class="flex flex-wrap justify-between items-end border-b border-slate-700 pb-2 gap-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-100 uppercase tracking-widest flex items-center gap-2">
+                            <i data-lucide="clipboard-list" class="w-6 h-6 text-amber-500"></i> Student Report Card
+                        </h2>
+                        <p class="text-[11px] text-slate-400 mt-1">Aggregated 10-point assessment · Attendance · Group Ensemble · Solo Assessments</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button id="reportcard-save-btn" onclick="saveReportCardMarks()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-4 py-2 rounded-xl text-xs transition-all flex items-center gap-1.5 shadow-md shadow-emerald-600/20 hidden">
+                            <i data-lucide="save" class="w-4 h-4"></i> Save Solo Marks
+                        </button>
+                        <button onclick="downloadPDF('view-reportcard', 'Student Report Card')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2 rounded-xl text-xs transition-all flex items-center gap-1.5 shadow-md shadow-indigo-600/20">
+                            <i data-lucide="download-cloud" class="w-4 h-4"></i> Export PDF
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Weighting legend -->
+                <div class="bg-slate-800 border border-slate-700 rounded-xl px-5 py-3 shadow-md">
+                    <p class="text-[10px] text-slate-400 uppercase tracking-widest font-mono">
+                        <span class="font-bold text-slate-300">Scoring Model:</span>
+                        Each component is scaled to <span class="text-amber-500 font-bold">/10</span>.
+                        Overall = average of <span class="text-blue-400 font-semibold">Attendance</span>,
+                        <span class="text-emerald-400 font-semibold">Group Ensemble</span> and
+                        <span class="text-purple-400 font-semibold">Solo</span> (mean of Test 01 &amp; Test 02).
+                        Enter test marks (0&ndash;10) as each assessment is completed.
+                    </p>
+                </div>
+
+                <div class="bg-slate-800 border border-slate-700/60 rounded-xl shadow-lg overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full min-w-[820px] text-left text-sm">
+                            <thead class="text-[10px] text-slate-400 uppercase bg-slate-900/40 border-b border-slate-700/40">
+                                <tr>
+                                    <th class="px-5 py-3.5 font-semibold">Student Name</th>
+                                    <th class="px-4 py-3.5 font-semibold">Section</th>
+                                    <th class="px-4 py-3.5 text-center font-semibold text-blue-400">Attendance<br><span class="text-[9px] text-slate-500 normal-case">/10</span></th>
+                                    <th class="px-4 py-3.5 text-center font-semibold text-emerald-400">Group Ensemble<br><span class="text-[9px] text-slate-500 normal-case">/10</span></th>
+                                    <th class="px-4 py-3.5 text-center font-semibold text-purple-400">Solo Test 01<br><span class="text-[9px] text-slate-500 normal-case">/10</span></th>
+                                    <th class="px-4 py-3.5 text-center font-semibold text-purple-400">Solo Test 02<br><span class="text-[9px] text-slate-500 normal-case">/10</span></th>
+                                    <th class="px-4 py-3.5 text-center font-semibold text-amber-500">Overall<br><span class="text-[9px] text-slate-500 normal-case">/10</span></th>
+                                    <th class="px-5 py-3.5 text-center font-semibold">Grade Band</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reportcard-table-body" class="divide-y divide-slate-700/40"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Scaling / grading legend -->
+                <div class="bg-slate-800 border border-slate-700 rounded-xl shadow-md overflow-hidden">
+                    <div class="bg-slate-900/60 p-4 border-b border-slate-700">
+                        <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
+                            <i data-lucide="ruler" class="w-4 h-4 text-amber-500"></i> Grading Scale &amp; Legend
+                        </h3>
+                        <p class="text-[10px] text-slate-400 mt-0.5">Descriptor bands applied to the aggregated 10-point overall score</p>
+                    </div>
+                    <div id="reportcard-legend" class="p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="w-full py-6 border-t border-slate-800/60 mt-auto bg-slate-950/20 backdrop-blur-sm">
+            <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4 text-[10px] md:text-[11px] font-medium tracking-wider uppercase text-slate-500 text-center md:text-left">
+                <div>&copy; 2026 <span class="text-blue-400 font-semibold">K.LeeHuang</span>. All Rights Reserved.</div>
+                <div class="flex flex-col sm:flex-row sm:items-center justify-center gap-1.5 sm:gap-2 text-slate-500">
+                    <span>Designed for Swara Jauhari MOF</span><span class="hidden sm:inline text-slate-700">•</span>
+                    <span>Powered by <span class="text-amber-500/80 font-semibold">Oongisvoce Academy of Music</span></span>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- MODAL 1: BULK IMPORT -->
+    <div id="bulk-import-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-2xl p-6 space-y-4 shadow-2xl">
+            <h3 id="bulk-modal-title" class="text-lg font-bold text-slate-200 tracking-wide uppercase flex items-center gap-2">
+                <i data-lucide="upload-cloud" class="w-5 h-5 text-blue-500"></i> Bulk Import
+            </h3>
+            <div class="bg-slate-900/50 border border-slate-700/50 p-4 rounded-xl">
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Required Format:</p>
+                <code id="bulk-modal-instructions" class="text-xs text-amber-500 font-mono block whitespace-pre-wrap"></code>
+            </div>
+            <form id="bulk-import-form" onsubmit="handleBulkImportSubmit(event)" class="space-y-4">
+                <div>
+                    <textarea id="bulk-import-textarea" required rows="8" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs font-mono focus:outline-none focus:border-blue-500 placeholder-slate-600" placeholder="Paste your rows here..."></textarea>
+                </div>
+                <div class="flex items-center justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeBulkImportModal()" class="px-4 py-2 rounded-lg text-xs font-medium bg-slate-700 hover:bg-slate-600">Cancel</button>
+                    <button type="submit" id="bulk-submit-btn" class="px-4 py-2 rounded-lg text-xs font-semibold bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-1.5">
+                        <i data-lucide="check-circle-2" class="w-4 h-4"></i> Process & Import
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 2: ADD SINGLE STUDENT -->
+    <div id="add-student-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl">
+            <h3 class="text-sm font-bold text-slate-200 tracking-wide uppercase text-amber-500">Register New Student</h3>
+            <form id="add-student-form" onsubmit="handleAddStudentSubmit(event)" class="space-y-4">
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Full Name</label>
+                    <input id="modal-name" type="text" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-amber-500">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Vocal Grade</label>
+                        <select id="modal-grade" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-amber-500">
+                            <option value="Beginner">Beginner</option><option value="Intermediate">Intermediate</option><option value="CC1">CC1</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Section</label>
+                        <select id="modal-section" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-amber-500">
+                            <option value="Soprano">Soprano</option><option value="Alto">Alto</option><option value="Tenor">Tenor</option><option value="Bass">Bass</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="flex items-center justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeAddStudentModal()" class="px-4 py-2 rounded-lg text-xs font-medium bg-slate-700 hover:bg-slate-600">Cancel</button>
+                    <button type="submit" class="px-4 py-2 rounded-lg text-xs font-semibold bg-amber-500 text-slate-950 hover:bg-amber-600">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 3: ADD NEW REPORT / LOG ENTRY -->
+    <div id="add-log-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-lg p-6 space-y-4 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-700/60 pb-3">
+                <h3 id="add-log-modal-title" class="text-sm font-bold text-amber-500 uppercase tracking-wide">Submit New Coaching Log</h3>
+                <button onclick="closeAddLogModal()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button>
+            </div>
+            <form id="add-log-form" onsubmit="handleAddLogSubmit(event)" class="space-y-4">
+                <input type="hidden" id="add-log-target-type"> <!-- 'song' or 'section' -->
+                <input type="hidden" id="add-log-target-key">  <!-- song index or section name -->
+                
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Session Date / Review Date</label>
+                    <input id="add-log-date" type="text" required placeholder="e.g., 22 Jul 2026 or Rehearsal #5" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-amber-500 text-slate-200">
+                </div>
+
+                <!-- Song Scores Section (Shown if type === 'song') -->
+                <div id="add-log-song-scores" class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 bg-slate-900/50 p-3 rounded-xl border border-slate-700/50 hidden">
+                    <div>
+                        <label class="block text-[9px] uppercase font-bold text-slate-400">Technique</label>
+                        <select id="log-score-tech" class="w-full bg-slate-950 border border-slate-700 rounded p-1.5 text-xs text-slate-200">
+                            <option value="1">1 - Needs Work</option><option value="2" selected>2 - Capable</option><option value="3">3 - Proficient</option><option value="4">4 - Impressive</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[9px] uppercase font-bold text-slate-400">Rhythm</label>
+                        <select id="log-score-rhythm" class="w-full bg-slate-950 border border-slate-700 rounded p-1.5 text-xs text-slate-200">
+                            <option value="1">1 - Needs Work</option><option value="2" selected>2 - Capable</option><option value="3">3 - Proficient</option><option value="4">4 - Impressive</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[9px] uppercase font-bold text-slate-400">Accuracy</label>
+                        <select id="log-score-acc" class="w-full bg-slate-950 border border-slate-700 rounded p-1.5 text-xs text-slate-200">
+                            <option value="1">1 - Needs Work</option><option value="2" selected>2 - Capable</option><option value="3">3 - Proficient</option><option value="4">4 - Impressive</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[9px] uppercase font-bold text-slate-400">Dynamics</label>
+                        <select id="log-score-dyn" class="w-full bg-slate-950 border border-slate-700 rounded p-1.5 text-xs text-slate-200">
+                            <option value="1">1 - Needs Work</option><option value="2" selected>2 - Capable</option><option value="3">3 - Proficient</option><option value="4">4 - Impressive</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[9px] uppercase font-bold text-slate-400">Flair</label>
+                        <select id="log-score-flair" class="w-full bg-slate-950 border border-slate-700 rounded p-1.5 text-xs text-slate-200">
+                            <option value="1" selected>1 - Needs Work</option><option value="2">2 - Capable</option><option value="3">3 - Proficient</option><option value="4">4 - Impressive</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Section Score (Shown if type === 'section') -->
+                <div id="add-log-section-score" class="hidden">
+                    <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Section Score (0 - 10 Marks)</label>
+                    <input id="log-score-sec" type="number" min="0" max="10" value="6" class="w-24 bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs font-bold text-amber-500 text-center">
+                </div>
+
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Coach Feedback Notes</label>
+                    <textarea id="add-log-comment" required rows="4" placeholder="Enter target vocal placement, pitch adjustments, or rehearsal feedback..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-amber-500 text-slate-200 resize-y"></textarea>
+                </div>
+
+                <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-700/60">
+                    <button type="button" onclick="closeAddLogModal()" class="px-4 py-2 rounded-lg text-xs font-medium bg-slate-700 hover:bg-slate-600">Cancel</button>
+                    <button type="submit" class="px-4 py-2 rounded-lg text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-500 flex items-center gap-1.5">
+                        <i data-lucide="check-circle" class="w-4 h-4"></i> Save Feedback Entry
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let studentsState = [];
+        let paymentsState = [];
+        let isAdmin = false;
+        let activeLessonDates = ["2026-06-05", "2026-06-12", "2026-06-19", "2026-06-26"];
+        let globalTotalSessions = 0;
+        let globalCompletedSessions = 0;
+        let adminUserEmail = "";
+        
+        // Track selected sidebar date indices for Sectional Group Progress
+        let selectedSectionDateIndex = { Soprano: 0, Alto: 0, Tenor: 0, Bass: 0 };
+
+        let analyticsPayload = {
+            songs: [
+                {
+                    id: Date.now(),
+                    title: "Sabah Maju Jaya",
+                    logs: [
+                        {
+                            id: "log-1",
+                            date: "22 Jul 2026",
+                            scores: { technique: 2, rhythmic: 2, accuracy: 2, dynamics: 2, flair: 1 },
+                            comment: "Singers are capable of singing the assigned vocal arrangements. They need to work on pitch and vocal technique to ensure overall tonal quality."
+                        },
+                        {
+                            id: "log-2",
+                            date: "15 Jul 2026",
+                            scores: { technique: 1, rhythmic: 2, accuracy: 1, dynamics: 1, flair: 1 },
+                            comment: "Initial exposition. Need closer attention to dynamic contrast."
+                        }
+                    ]
+                }
+            ],
+            sections: {
+                Soprano: {
+                    logs: [
+                        { id: "sec-sop-1", date: "22 Jul 2026", score: 7, comment: "You are currently on transition state to good performance. Singers need to be aware of each other to make a quality sound." },
+                        { id: "sec-sop-2", date: "15 Jul 2026", score: 5, comment: "Sopranos struggling with pitch accuracy in measure 24-32." }
+                    ]
+                },
+                Alto: {
+                    logs: [
+                        { id: "sec-alt-1", date: "22 Jul 2026", score: 8, comment: "This group shows much effort in producing good vocal tone. Pitch holds well." }
+                    ]
+                },
+                Tenor: {
+                    logs: [
+                        { id: "sec-ten-1", date: "22 Jul 2026", score: 6, comment: "The tenors are quick learners yet struggling to blend their tone." }
+                    ]
+                },
+                Bass: {
+                    logs: [
+                        { id: "sec-bas-1", date: "22 Jul 2026", score: 5, comment: "Bridge tone requires immediate focus." }
+                    ]
+                }
+            }
+        };
+        
+        const MACRO_ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbym0QHXQujNGuvq4tMKnyhoch6pVRFodzjqHp5MLzL1ecdFc8gJjeY4OGWx4zxvxsf2/exec"; 
+
+        const AUTHORIZED_ADMINS = [
+            "kriyaoliver369@gmail.com",
+            "admin@system.com",
+            "director@swarajauhari.com",
+            "management@swarajauhari.com"
+        ];
+
+        // --- BACKWARD COMPATIBILITY NORMALIZE DATA ---
+        function ensureAnalyticsLogsStructure() {
+            if (!analyticsPayload) return;
+            if (!analyticsPayload.songs) analyticsPayload.songs = [];
+            
+            // Normalize songs
+            analyticsPayload.songs.forEach(song => {
+                if (!song.logs || !Array.isArray(song.logs) || song.logs.length === 0) {
+                    const fallbackComment = song.comment || "Initial baseline report created.";
+                    const fallbackScores = song.scores || { technique: 1, rhythmic: 1, accuracy: 1, dynamics: 1, flair: 1 };
+                    song.logs = [{
+                        id: "log-" + Date.now(),
+                        date: "Baseline",
+                        scores: fallbackScores,
+                        comment: fallbackComment
+                    }];
+                }
+            });
+
+            // Normalize voice sections
+            const secNames = ['Soprano', 'Alto', 'Tenor', 'Bass'];
+            if (!analyticsPayload.sections) analyticsPayload.sections = {};
+            secNames.forEach(sec => {
+                if (!analyticsPayload.sections[sec]) {
+                    analyticsPayload.sections[sec] = { logs: [{ id: "sec-" + Date.now(), date: "Baseline", score: 0, comment: "No logs recorded." }] };
+                } else if (!analyticsPayload.sections[sec].logs || !Array.isArray(analyticsPayload.sections[sec].logs) || analyticsPayload.sections[sec].logs.length === 0) {
+                    const oldSec = analyticsPayload.sections[sec];
+                    analyticsPayload.sections[sec] = {
+                        logs: [{ id: "sec-" + Date.now(), date: "Baseline", score: oldSec.score || 0, comment: oldSec.comment || "No logs recorded." }]
+                    };
+                }
+            });
+        }
+
+        // --- DYNAMIC CURRENT MONTH SETUP ---
+        function setDefaultMonthToCurrent() {
+            const now = new Date();
+            const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            const currentMonthYear = `${monthNames[now.getMonth()]} ${now.getFullYear()}`;
+            
+            const selectEl = document.getElementById('config-month');
+            if (selectEl) {
+                let exists = false;
+                for (let i = 0; i < selectEl.options.length; i++) {
+                    if (selectEl.options[i].value === currentMonthYear) {
+                        selectEl.selectedIndex = i;
+                        exists = true;
+                        break;
+                    }
+                }
+                if (!exists) {
+                    const opt = document.createElement('option');
+                    opt.value = currentMonthYear;
+                    opt.innerText = currentMonthYear;
+                    opt.selected = true;
+                    selectEl.appendChild(opt);
+                }
+            }
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const emailInput = document.getElementById('admin-email').value.trim().toLowerCase();
+            if (AUTHORIZED_ADMINS.map(email => email.toLowerCase()).includes(emailInput)) {
+                isAdmin = true;
+                adminUserEmail = emailInput;
+                initializeSession(emailInput);
+            } else {
+                alert("Access Denied: Email parameter is not explicitly whitelisted.");
+            }
+        }
+
+        function handleViewOnly() { isAdmin = false; adminUserEmail = "Guest"; initializeSession("Guest (View-Only Access)"); }
+
+        function initializeSession(userLabel) {
+            document.getElementById('user-display').innerText = userLabel;
+            document.getElementById('login-page').classList.add('hidden');
+            document.getElementById('app-container').classList.remove('hidden');
+            
+            if (isAdmin) {
+                document.getElementById('admin-add-date-btn').classList.remove('hidden');
+                document.getElementById('admin-actions-card').classList.remove('hidden');
+                document.getElementById('admin-student-controls').classList.remove('hidden');
+                document.getElementById('admin-payment-controls').classList.remove('hidden');
+                document.getElementById('student-action-header').classList.remove('hidden');
+                document.getElementById('reportcard-save-btn').classList.remove('hidden');
+            }
+            
+            setDefaultMonthToCurrent();
+            startCountdowns();
+            fetchDashboardData();
+            lucide.createIcons();
+        }
+
+        function handleLogout() {
+            isAdmin = false;
+            document.getElementById('app-container').classList.add('hidden');
+            document.getElementById('login-page').classList.remove('hidden');
+        }
+
+        function switchTab(targetTab) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`view-${targetTab}`).classList.remove('hidden');
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.className = "tab-btn px-4 py-2 text-xs font-medium text-slate-400 hover:text-slate-200 rounded-lg flex items-center gap-2 transition-all whitespace-nowrap");
+            document.getElementById(`tab-${targetTab}`).className = "tab-btn px-4 py-2 text-xs rounded-lg flex items-center gap-2 transition-all whitespace-nowrap bg-amber-500 text-slate-950 font-semibold shadow-md";
+            
+            if(targetTab === 'analytics') {
+                renderAnalyticsUI();
+                calculateAnalyticsMetrics();
+            }
+
+            if(targetTab === 'reportcard') {
+                renderReportCard();
+            }
+        }
+
+        function startCountdowns() {
+            function update() {
+                const now = new Date();
+                const dateOptions = { year: 'numeric', month: 'long', day: 'numeric' };
+                const dayOptions = { weekday: 'long' };
+                const dateEl = document.getElementById('global-today-date');
+                const dayEl = document.getElementById('global-today-day');
+                if (dateEl) dateEl.innerText = now.toLocaleDateString('en-US', dateOptions);
+                if (dayEl) dayEl.innerText = now.toLocaleDateString('en-US', dayOptions);
+
+                const nowTime = now.getTime();
+                const d1 = new Date("2026-08-01T00:00:00").getTime();
+                const d2 = new Date("2026-08-31T00:00:00").getTime();
+
+                const diff1 = Math.ceil((d1 - nowTime) / (1000 * 60 * 60 * 24));
+                const diff2 = Math.ceil((d2 - nowTime) / (1000 * 60 * 60 * 24));
+
+                const cd1 = document.getElementById('countdown-1');
+                const cd2 = document.getElementById('countdown-2');
+                if (cd1) cd1.innerText = diff1 > 0 ? diff1 : 0;
+                if (cd2) cd2.innerText = diff2 > 0 ? diff2 : 0;
+            }
+            update();
+            setInterval(update, 60000); 
+        }
+
+        // --- NEW EXECUTIVE ANALYTICS RENDER PIPELINE ---
+        function renderAnalyticsUI() {
+            ensureAnalyticsLogsStructure();
+            
+            // 1. RENDER SONGS (CHOIR SESSION PROGRESS)
+            const songsContainer = document.getElementById('songs-container');
+            songsContainer.innerHTML = analyticsPayload.songs.map((song, songIndex) => {
+                const latestLog = song.logs[0]; // Newest at index 0
+                const latestTotalPts = calculateSingleSongTotal(latestLog.scores);
+                const historyCount = song.logs.length - 1;
+
+                return `
+                <div class="p-5 bg-slate-900/50 border border-slate-700/60 rounded-xl space-y-4 shadow-sm">
+                    <!-- Song Header -->
+                    <div class="flex flex-wrap justify-between items-center gap-3">
+                        <input type="text" value="${song.title}" onchange="updateSongTitle(${songIndex}, this.value)" ${!isAdmin ? 'disabled' : ''} class="bg-transparent border-b border-slate-700 focus:border-amber-500 focus:outline-none text-base text-slate-100 font-bold py-0.5 transition-colors max-w-xs sm:max-w-md">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-mono font-bold text-amber-500 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-lg" id="song-total-${songIndex}">${latestTotalPts}/20 Pts</span>
+                            ${isAdmin ? `<button onclick="openAddLogModal('song', ${songIndex})" class="text-xs bg-amber-500 hover:bg-amber-600 text-slate-950 px-3 py-1 rounded-lg font-bold flex items-center gap-1 transition-all"><i data-lucide="plus-circle" class="w-3.5 h-3.5"></i> Add Report</button>` : ''}
+                            ${isAdmin ? `<button onclick="removeSong(${songIndex})" class="text-rose-500 hover:text-rose-400 p-1.5"><i data-lucide="trash-2" class="w-4 h-4"></i></button>` : ''}
+                        </div>
+                    </div>
+
+                    <!-- Latest Report Display (Current Active) -->
+                    <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-4 space-y-3">
+                        <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                            <span class="text-[10px] font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+                                <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Active Report
+                            </span>
+                            <span class="text-[10px] font-mono text-slate-400">${latestLog.date}</span>
+                        </div>
+                        <div class="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                            ${renderMetricPill('Technique', latestLog.scores.technique)}
+                            ${renderMetricPill('Rhythm', latestLog.scores.rhythmic)}
+                            ${renderMetricPill('Accuracy', latestLog.scores.accuracy)}
+                            ${renderMetricPill('Dynamics', latestLog.scores.dynamics)}
+                            ${renderMetricPill('Flair', latestLog.scores.flair)}
+                        </div>
+                        <p class="text-xs text-slate-200 italic leading-relaxed pt-1">${latestLog.comment || 'No notes logged.'}</p>
+                    </div>
+
+                    <!-- Past History Accordion Dropdown -->
+                    ${historyCount > 0 ? `
+                        <div>
+                            <button onclick="toggleSongHistoryAccordion(${songIndex})" class="text-xs text-blue-400 hover:text-blue-300 font-semibold flex items-center gap-1.5 transition-colors">
+                                <i data-lucide="history" class="w-3.5 h-3.5"></i> 
+                                <span id="accordion-btn-text-${songIndex}">View Past Session Reports (${historyCount})</span>
+                                <i data-lucide="chevron-down" id="accordion-icon-${songIndex}" class="w-3.5 h-3.5 transition-transform"></i>
+                            </button>
+                            <div id="song-history-accordion-${songIndex}" class="hidden space-y-3 pt-3 pl-2 border-l-2 border-slate-800 mt-2">
+                                ${song.logs.slice(1).map((log) => `
+                                    <div class="bg-slate-950/40 border border-slate-800 rounded-lg p-3 space-y-2">
+                                        <div class="flex justify-between items-center text-[10px] font-mono text-slate-400">
+                                            <span>Date: <strong class="text-slate-200">${log.date}</strong></span>
+                                            <span class="text-amber-500 font-bold">${calculateSingleSongTotal(log.scores)}/20 Pts</span>
+                                        </div>
+                                        <div class="grid grid-cols-5 gap-1 text-[9px] font-mono">
+                                            <span class="bg-slate-900 p-1 rounded text-center">Tech: ${log.scores.technique}</span>
+                                            <span class="bg-slate-900 p-1 rounded text-center">Rhy: ${log.scores.rhythmic}</span>
+                                            <span class="bg-slate-900 p-1 rounded text-center">Acc: ${log.scores.accuracy}</span>
+                                            <span class="bg-slate-900 p-1 rounded text-center">Dyn: ${log.scores.dynamics}</span>
+                                            <span class="bg-slate-900 p-1 rounded text-center">Flair: ${log.scores.flair}</span>
+                                        </div>
+                                        <p class="text-xs text-slate-300 italic">${log.comment}</p>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>`;
+            }).join('');
+
+            // 2. RENDER VOICE SECTIONS (LEFT SIDEBAR FOR DATES + RIGHT CONTENT PANEL)
+            const sectionContainer = document.getElementById('section-comments-container');
+            const sections = ['Soprano', 'Alto', 'Tenor', 'Bass'];
+            
+            sectionContainer.innerHTML = sections.map(sec => {
+                const secObj = analyticsPayload.sections[sec];
+                const logs = secObj.logs || [];
+                const activeIdx = selectedSectionDateIndex[sec] !== undefined ? selectedSectionDateIndex[sec] : 0;
+                const activeLog = logs[activeIdx] || logs[0] || { date: 'N/A', score: 0, comment: 'No notes logged.' };
+
+                const dateListHTML = logs.map((log, idx) => `
+                    <button onclick="selectSectionDate('${sec}', ${idx})" class="w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-mono transition-all flex items-center justify-between ${idx === activeIdx ? 'bg-amber-500 text-slate-950 font-bold shadow' : 'bg-slate-950/60 text-slate-400 hover:bg-slate-800 hover:text-slate-200'}">
+                        <span>${log.date}</span>
+                        ${idx === 0 ? '<span class="text-[8px] uppercase tracking-wider bg-slate-900 text-amber-400 px-1 rounded">Latest</span>' : ''}
+                    </button>
+                `).join('');
+
+                return `
+                <div class="bg-slate-900/50 border border-slate-700/60 rounded-xl p-4 flex flex-col space-y-3">
+                    <!-- Section Header -->
+                    <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                        <h4 class="text-sm font-bold text-slate-100 flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full ${sec==='Soprano'?'bg-rose-400':sec==='Alto'?'bg-amber-400':sec==='Tenor'?'bg-blue-400':'bg-emerald-400'}"></span>
+                            ${sec} Section
+                        </h4>
+                        ${isAdmin ? `<button onclick="openAddLogModal('section', '${sec}')" class="text-xs bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600 hover:text-white border border-emerald-500/30 px-2.5 py-1 rounded-lg font-semibold flex items-center gap-1"><i data-lucide="plus" class="w-3.5 h-3.5"></i> Add Log</button>` : ''}
+                    </div>
+
+                    <!-- Split View: Left Date Sidebar + Right Comment Panel -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 flex-1 min-h-[160px]">
+                        <!-- Left Date Sidebar -->
+                        <div class="space-y-1.5 border-r border-slate-800 pr-2 max-h-[180px] overflow-y-auto">
+                            <p class="text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-1">Select Review Date</p>
+                            ${dateListHTML}
+                        </div>
+
+                        <!-- Right Selected Comment View -->
+                        <div class="sm:col-span-2 bg-slate-950/70 border border-slate-800 rounded-xl p-3 flex flex-col justify-between space-y-2">
+                            <div>
+                                <div class="flex justify-between items-center mb-1">
+                                    <span class="text-[10px] font-mono text-amber-400 font-bold">${activeLog.date} Log</span>
+                                    <span class="text-xs font-mono font-bold bg-amber-500/10 text-amber-500 border border-amber-500/20 px-2 py-0.5 rounded">Score: ${activeLog.score} / 10</span>
+                                </div>
+                                <p class="text-xs text-slate-200 leading-relaxed italic pt-1">${activeLog.comment || 'No feedback logged for this date.'}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+            
+            lucide.createIcons();
+            calculateRepertoireMastery();
+        }
+
+        function selectSectionDate(section, index) {
+            selectedSectionDateIndex[section] = index;
+            renderAnalyticsUI();
+        }
+
+        function toggleSongHistoryAccordion(songIndex) {
+            const el = document.getElementById(`song-history-accordion-${songIndex}`);
+            const icon = document.getElementById(`accordion-icon-${songIndex}`);
+            if (el.classList.contains('hidden')) {
+                el.classList.remove('hidden');
+                if (icon) icon.style.transform = 'rotate(180deg)';
+            } else {
+                el.classList.add('hidden');
+                if (icon) icon.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        function renderMetricPill(label, val) {
+            const levelLabels = { 1: "1 - Needs Work", 2: "2 - Capable", 3: "3 - Proficient", 4: "4 - Impressive" };
+            const levelColors = { 1: "text-rose-400 bg-rose-500/10 border-rose-500/20", 2: "text-amber-400 bg-amber-500/10 border-amber-500/20", 3: "text-blue-400 bg-blue-500/10 border-blue-500/20", 4: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20" };
+            return `
+            <div class="bg-slate-900 border border-slate-800 rounded-lg p-1.5 flex flex-col">
+                <span class="text-[9px] uppercase font-bold text-slate-500 truncate">${label}</span>
+                <span class="text-[11px] font-semibold ${levelColors[val] || 'text-slate-300'} truncate">${levelLabels[val] || val}</span>
+            </div>`;
+        }
+
+        function calculateSingleSongTotal(scores) {
+            if(!scores) return 5;
+            return parseInt(scores.technique||1) + parseInt(scores.rhythmic||1) + parseInt(scores.accuracy||1) + parseInt(scores.dynamics||1) + parseInt(scores.flair||1);
+        }
+
+        function calculateRepertoireMastery() {
+            const totalSongs = analyticsPayload.songs.length;
+            if (totalSongs === 0) {
+                document.getElementById('kpi-repertoire').innerText = "0%";
+                document.getElementById('repertoire-aggregated-raw').innerText = "0 / 0 Pts";
+                document.getElementById('repertoire-aggregated-percent').innerText = "0%";
+                return;
+            }
+            let totalPoints = 0;
+            const maxPoints = totalSongs * 20;
+            analyticsPayload.songs.forEach(song => { 
+                const latestLog = song.logs[0];
+                totalPoints += calculateSingleSongTotal(latestLog ? latestLog.scores : null); 
+            });
+            const percentage = Math.round((totalPoints / maxPoints) * 100);
+            
+            document.getElementById('kpi-repertoire').innerText = `${percentage}%`;
+            document.getElementById('repertoire-aggregated-raw').innerText = `${totalPoints} / ${maxPoints} Pts`;
+            document.getElementById('repertoire-aggregated-percent').innerText = `${percentage}%`;
+        }
+
+        function addSong() {
+            if(!isAdmin) return;
+            analyticsPayload.songs.push({ 
+                id: Date.now(), 
+                title: "New Repertoire Title", 
+                logs: [
+                    { id: "log-" + Date.now(), date: new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric'}), scores: { technique: 1, rhythmic: 1, accuracy: 1, dynamics: 1, flair: 1 }, comment: "Initial song report created." }
+                ]
+            });
+            renderAnalyticsUI();
+        }
+
+        function removeSong(index) {
+            if(!isAdmin) return;
+            if(confirm("Remove this song from the progress tracker?")) {
+                analyticsPayload.songs.splice(index, 1);
+                renderAnalyticsUI();
+            }
+        }
+
+        function updateSongTitle(index, val) { analyticsPayload.songs[index].title = val; }
+
+        // --- ADD LOG ENTRY MODAL LOGIC ---
+        function openAddLogModal(type, targetKey) {
+            if(!isAdmin) return;
+            document.getElementById('add-log-target-type').value = type;
+            document.getElementById('add-log-target-key').value = targetKey;
+            
+            const todayStr = new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric'});
+            document.getElementById('add-log-date').value = todayStr;
+            document.getElementById('add-log-comment').value = '';
+
+            if (type === 'song') {
+                document.getElementById('add-log-modal-title').innerText = `Add Report: ${analyticsPayload.songs[targetKey].title}`;
+                document.getElementById('add-log-song-scores').classList.remove('hidden');
+                document.getElementById('add-log-section-score').classList.add('hidden');
+            } else {
+                document.getElementById('add-log-modal-title').innerText = `Add Log: ${targetKey} Section`;
+                document.getElementById('add-log-song-scores').classList.add('hidden');
+                document.getElementById('add-log-section-score').classList.remove('hidden');
+            }
+
+            document.getElementById('add-log-modal').classList.remove('hidden');
+        }
+
+        function closeAddLogModal() { document.getElementById('add-log-modal').classList.add('hidden'); }
+
+        function handleAddLogSubmit(e) {
+            e.preventDefault();
+            const type = document.getElementById('add-log-target-type').value;
+            const key = document.getElementById('add-log-target-key').value;
+            const dateStr = document.getElementById('add-log-date').value.trim();
+            const commentStr = document.getElementById('add-log-comment').value.trim();
+
+            if (type === 'song') {
+                const song = analyticsPayload.songs[key];
+                if (!song.logs) song.logs = [];
+                // Unshift to place newest log at index 0 (top)
+                song.logs.unshift({
+                    id: "log-" + Date.now(),
+                    date: dateStr,
+                    scores: {
+                        technique: parseInt(document.getElementById('log-score-tech').value),
+                        rhythmic: parseInt(document.getElementById('log-score-rhythm').value),
+                        accuracy: parseInt(document.getElementById('log-score-acc').value),
+                        dynamics: parseInt(document.getElementById('log-score-dyn').value),
+                        flair: parseInt(document.getElementById('log-score-flair').value)
+                    },
+                    comment: commentStr
+                });
+            } else {
+                const secObj = analyticsPayload.sections[key];
+                if (!secObj.logs) secObj.logs = [];
+                secObj.logs.unshift({
+                    id: "sec-log-" + Date.now(),
+                    date: dateStr,
+                    score: parseInt(document.getElementById('log-score-sec').value),
+                    comment: commentStr
+                });
+                selectedSectionDateIndex[key] = 0; // Reset view to newly added log
+            }
+
+            closeAddLogModal();
+            renderAnalyticsUI();
+        }
+
+        async function saveAnalyticsToHistory() {
+            if(!isAdmin) return;
+            const btn = document.querySelector("button[onclick='saveAnalyticsToHistory()']");
+            const ogText = btn.innerHTML;
+            btn.innerHTML = `<i class="w-4 h-4 animate-spin"></i> Committing Logs...`;
+            
+            executePostPayload({
+                action: "saveAnalytics",
+                analyticsPayload: analyticsPayload,
+                userEmail: adminUserEmail
+            });
+            
+            setTimeout(() => {
+                btn.innerHTML = ogText;
+                alert("Digital Signature Confirmed. Repertoire matrix snapshot securely saved to Google Sheets.");
+            }, 1000);
+        }
+
+        // --- DASHBOARD DATA & ATTENDANCE RENDERING ---
+        function renderAllData() {
+            renderAttendance();
+            renderStudents();
+            renderPayments();
+            calculateAnalyticsMetrics();
+        }
+
+        function renderDatePickerInputs() {
+            const container = document.getElementById('date-pickers-container');
+            if(!container) return;
+            container.innerHTML = activeLessonDates.map((date, idx) => `
+                <div class="relative flex items-center bg-slate-900 border border-slate-700 rounded-lg px-2 py-1">
+                    <input type="date" value="${date}" onchange="handleDatePickerChange(${idx}, this.value)" ${!isAdmin ? 'disabled' : ''} class="bg-transparent text-xs text-slate-200 focus:outline-none ${!isAdmin ? 'cursor-not-allowed' : ''}">
+                    ${isAdmin ? `<button onclick="removeDatePickerDate(${idx})" class="text-rose-500 hover:text-rose-400 ml-1.5 p-0.5" title="Remove Date"><i data-lucide="x" class="w-3 h-3"></i></button>` : ''}
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        function handleDatePickerChange(idx, newValue) {
+            if(!isAdmin) return;
+            activeLessonDates[idx] = newValue;
+            renderAttendance();
+            autoSaveConfigDates(); 
+        }
+
+        function removeDatePickerDate(idx) {
+            if(!isAdmin) return;
+            activeLessonDates.splice(idx, 1);
+            renderDatePickerInputs();
+            renderAttendance();
+            autoSaveConfigDates(); 
+        }
+
+        function addNewLessonDateInput() {
+            if(!isAdmin) return;
+            const todayStr = new Date().toISOString().split('T')[0];
+            activeLessonDates.push(todayStr);
+
+            studentsState.forEach(student => {
+                if (!student.attendance) {
+                    student.attendance = [];
+                }
+                while (student.attendance.length < activeLessonDates.length) {
+                    student.attendance.push(false);
+                }
+            });
+
+            renderDatePickerInputs();
+            renderAttendance();
+            autoSaveConfigDates(); 
+        }
+
+        async function autoSaveConfigDates() {
+            if(!isAdmin) return;
+            executePostPayload({
+                action: "saveConfig",
+                month: document.getElementById('config-month').value,
+                dates: activeLessonDates.join(",")
+            });
+        }
+
+        function toggleAttendanceState(studentId, dateIdx) {
+            if (!isAdmin) return;
+            
+            const student = studentsState.find(s => s.id === studentId);
+            if (!student) return;
+
+            if (!student.attendance) {
+                student.attendance = new Array(activeLessonDates.length).fill(false);
+            }
+
+            while (student.attendance.length < activeLessonDates.length) {
+                student.attendance.push(false);
+            }
+
+            student.attendance[dateIdx] = !student.attendance[dateIdx];
+            student.cumulativeChecks = student.attendance.filter(Boolean).length;
+
+            renderAttendance();
+            calculateAnalyticsMetrics();
+
+            const targetDate = activeLessonDates[dateIdx];
+
+            executePostPayload({
+                action: "updateAttendance",
+                month: document.getElementById('config-month').value,
+                date: targetDate,
+                id: studentId,
+                status: student.attendance[dateIdx]
+            });
+        }
+        
+        function renderAttendance() {
+            const theadRow = document.querySelector('#view-attendance table thead tr');
+            const tbody = document.getElementById('attendance-table-body');
+            if(!theadRow || !tbody) return;
+            
+            theadRow.innerHTML = `<th class="px-6 py-3.5 font-semibold text-left">Student Name</th>` + 
+                activeLessonDates.map(date => `<th class="px-2 py-3.5 text-center font-mono text-xs font-semibold">${date.substring(5)}</th>`).join('') +
+                `<th class="px-6 py-3.5 text-right font-semibold">Total</th>`;
+
+            if (studentsState.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="${activeLessonDates.length + 2}" class="p-6 text-center text-xs text-slate-500 italic">No record data found inside sheet workspace.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = studentsState.map((student) => {
+                const totalCount = student.attendance ? student.attendance.filter(Boolean).length : 0;
+                const disabledAttr = !isAdmin ? 'disabled' : '';
+                return `
+                    <tr class="hover:bg-slate-700/20 transition-colors">
+                        <td class="px-6 py-4 font-medium text-slate-200 text-left">${student.name || "Unknown"}</td>
+                        ${activeLessonDates.map((date, idx) => {
+                            const isChecked = student.attendance && student.attendance[idx] ? true : false;
+                            return `
+                                <td class="px-2 py-4 text-center">
+                                    <input type="checkbox" ${isChecked ? 'checked' : ''} ${disabledAttr}
+                                        onclick="toggleAttendanceState('${student.id}', ${idx})"
+                                        class="w-4 h-4 rounded text-blue-600 bg-slate-900 border-slate-700 focus:ring-amber-500 accent-amber-500 transform scale-110 ${!isAdmin ? 'cursor-not-allowed' : 'cursor-pointer'}">
+                                </td>
+                            `;
+                        }).join('')}
+                        <td class="px-6 py-4 text-right font-mono font-bold text-amber-500">${totalCount}/${activeLessonDates.length}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function renderStudents() {
+            const tbody = document.getElementById('students-table-body');
+            if(!tbody) return;
+            if (studentsState.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-xs text-slate-500 italic">No student student rosters synchronized.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = studentsState.map((student, index) => {
+                let badgeClass = "bg-purple-950/40 text-purple-400 border-purple-500/20";
+                if (student.section === "Soprano") badgeClass = "bg-rose-950/40 text-rose-400 border-rose-500/20";
+                if (student.section === "Alto") badgeClass = "bg-amber-950/40 text-amber-400 border-amber-500/20";
+                if (student.section === "Tenor") badgeClass = "bg-blue-950/40 text-blue-400 border-blue-500/20";
+                if (student.section === "Bass") badgeClass = "bg-emerald-950/40 text-emerald-400 border-emerald-500/20";
+
+                return `
+                <tr class="hover:bg-slate-700/20 transition-colors">
+                    <td class="px-6 py-4 font-medium text-slate-200">${student.name || "Unknown"}</td>
+                    <td class="px-6 py-4 text-slate-400">${student.grade || 'N/A'}</td>
+                    <td class="px-6 py-4"><span class="${badgeClass} border text-xs px-2.5 py-0.5 rounded-full font-medium">${student.section || 'Soprano'}</span></td>
+                    ${isAdmin ? `
+                    <td class="px-6 py-4 text-right flex items-center justify-end gap-3">
+                        <button onclick="moveStudent(${index}, -1)" class="text-slate-400 hover:text-white" title="Move Up"><i data-lucide="arrow-up" class="w-4 h-4"></i></button>
+                        <button onclick="moveStudent(${index}, 1)" class="text-slate-400 hover:text-white" title="Move Down"><i data-lucide="arrow-down" class="w-4 h-4"></i></button>
+                        <button onclick="deleteStudent('${student.id}')" class="text-xs bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white border border-rose-500/30 px-2 py-1 rounded transition-all font-semibold ml-2">Drop</button>
+                    </td>` : ''}
+                </tr>`;
+            }).join('');
+            lucide.createIcons();
+        }
+
+        // --- PAYMENT MATRIX (auto-populated from the student roster) ---
+        const PAYMENT_YEAR = 2026;
+        const PAYMENT_MONTHS = [
+            { key: "June",      short: "Jun", monthIndex: 5 },
+            { key: "July",      short: "Jul", monthIndex: 6 },
+            { key: "August",    short: "Aug", monthIndex: 7 },
+            { key: "September", short: "Sep", monthIndex: 8 }
+        ];
+        const DEFAULT_PAYMENT_METHOD = "Cash";
+
+        // { [studentId]: { June: { day: 6, method: "Cash" }, ... } }
+        let paymentsMatrix = {};
+
+        function daysInPaymentMonth(monthIndex) {
+            return new Date(PAYMENT_YEAR, monthIndex + 1, 0).getDate();
+        }
+
+        function getPaymentEntry(studentId, monthKey) {
+            const row = paymentsMatrix[studentId];
+            return (row && row[monthKey]) ? row[monthKey] : null;
+        }
+
+        function setPaymentEntry(studentId, monthKey, entry) {
+            if (!paymentsMatrix[studentId]) paymentsMatrix[studentId] = {};
+            if (entry === null) delete paymentsMatrix[studentId][monthKey];
+            else paymentsMatrix[studentId][monthKey] = entry;
+        }
+
+        function countPaidMonths(studentId) {
+            return PAYMENT_MONTHS.filter(m => getPaymentEntry(studentId, m.key)).length;
+        }
+
+        // Convert a stored day number into a readable "6 Jun 2026" label.
+        function formatPaymentDate(day, month) {
+            return `${day} ${month.short} ${PAYMENT_YEAR}`;
+        }
+
+        // Seed the matrix from any legacy flat ledger rows ({name, amount, date}).
+        function seedPaymentsMatrixFromLedger() {
+            if (!Array.isArray(paymentsState) || paymentsState.length === 0) return;
+            paymentsState.forEach(pay => {
+                const student = studentsState.find(s =>
+                    (s.name || "").toString().trim().toLowerCase() === (pay.name || "").toString().trim().toLowerCase());
+                if (!student) return;
+                const parsed = parseLegacyPaymentDate(pay.date);
+                if (!parsed) return;
+                // Never clobber an explicitly recorded matrix entry.
+                if (getPaymentEntry(student.id, parsed.month.key)) return;
+                setPaymentEntry(student.id, parsed.month.key, {
+                    day: parsed.day,
+                    method: normalizePaymentMethod(pay.method)
+                });
+            });
+        }
+
+        function normalizePaymentMethod(raw) {
+            const v = (raw || "").toString().trim().toLowerCase();
+            if (v === "online" || v === "transfer" || v === "bank") return "Online";
+            if (v === "cash") return "Cash";
+            return DEFAULT_PAYMENT_METHOD;
+        }
+
+        // Tolerant parser for legacy date strings: "2026-06-06", "6 Jun", "6-june", "6/6/2026".
+        function parseLegacyPaymentDate(raw) {
+            if (!raw) return null;
+            const str = raw.toString().trim();
+
+            const iso = str.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+            if (iso) {
+                const month = PAYMENT_MONTHS.find(m => m.monthIndex === parseInt(iso[2], 10) - 1);
+                if (month) return { day: parseInt(iso[3], 10), month };
+            }
+
+            const named = str.match(/(\d{1,2})\s*[-\/\s]\s*([A-Za-z]{3,})/);
+            if (named) {
+                const token = named[2].toLowerCase();
+                const month = PAYMENT_MONTHS.find(m => m.key.toLowerCase().startsWith(token.slice(0, 3)));
+                if (month) return { day: parseInt(named[1], 10), month };
+            }
+
+            const numeric = str.match(/^(\d{1,2})[\/\-](\d{1,2})/);
+            if (numeric) {
+                const month = PAYMENT_MONTHS.find(m => m.monthIndex === parseInt(numeric[2], 10) - 1);
+                if (month) return { day: parseInt(numeric[1], 10), month };
+            }
+            return null;
+        }
+
+        function updatePaymentDay(studentId, monthKey, rawValue) {
+            if (!isAdmin) return;
+            const month = PAYMENT_MONTHS.find(m => m.key === monthKey);
+            if (!month) return;
+
+            const trimmed = (rawValue || "").toString().trim();
+            if (trimmed === "") {
+                setPaymentEntry(studentId, monthKey, null);
+                persistPaymentEntry(studentId, monthKey, "", "");
+                renderPayments();
+                calculateAnalyticsMetrics();
+                return;
+            }
+
+            let day = parseInt(trimmed, 10);
+            if (isNaN(day)) { renderPayments(); return; }
+            day = Math.max(1, Math.min(daysInPaymentMonth(month.monthIndex), day));
+
+            const existing = getPaymentEntry(studentId, monthKey);
+            const method = existing ? existing.method : DEFAULT_PAYMENT_METHOD;
+            setPaymentEntry(studentId, monthKey, { day: day, method: method });
+            persistPaymentEntry(studentId, monthKey, day, method);
+            renderPayments();
+            calculateAnalyticsMetrics();
+        }
+
+        function updatePaymentMethod(studentId, monthKey, method) {
+            if (!isAdmin) return;
+            const existing = getPaymentEntry(studentId, monthKey);
+            const clean = normalizePaymentMethod(method);
+            // Remember the preference even before a day is entered.
+            if (!existing) {
+                if (!paymentsMatrix[studentId]) paymentsMatrix[studentId] = {};
+                paymentsMatrix[studentId]["_pending_" + monthKey] = clean;
+                renderPayments();
+                return;
+            }
+            existing.method = clean;
+            persistPaymentEntry(studentId, monthKey, existing.day, clean);
+            renderPayments();
+        }
+
+        function pendingMethodFor(studentId, monthKey) {
+            const row = paymentsMatrix[studentId];
+            return (row && row["_pending_" + monthKey]) || DEFAULT_PAYMENT_METHOD;
+        }
+
+        // Column-level convenience: set the method for every student already paid that month.
+        function setColumnPaymentMethod(monthKey, method) {
+            if (!isAdmin) return;
+            const clean = normalizePaymentMethod(method);
+            const affected = studentsState.filter(s => getPaymentEntry(s.id, monthKey));
+            if (affected.length === 0) {
+                alert(`No recorded ${monthKey} payments to update yet.`);
+                renderPayments();
+                return;
+            }
+            if (!confirm(`Set all ${affected.length} recorded ${monthKey} payment(s) to "${clean}"?`)) {
+                renderPayments();
+                return;
+            }
+            affected.forEach(s => {
+                const entry = getPaymentEntry(s.id, monthKey);
+                entry.method = clean;
+                persistPaymentEntry(s.id, monthKey, entry.day, clean);
+            });
+            renderPayments();
+        }
+
+        function persistPaymentEntry(studentId, monthKey, day, method) {
+            const student = studentsState.find(s => s.id === studentId);
+            executePostPayload({
+                action: "updatePayment",
+                id: studentId,
+                name: student ? student.name : "",
+                month: monthKey,
+                year: PAYMENT_YEAR,
+                day: day,
+                method: method,
+                date: day === "" ? "" : `${day} ${monthKey} ${PAYMENT_YEAR}`
+            });
+        }
+
+        function renderPayments() {
+            const headRow = document.getElementById('payments-head-row');
+            const tbody = document.getElementById('payments-table-body');
+            const footRow = document.getElementById('payments-foot-row');
+            const note = document.getElementById('payments-roster-note');
+            if (!headRow || !tbody || !footRow) return;
+
+            const totalMonths = PAYMENT_MONTHS.length;
+
+            if (note) {
+                note.innerText = `Roster synced automatically from the Master Roster — ${studentsState.length} student(s) across ${totalMonths} billing month(s).`;
+            }
+
+            headRow.innerHTML =
+                `<th class="px-5 py-3.5 font-semibold sticky left-0 bg-slate-900/40">Student Name</th>
+                 <th class="px-4 py-3.5 font-semibold">Section</th>` +
+                PAYMENT_MONTHS.map(m => `
+                    <th class="px-3 py-3 text-center font-semibold">
+                        <div>${m.key} ${PAYMENT_YEAR}</div>
+                        <div class="text-[9px] normal-case tracking-normal text-slate-500 font-normal mt-0.5">day &middot; method</div>
+                        ${isAdmin ? `
+                        <select data-pdf-omit onchange="setColumnPaymentMethod('${m.key}', this.value); this.selectedIndex=0;" class="mt-1.5 bg-slate-950 border border-slate-700 rounded px-1 py-0.5 text-[9px] text-slate-400 normal-case font-normal focus:outline-none focus:border-amber-500">
+                            <option value="">Set all…</option>
+                            <option value="Cash">All Cash</option>
+                            <option value="Online">All Online</option>
+                        </select>` : ''}
+                    </th>`).join('') +
+                `<th class="px-5 py-3.5 text-center font-semibold text-amber-500">Payment Status</th>`;
+
+            if (studentsState.length === 0) {
+                tbody.innerHTML = `
+                    <tr><td colspan="${totalMonths + 3}" class="p-6 text-center text-xs text-slate-500">
+                        <div class="italic">No students on the roster yet — the ledger fills itself from the Master Roster.</div>
+                        ${isAdmin ? `<button data-pdf-omit onclick="switchTab('students'); openAddStudentModal();" class="mt-3 bg-amber-500 hover:bg-amber-600 text-slate-950 font-semibold px-3 py-1.5 rounded-lg text-[11px] transition-all not-italic">Add a student</button>` : ''}
+                    </td></tr>`;
+                footRow.innerHTML = '';
+                lucide.createIcons();
+                return;
+            }
+
+            const disabledAttr = !isAdmin ? 'disabled' : '';
+            const lockedCls = !isAdmin ? 'cursor-not-allowed opacity-70' : '';
+
+            tbody.innerHTML = studentsState.map(student => {
+                let badgeClass = "bg-purple-950/40 text-purple-400 border-purple-500/20";
+                if (student.section === "Soprano") badgeClass = "bg-rose-950/40 text-rose-400 border-rose-500/20";
+                if (student.section === "Alto") badgeClass = "bg-amber-950/40 text-amber-400 border-amber-500/20";
+                if (student.section === "Tenor") badgeClass = "bg-blue-950/40 text-blue-400 border-blue-500/20";
+                if (student.section === "Bass") badgeClass = "bg-emerald-950/40 text-emerald-400 border-emerald-500/20";
+
+                const monthCells = PAYMENT_MONTHS.map(m => {
+                    const entry = getPaymentEntry(student.id, m.key);
+                    const dayVal = entry ? entry.day : '';
+                    const methodVal = entry ? entry.method : pendingMethodFor(student.id, m.key);
+                    const methodColor = methodVal === "Online" ? "text-blue-400" : "text-emerald-400";
+
+                    const caption = entry
+                        ? `<div class="text-[9px] font-mono mt-1 ${methodColor}">${formatPaymentDate(entry.day, m)} &middot; ${entry.method}</div>`
+                        : `<div class="text-[9px] font-mono mt-1 text-slate-600">Unpaid</div>`;
+
+                    return `
+                        <td class="px-3 py-3 text-center align-top">
+                            <div data-pdf-omit class="flex items-center justify-center gap-1">
+                                <input type="number" min="1" max="${daysInPaymentMonth(m.monthIndex)}" step="1"
+                                    value="${dayVal}" placeholder="—" ${disabledAttr}
+                                    onchange="updatePaymentDay('${student.id}', '${m.key}', this.value)"
+                                    title="Day of ${m.key} ${PAYMENT_YEAR}"
+                                    class="w-12 bg-slate-900 border ${entry ? 'border-emerald-600/50' : 'border-slate-700'} rounded-lg px-1.5 py-1 text-xs text-center font-mono text-slate-100 focus:outline-none focus:border-amber-500 ${lockedCls}">
+                                <select ${disabledAttr}
+                                    onchange="updatePaymentMethod('${student.id}', '${m.key}', this.value)"
+                                    class="bg-slate-900 border border-slate-700 rounded-lg px-1 py-1 text-[10px] ${methodColor} focus:outline-none focus:border-amber-500 ${lockedCls}">
+                                    <option value="Cash" ${methodVal === 'Cash' ? 'selected' : ''}>Cash</option>
+                                    <option value="Online" ${methodVal === 'Online' ? 'selected' : ''}>Online</option>
+                                </select>
+                            </div>
+                            ${caption}
+                        </td>`;
+                }).join('');
+
+                const paidCount = countPaidMonths(student.id);
+                const statusCls = paidCount === totalMonths
+                    ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
+                    : paidCount === 0
+                        ? "bg-rose-500/10 text-rose-400 border-rose-500/30"
+                        : "bg-amber-500/10 text-amber-400 border-amber-500/30";
+
+                return `
+                    <tr class="hover:bg-slate-700/20 transition-colors">
+                        <td class="px-5 py-3 font-medium text-slate-200 whitespace-nowrap">${student.name || "Unknown"}</td>
+                        <td class="px-4 py-3"><span class="${badgeClass} border text-[10px] px-2 py-0.5 rounded-full font-medium">${student.section || 'N/A'}</span></td>
+                        ${monthCells}
+                        <td class="px-5 py-3 text-center">
+                            <span class="inline-block border text-[11px] font-bold px-3 py-1 rounded-full ${statusCls}">Paid ${paidCount}/${totalMonths}</span>
+                        </td>
+                    </tr>`;
+            }).join('');
+
+            // Footer: per-month collection tally split by method.
+            const monthTotals = PAYMENT_MONTHS.map(m => {
+                let cash = 0, online = 0;
+                studentsState.forEach(s => {
+                    const e = getPaymentEntry(s.id, m.key);
+                    if (!e) return;
+                    if (e.method === "Online") online++; else cash++;
+                });
+                const paid = cash + online;
+                return `
+                    <td class="px-3 py-3 text-center">
+                        <div class="font-mono ${paid === studentsState.length ? 'text-emerald-400' : paid === 0 ? 'text-rose-400' : 'text-amber-400'}">${paid}/${studentsState.length}</div>
+                        <div class="text-[9px] font-normal text-slate-500 mt-0.5">${cash} cash &middot; ${online} online</div>
+                    </td>`;
+            }).join('');
+
+            const fullyPaid = studentsState.filter(s => countPaidMonths(s.id) === totalMonths).length;
+            footRow.innerHTML =
+                `<td colspan="2" class="px-5 py-3 text-slate-200">Collection Summary</td>` +
+                monthTotals +
+                `<td class="px-5 py-3 text-center text-blue-400 font-mono">${fullyPaid}/${studentsState.length} fully paid</td>`;
+
+            lucide.createIcons();
+        }
+
+        function calculateAnalyticsMetrics() {
+            const totalStudents = studentsState.length;
+            const totalSessions = globalTotalSessions > 0 ? globalTotalSessions : activeLessonDates.length; 
+            const completedSessions = globalCompletedSessions;
+            let totalPossibleChecks = totalStudents * totalSessions;
+            let totalActualChecks = 0;
+            const sectionStats = {};
+
+            studentsState.forEach(student => {
+                const section = (student.section || "Unassigned").toUpperCase();
+                if (!sectionStats[section]) sectionStats[section] = { activeSingers: 0, checksEarned: 0 };
+                sectionStats[section].activeSingers += 1;
+                const attendedCount = student.cumulativeChecks || 0;
+                sectionStats[section].checksEarned += attendedCount;
+                totalActualChecks += attendedCount;
+            });
+
+            const overallPerformance = totalPossibleChecks === 0 ? 0 : Math.round((totalActualChecks / totalPossibleChecks) * 1000) / 10;
+            document.getElementById('kpi-diagnostic').innerText = `${overallPerformance}%`;
+            document.getElementById('kpi-sessions').innerText = `${completedSessions} / ${totalSessions}`;
+            
+            // Unpaid = students with no recorded payment in any billing month.
+            const unpaidCount = studentsState.filter(s => countPaidMonths(s.id) === 0).length;
+            document.getElementById('kpi-unpaid').innerText = unpaidCount;
+
+            const tbody = document.getElementById('analytics-section-table');
+            if (tbody) {
+                const rowsHTML = Object.keys(sectionStats).map(sec => {
+                    const stats = sectionStats[sec];
+                    const possible = stats.activeSingers * totalSessions;
+                    const progress = possible === 0 ? 0 : Math.round((stats.checksEarned / possible) * 1000) / 10;
+                    return `
+                        <tr class="hover:bg-slate-700/20 transition-colors">
+                            <td class="px-5 py-3 font-semibold text-slate-300">${sec}</td>
+                            <td class="px-5 py-3 text-center text-slate-400">${stats.activeSingers}</td>
+                            <td class="px-5 py-3 text-center text-slate-400">${stats.checksEarned}</td>
+                            <td class="px-5 py-3 text-right font-bold ${progress >= 90 ? 'text-emerald-500' : progress >= 60 ? 'text-amber-500' : 'text-rose-500'}">${progress}%</td>
+                        </tr>
+                    `;
+                }).join('');
+                tbody.innerHTML = rowsHTML || `<tr><td colspan="4" class="text-center py-4 text-xs text-slate-500">No data available</td></tr>`;
+            }
+
+            document.getElementById('analytics-total-singers').innerText = totalStudents;
+            document.getElementById('analytics-total-checks').innerText = totalActualChecks;
+            document.getElementById('analytics-total-progress').innerText = `${overallPerformance}%`;
+
+            const sortedStudents = [...studentsState].map(s => ({ name: s.name, count: s.cumulativeChecks || 0 })).sort((a, b) => b.count - a.count);
+            const topDiv = document.getElementById('analytics-top-performers');
+            const bottomDiv = document.getElementById('analytics-needs-improvement');
+
+            if (topDiv && bottomDiv) {
+                if (sortedStudents.length === 0) {
+                    topDiv.innerHTML = `<p class="text-xs text-slate-500">No data</p>`;
+                    bottomDiv.innerHTML = `<p class="text-xs text-slate-500">No data</p>`;
+                } else {
+                    topDiv.innerHTML = sortedStudents.slice(0, 4).map(s => `
+                        <div class="flex justify-between items-center bg-slate-900/40 px-3 py-2 rounded border border-slate-700/50">
+                            <span class="text-xs text-slate-300 truncate font-medium">${s.name || "Unknown"}</span>
+                            <span class="text-[10px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded font-bold">${s.count} / ${totalSessions}</span>
+                        </div>
+                    `).join('');
+
+                    bottomDiv.innerHTML = sortedStudents.slice(-4).reverse().map(s => `
+                        <div class="flex justify-between items-center bg-slate-900/40 px-3 py-2 rounded border border-slate-700/50">
+                            <span class="text-xs text-slate-300 truncate font-medium">${s.name || "Unknown"}</span>
+                            <span class="text-[10px] bg-rose-500/20 text-rose-400 px-2 py-0.5 rounded font-bold">${s.count} / ${totalSessions}</span>
+                        </div>
+                    `).join('');
+                }
+            }
+        }
+
+        // --- REPORT CARD PIPELINE ---
+        // Grade descriptor bands applied to the aggregated 10-point overall score.
+        const REPORT_CARD_BANDS = [
+            { min: 9.0, max: 10.0, label: "Higher Distinction", range: "9.0 – 10.0", classes: "text-emerald-400 bg-emerald-500/10 border-emerald-500/30" },
+            { min: 8.0, max: 8.9, label: "Distinction",        range: "8.0 – 8.9",  classes: "text-teal-300 bg-teal-500/10 border-teal-500/30" },
+            { min: 7.0, max: 7.9, label: "Merit",              range: "7.0 – 7.9",  classes: "text-blue-400 bg-blue-500/10 border-blue-500/30" },
+            { min: 6.0, max: 6.9, label: "Credit",             range: "6.0 – 6.9",  classes: "text-indigo-400 bg-indigo-500/10 border-indigo-500/30" },
+            { min: 5.0, max: 5.9, label: "Pass",               range: "5.0 – 5.9",  classes: "text-amber-400 bg-amber-500/10 border-amber-500/30" },
+            { min: 4.0, max: 4.9, label: "Marginal Pass",      range: "4.0 – 4.9",  classes: "text-orange-400 bg-orange-500/10 border-orange-500/30" },
+            { min: 0.0, max: 3.9, label: "Needs Improvement",  range: "0.0 – 3.9",  classes: "text-rose-400 bg-rose-500/10 border-rose-500/30" }
+        ];
+
+        function getReportCardBand(score) {
+            for (const band of REPORT_CARD_BANDS) {
+                if (score >= band.min) return band;
+            }
+            return REPORT_CARD_BANDS[REPORT_CARD_BANDS.length - 1];
+        }
+
+        function round1(n) { return Math.round(n * 10) / 10; }
+
+        // Attendance scaled to /10 from the student's current attendance record.
+        function computeAttendanceScore(student) {
+            const totalSessions = globalTotalSessions > 0 ? globalTotalSessions : activeLessonDates.length;
+            if (!totalSessions) return 0;
+            const attended = (typeof student.cumulativeChecks === 'number')
+                ? student.cumulativeChecks
+                : (Array.isArray(student.attendance) ? student.attendance.filter(Boolean).length : 0);
+            return round1(Math.min(attended / totalSessions, 1) * 10);
+        }
+
+        // Group ensemble mark = latest recorded section score (0-10) from Analytics.
+        function computeGroupScore(student) {
+            const sec = student.section || "";
+            const secObj = analyticsPayload && analyticsPayload.sections ? analyticsPayload.sections[sec] : null;
+            if (!secObj || !Array.isArray(secObj.logs) || secObj.logs.length === 0) return null;
+            const latest = secObj.logs[0];
+            const val = parseFloat(latest.score);
+            return isNaN(val) ? null : round1(val);
+        }
+
+        function clampSolo(v) {
+            const n = parseFloat(v);
+            if (isNaN(n)) return null;
+            return Math.max(0, Math.min(10, n));
+        }
+
+        function updateSoloMark(studentId, testKey, value) {
+            if (!isAdmin) return;
+            const student = studentsState.find(s => s.id === studentId);
+            if (!student) return;
+            const cleaned = clampSolo(value);
+            student[testKey] = cleaned === null ? null : round1(cleaned);
+            renderReportCard();
+        }
+
+        function renderReportCard() {
+            const tbody = document.getElementById('reportcard-table-body');
+            const legend = document.getElementById('reportcard-legend');
+            if (!tbody) return;
+
+            // Render legend bands
+            if (legend) {
+                legend.innerHTML = REPORT_CARD_BANDS.map(b => `
+                    <div class="flex items-center justify-between gap-3 border rounded-lg px-3 py-2 ${b.classes}">
+                        <strong class="text-xs font-semibold">${b.label}</strong>
+                        <span class="text-[11px] font-mono font-bold">&nbsp;${b.range}</span>
+                    </div>
+                `).join('');
+            }
+
+            if (studentsState.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-xs text-slate-500 italic">No students available to score.</td></tr>`;
+                lucide.createIcons();
+                return;
+            }
+
+            const disabledAttr = !isAdmin ? 'disabled' : '';
+            tbody.innerHTML = studentsState.map(student => {
+                const att = computeAttendanceScore(student);
+                const grp = computeGroupScore(student);
+                const t1 = (typeof student.soloTest01 === 'number') ? student.soloTest01 : null;
+                const t2 = (typeof student.soloTest02 === 'number') ? student.soloTest02 : null;
+
+                // Solo category = mean of whichever tests are entered (blank ignored).
+                const soloVals = [t1, t2].filter(v => v !== null);
+                const soloAvg = soloVals.length ? soloVals.reduce((a, b) => a + b, 0) / soloVals.length : null;
+
+                // Overall = average of available category scores (attendance, group, solo).
+                const cats = [att];
+                if (grp !== null) cats.push(grp);
+                if (soloAvg !== null) cats.push(soloAvg);
+                const overall = round1(cats.reduce((a, b) => a + b, 0) / cats.length);
+                const band = getReportCardBand(overall);
+
+                const grpDisplay = grp === null
+                    ? `<span class="text-slate-500 italic text-[10px]">No section log</span>`
+                    : `<span class="font-mono font-bold text-emerald-400">${grp.toFixed(1)}</span>`;
+
+                let badgeClass = "bg-purple-950/40 text-purple-400 border-purple-500/20";
+                if (student.section === "Soprano") badgeClass = "bg-rose-950/40 text-rose-400 border-rose-500/20";
+                if (student.section === "Alto") badgeClass = "bg-amber-950/40 text-amber-400 border-amber-500/20";
+                if (student.section === "Tenor") badgeClass = "bg-blue-950/40 text-blue-400 border-blue-500/20";
+                if (student.section === "Bass") badgeClass = "bg-emerald-950/40 text-emerald-400 border-emerald-500/20";
+
+                return `
+                    <tr class="hover:bg-slate-700/20 transition-colors">
+                        <td class="px-5 py-3.5 font-medium text-slate-200 whitespace-nowrap">${student.name || "Unknown"}</td>
+                        <td class="px-4 py-3.5"><span class="${badgeClass} border text-[10px] px-2 py-0.5 rounded-full font-medium">${student.section || 'N/A'}</span></td>
+                        <td class="px-4 py-3.5 text-center font-mono font-bold text-blue-400">${att.toFixed(1)}</td>
+                        <td class="px-4 py-3.5 text-center">${grpDisplay}</td>
+                        <td class="px-4 py-3.5 text-center">
+                            <input type="number" min="0" max="10" step="0.1" value="${t1 === null ? '' : t1.toFixed(1)}" placeholder="—" ${disabledAttr}
+                                onchange="updateSoloMark('${student.id}', 'soloTest01', this.value)"
+                                class="w-16 bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-center font-mono text-purple-300 focus:outline-none focus:border-purple-500 ${!isAdmin ? 'cursor-not-allowed opacity-70' : ''}">
+                        </td>
+                        <td class="px-4 py-3.5 text-center">
+                            <input type="number" min="0" max="10" step="0.1" value="${t2 === null ? '' : t2.toFixed(1)}" placeholder="—" ${disabledAttr}
+                                onchange="updateSoloMark('${student.id}', 'soloTest02', this.value)"
+                                class="w-16 bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-center font-mono text-purple-300 focus:outline-none focus:border-purple-500 ${!isAdmin ? 'cursor-not-allowed opacity-70' : ''}">
+                        </td>
+                        <td class="px-4 py-3.5 text-center font-mono font-extrabold text-amber-500 text-base">${overall.toFixed(1)}</td>
+                        <td class="px-5 py-3.5 text-center">
+                            <span class="inline-block border text-[10px] font-semibold px-2.5 py-1 rounded-full ${band.classes}">${band.label}</span>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            lucide.createIcons();
+        }
+
+        async function saveReportCardMarks() {
+            if (!isAdmin) return;
+            const btn = document.getElementById('reportcard-save-btn');
+            const ogText = btn.innerHTML;
+            btn.innerHTML = `<i class="w-4 h-4 animate-spin"></i> Saving...`;
+
+            const marks = studentsState.map(s => ({
+                id: s.id,
+                name: s.name,
+                soloTest01: (typeof s.soloTest01 === 'number') ? s.soloTest01 : "",
+                soloTest02: (typeof s.soloTest02 === 'number') ? s.soloTest02 : ""
+            }));
+
+            executePostPayload({ action: "saveReportCard", marks: marks, userEmail: adminUserEmail });
+
+            setTimeout(() => {
+                btn.innerHTML = ogText;
+                lucide.createIcons();
+                alert("Solo assessment marks saved.");
+            }, 1000);
+        }
+
+        async function handleBulkImportSubmit(e) {
+            e.preventDefault();
+            const rawText = document.getElementById('bulk-import-textarea').value.trim();
+            if(!rawText) return;
+            const btn = document.getElementById('bulk-submit-btn');
+            btn.innerHTML = `<i class="w-4 h-4 animate-spin"></i> Processing...`;
+            btn.disabled = true;
+
+            try {
+                const rows = rawText.split('\n').map(row => row.split(/[\t,]/).map(cell => cell.trim()).filter(cell => cell !== ""));
+                let rowsProcessed = 0;
+
+                if (currentImportContext === "Students") {
+                    const backendRows = [];
+                    let maxCounter = 0;
+                    studentsState.forEach(s => {
+                        if (s.id) {
+                            const match = s.id.match(/SJ2026013108-(\d+)/);
+                            if (match && parseInt(match[1], 10) > maxCounter) maxCounter = parseInt(match[1], 10);
+                        }
+                    });
+                    let nextCounter = maxCounter + 1;
+                    rows.forEach(row => {
+                        if(row.length >= 1) {
+                            let name = row[0]; let grade = row[1] || 'N/A'; let section = row[2] || 'N/A';
+                            if (row.length >= 4 && (row[0].toLowerCase().includes('id') || row[0].toLowerCase().startsWith('s'))) {
+                                if (row[0].toLowerCase().includes('studentid')) return; 
+                                name = row[1] || 'Unknown'; grade = row[2] || 'N/A'; section = row[4] || 'N/A';
+                            }
+                            const formattedId = "SJ2026013108-" + String(nextCounter).padStart(2, '0');
+                            nextCounter++;
+                            studentsState.push({ id: formattedId, name: name, grade: grade, section: section, attendance: new Array(activeLessonDates.length).fill(false), cumulativeChecks: 0 });
+                            backendRows.push([formattedId, name, grade, 'Active', section]);
+                            rowsProcessed++;
+                        }
+                    });
+                    if (backendRows.length > 0) executePostPayload({ action: "bulkImportStudents", data: backendRows });
+                } else if (currentImportContext === "Attendance") {
+                    await executePostPayload({ action: "bulkImportAttendance", month: document.getElementById('config-month').value, dates: activeLessonDates.join(",") });
+                    rowsProcessed = studentsState.length * activeLessonDates.length;
+                } else if (currentImportContext === "Payments") {
+                    // Expected columns: Name, Month, Day, Method
+                    const paymentRows = [];
+                    const skipped = [];
+                    rows.forEach(row => {
+                        if (row.length < 3) return;
+                        const [rawName, rawMonth, rawDay, rawMethod] = row;
+                        if ((rawName || "").toLowerCase() === "name") return; // header line
+
+                        const student = studentsState.find(s =>
+                            (s.name || "").toString().trim().toLowerCase() === (rawName || "").toString().trim().toLowerCase());
+                        if (!student) { skipped.push(rawName); return; }
+
+                        const token = (rawMonth || "").toString().trim().toLowerCase().slice(0, 3);
+                        const month = PAYMENT_MONTHS.find(m => m.key.toLowerCase().startsWith(token));
+                        if (!month) { skipped.push(`${rawName} (${rawMonth})`); return; }
+
+                        let day = parseInt(rawDay, 10);
+                        if (isNaN(day)) { skipped.push(`${rawName} (${rawMonth} day)`); return; }
+                        day = Math.max(1, Math.min(daysInPaymentMonth(month.monthIndex), day));
+
+                        const method = normalizePaymentMethod(rawMethod);
+                        setPaymentEntry(student.id, month.key, { day: day, method: method });
+                        paymentRows.push([student.id, student.name, month.key, PAYMENT_YEAR, day, method]);
+                        rowsProcessed++;
+                    });
+                    if (paymentRows.length > 0) executePostPayload({ action: "bulkImportPayments", data: paymentRows });
+                    renderPayments();
+                    calculateAnalyticsMetrics();
+                    if (skipped.length > 0) {
+                        alert(`Imported ${rowsProcessed} payment row(s).\nSkipped ${skipped.length} unmatched row(s):\n${skipped.slice(0, 10).join('\n')}`);
+                    }
+                }
+
+                setTimeout(async () => {
+                    await fetchDashboardData();
+                    alert(`Successfully synchronized data parameters for ${currentImportContext}.`);
+                }, 3500);
+            } catch (err) {
+                console.error(err);
+                alert("Error parsing input payload structure maps.");
+            } finally {
+                closeBulkImportModal();
+                btn.innerHTML = `<i data-lucide="check-circle-2" class="w-4 h-4"></i> Process & Import`;
+                btn.disabled = false;
+                lucide.createIcons();
+            }
+        }
+
+        async function fetchDashboardData() {
+            try {
+                const chosenMonth = document.getElementById('config-month').value || "July 2026";
+                const response = await fetch(MACRO_ENDPOINT_URL + "?action=getDashboard&month=" + encodeURIComponent(chosenMonth));
+                if (response.ok) {
+                    const jsonPayload = await response.json();
+                    activeLessonDates = (jsonPayload && jsonPayload.dates && jsonPayload.dates.length > 0) ? jsonPayload.dates : activeLessonDates;
+                    studentsState = (jsonPayload && jsonPayload.students) ? jsonPayload.students : [];
+                    paymentsState = (jsonPayload && jsonPayload.payments) ? jsonPayload.payments : [];
+                    globalTotalSessions = jsonPayload.globalTotalSessions || activeLessonDates.length;
+                    globalCompletedSessions = jsonPayload.globalCompletedSessions || 0;
+                    if (jsonPayload && jsonPayload.analyticsPayload) {
+                        analyticsPayload = jsonPayload.analyticsPayload;
+                    }
+
+                    // Rebuild the payment matrix: prefer explicit rows, else derive from the flat ledger.
+                    paymentsMatrix = {};
+                    if (jsonPayload && Array.isArray(jsonPayload.paymentsMatrix)) {
+                        jsonPayload.paymentsMatrix.forEach(rec => {
+                            if (!rec || !rec.id || !rec.month) return;
+                            const month = PAYMENT_MONTHS.find(m => m.key.toLowerCase() === rec.month.toString().trim().toLowerCase());
+                            const day = parseInt(rec.day, 10);
+                            if (!month || isNaN(day)) return;
+                            setPaymentEntry(rec.id, month.key, { day: day, method: normalizePaymentMethod(rec.method) });
+                        });
+                    }
+                    seedPaymentsMatrixFromLedger();
+
+                    // Merge any persisted report-card solo marks (keyed by student id).
+                    if (jsonPayload && Array.isArray(jsonPayload.reportCardMarks)) {
+                        const markMap = {};
+                        jsonPayload.reportCardMarks.forEach(m => { if (m && m.id) markMap[m.id] = m; });
+                        studentsState.forEach(student => {
+                            const m = markMap[student.id];
+                            if (m) {
+                                const t1 = parseFloat(m.soloTest01);
+                                const t2 = parseFloat(m.soloTest02);
+                                if (!isNaN(t1)) student.soloTest01 = t1;
+                                if (!isNaN(t2)) student.soloTest02 = t2;
+                            }
+                        });
+                    }
+
+                    // Normalize solo marks that may already live on the student objects.
+                    studentsState.forEach(student => {
+                        if (student.soloTest01 !== undefined && student.soloTest01 !== null && student.soloTest01 !== "") {
+                            const v = parseFloat(student.soloTest01);
+                            student.soloTest01 = isNaN(v) ? undefined : v;
+                        }
+                        if (student.soloTest02 !== undefined && student.soloTest02 !== null && student.soloTest02 !== "") {
+                            const v = parseFloat(student.soloTest02);
+                            student.soloTest02 = isNaN(v) ? undefined : v;
+                        }
+                    });
+
+                    // Normalize student attendance arrays
+                    studentsState.forEach(student => {
+                        if (!student.attendance || !Array.isArray(student.attendance)) {
+                            student.attendance = [];
+                        }
+                        while (student.attendance.length < activeLessonDates.length) {
+                            student.attendance.push(false);
+                        }
+                    });
+                }
+            } catch(err) {
+                console.warn(err);
+            } finally {
+                renderDatePickerInputs();
+                renderAllData();
+                if(!document.getElementById('view-analytics').classList.contains('hidden')) renderAnalyticsUI();
+                if(!document.getElementById('view-reportcard').classList.contains('hidden')) renderReportCard();
+            }
+        }
+
+        function openAddStudentModal() { if(isAdmin) document.getElementById('add-student-modal').classList.remove('hidden'); }
+        function closeAddStudentModal() { document.getElementById('add-student-modal').classList.add('hidden'); document.getElementById('add-student-form').reset(); }
+        function handleAddStudentSubmit(e) {
+            e.preventDefault(); 
+            const name = document.getElementById('modal-name').value.trim();
+            const grade = document.getElementById('modal-grade').value;
+            const section = document.getElementById('modal-section').value;
+            let maxCounter = 0;
+            studentsState.forEach(s => {
+                if (s.id) {
+                    const match = s.id.match(/SJ2026013108-(\d+)/);
+                    if (match && parseInt(match[1], 10) > maxCounter) maxCounter = parseInt(match[1], 10);
+                }
+            });
+            const formattedId = "SJ2026013108-" + String(maxCounter + 1).padStart(2, '0');
+            studentsState.push({ id: formattedId, name: name, grade: grade, section: section, attendance: new Array(activeLessonDates.length).fill(false), cumulativeChecks: 0 });
+            renderAllData();
+            closeAddStudentModal();
+            executePostPayload({ action: "bulkImportStudents", data: [[formattedId, name, grade, 'Active', section]] });
+        }
+
+        // --- BULK IMPORT MODAL ---
+        let currentImportContext = "Students";
+
+        const BULK_IMPORT_FORMATS = {
+            Students: "Name, Grade, Section\nAisyah Binti Karim, Intermediate, Soprano\nDaniel Lim, CC1, Tenor",
+            Attendance: "Attendance is synced from the register grid.\nPress Process & Import to push the current month's dates to the sheet.",
+            Payments: "Name, Month, Day, Method\nAisyah Binti Karim, June, 6, Cash\nDaniel Lim, July, 12, Online"
+        };
+
+        function openBulkImportModal(context) {
+            if (!isAdmin) return;
+            currentImportContext = context;
+            document.getElementById('bulk-modal-title').innerHTML =
+                `<i data-lucide="upload-cloud" class="w-5 h-5 text-blue-500"></i> Bulk Import ${context}`;
+            document.getElementById('bulk-modal-instructions').innerText = BULK_IMPORT_FORMATS[context] || "";
+            const ta = document.getElementById('bulk-import-textarea');
+            ta.value = "";
+            ta.required = (context !== "Attendance");
+            document.getElementById('bulk-import-modal').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function closeBulkImportModal() {
+            document.getElementById('bulk-import-modal').classList.add('hidden');
+            document.getElementById('bulk-import-form').reset();
+        }
+
+        function deleteStudent(id) {
+            if (!isAdmin) return;
+            if (confirm("Are you sure you want to completely clear this student record?")) {
+                studentsState = studentsState.filter(s => s.id !== id);
+                delete paymentsMatrix[id];
+                renderAllData();
+                executePostPayload({ action: "deleteStudent", id: id });
+            }
+        }
+
+        function moveStudent(index, direction) {
+            if (!isAdmin) return;
+            const target = index + direction;
+            if (target < 0 || target >= studentsState.length) return;
+            const [row] = studentsState.splice(index, 1);
+            studentsState.splice(target, 0, row);
+            renderAllData();
+            executePostPayload({ action: "reorderStudents", orderedIds: studentsState.map(s => s.id) });
+        }
+
+        // --- PROFESSIONAL PDF REPORT EXPORT ---
+        const PDF_REPORT_STYLES = `
+            #pdf-render-root { width: 900px; background: #ffffff; color: #0f172a;
+                font-family: 'Inter', Arial, Helvetica, sans-serif; padding: 4px 2px; }
+            #pdf-render-root * { box-sizing: border-box; }
+            #pdf-render-root .pdf-letterhead { display: flex; justify-content: space-between;
+                align-items: flex-start; border-bottom: 3px solid #b45309; padding-bottom: 14px; margin-bottom: 20px; }
+            #pdf-render-root .pdf-brand { display: flex; gap: 13px; align-items: center; }
+            #pdf-render-root .pdf-mark { width: 46px; height: 46px; border-radius: 50%; border: 2px solid #b45309;
+                display: flex; align-items: center; justify-content: center; font-weight: 800; color: #b45309;
+                font-size: 15px; letter-spacing: 0.5px; flex-shrink: 0; }
+            #pdf-render-root .pdf-org { font-size: 17px; font-weight: 800; margin: 0; color: #0f172a; letter-spacing: 0.2px; }
+            #pdf-render-root .pdf-orgsub { font-size: 9px; color: #64748b; margin: 3px 0 0;
+                text-transform: uppercase; letter-spacing: 1.3px; font-weight: 600; }
+            #pdf-render-root .pdf-meta { text-align: right; font-size: 9px; color: #475569; line-height: 1.7; }
+            #pdf-render-root .pdf-meta b { color: #0f172a; }
+            #pdf-render-root .pdf-titleblock { margin-bottom: 18px; }
+            #pdf-render-root .pdf-eyebrow { font-size: 8.5px; text-transform: uppercase; letter-spacing: 2.2px;
+                color: #b45309; font-weight: 700; margin: 0 0 5px; }
+            #pdf-render-root .pdf-title { font-size: 23px; font-weight: 800; margin: 0; color: #0f172a; letter-spacing: -0.3px; }
+            #pdf-render-root .pdf-sub { font-size: 10px; color: #64748b; margin: 6px 0 0; }
+            #pdf-render-root .pdf-body { font-size: 10px; color: #1e293b; line-height: 1.55; }
+            #pdf-render-root .pdf-body h2 { font-size: 14px; font-weight: 800; color: #0f172a;
+                margin: 20px 0 8px; padding-bottom: 5px; border-bottom: 1px solid #e2e8f0; }
+            #pdf-render-root .pdf-body h3 { font-size: 11.5px; font-weight: 700; color: #334155;
+                margin: 15px 0 5px; text-transform: uppercase; letter-spacing: 0.6px; }
+            #pdf-render-root .pdf-body h4 { font-size: 10.5px; font-weight: 700; color: #334155; margin: 11px 0 4px; }
+            #pdf-render-root .pdf-body p { margin: 4px 0; }
+            #pdf-render-root .pdf-body table { width: 100%; border-collapse: collapse;
+                margin: 10px 0 16px; font-size: 9px; page-break-inside: auto; }
+            #pdf-render-root .pdf-body thead th { background: #0f172a; color: #ffffff; text-align: left;
+                padding: 8px; font-size: 8px; text-transform: uppercase; letter-spacing: 0.6px;
+                font-weight: 700; border: 1px solid #0f172a; }
+            #pdf-render-root .pdf-body tbody td { padding: 6px 8px; border: 1px solid #e2e8f0; color: #1e293b; }
+            #pdf-render-root .pdf-body tbody tr { page-break-inside: avoid; }
+            #pdf-render-root .pdf-body tbody tr:nth-child(even) td { background: #f8fafc; }
+            #pdf-render-root .pdf-body tfoot td { padding: 8px; border: 1px solid #cbd5e1;
+                background: #f1f5f9; font-weight: 700; color: #0f172a; }
+            #pdf-render-root .pdf-footer { margin-top: 22px; border-top: 1px solid #e2e8f0; padding-top: 9px;
+                font-size: 7.5px; color: #94a3b8; display: flex; justify-content: space-between;
+                text-transform: uppercase; letter-spacing: 0.7px; }
+        `;
+
+        function pdfEscape(str) {
+            return (str || "").toString()
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+
+        // Flatten a live dashboard section into clean, print-ready markup.
+        function buildPdfBody(sectionId) {
+            const src = document.getElementById(sectionId);
+            if (!src) return null;
+            const clone = src.cloneNode(true);
+
+            // Freeze form controls into their CURRENT values first, while the clone is still
+            // structurally identical to the source. cloneNode copies attributes but not live
+            // state (a select's selectedIndex, a typed-in value), so read the source element.
+            ['input', 'select', 'textarea'].forEach(tag => {
+                const liveEls = src.querySelectorAll(tag);
+                clone.querySelectorAll(tag).forEach((el, i) => {
+                    const live = liveEls[i] || el;
+                    const span = document.createElement('span');
+                    if (tag === 'select') {
+                        const opt = live.options[live.selectedIndex];
+                        span.textContent = (opt && opt.value) ? opt.text : '—';
+                    } else if (tag === 'input' && live.type === 'checkbox') {
+                        span.textContent = live.checked ? 'Present' : '—';
+                    } else {
+                        span.textContent = live.value !== "" ? live.value : '—';
+                    }
+                    if (el.hasAttribute('data-pdf-omit')) span.setAttribute('data-pdf-omit', '');
+                    el.replaceWith(span);
+                });
+            });
+
+            // Anything hidden on screen stays out of the report (keeps tables aligned).
+            clone.querySelectorAll('.hidden').forEach(el => el.remove());
+            // Controls, icons and on-screen-only hints carry no meaning on paper.
+            clone.querySelectorAll('button, svg, i[data-lucide], [data-pdf-omit]').forEach(el => el.remove());
+            // The letterhead already states the report title, so drop the duplicate heading.
+            const firstHeading = clone.querySelector('h2');
+            if (firstHeading) firstHeading.remove();
+
+            // Drop the dark-theme styling so the report renders on white stock.
+            clone.querySelectorAll('*').forEach(el => {
+                el.removeAttribute('class');
+                el.removeAttribute('style');
+            });
+            clone.removeAttribute('class');
+            clone.removeAttribute('id');
+            return clone.innerHTML;
+        }
+
+        function pdfNeedsLandscape(sectionId) {
+            const src = document.getElementById(sectionId);
+            if (!src) return false;
+            let widest = 0;
+            src.querySelectorAll('table').forEach(t => {
+                const head = t.querySelector('thead tr');
+                if (head) widest = Math.max(widest, head.children.length);
+            });
+            return widest > 6;
+        }
+
+        async function downloadPDF(sectionId, title) {
+            if (typeof html2pdf === 'undefined') {
+                alert("PDF engine is still loading. Please try again in a moment.");
+                return;
+            }
+
+            const bodyHTML = buildPdfBody(sectionId);
+            if (bodyHTML === null) { alert("Nothing to export from this view."); return; }
+
+            const now = new Date();
+            const issued = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
+            const stamp = now.toISOString().split('T')[0];
+            const ref = `SJ/${now.getFullYear()}/${sectionId.replace('view-', '').toUpperCase()}/${String(now.getMonth() + 1).padStart(2, '0')}`;
+            const period = (document.getElementById('config-month') || {}).value || `${now.getFullYear()}`;
+            const preparedBy = adminUserEmail || "Guest (View-Only Access)";
+
+            const wrapper = document.createElement('div');
+            wrapper.id = 'pdf-render-root';
+            wrapper.style.cssText = 'position:fixed; left:-11000px; top:0; z-index:-1;';
+            wrapper.innerHTML = `
+                <style>${PDF_REPORT_STYLES}</style>
+                <div class="pdf-letterhead">
+                    <div class="pdf-brand">
+                        <div class="pdf-mark">SJ</div>
+                        <div>
+                            <p class="pdf-org">Swara Jauhari MOF Sabah</p>
+                            <p class="pdf-orgsub">Choral Excellence Programme &middot; Oongisvoce Academy of Music</p>
+                        </div>
+                    </div>
+                    <div class="pdf-meta">
+                        <div><b>Ref No.</b> ${pdfEscape(ref)}</div>
+                        <div><b>Issued</b> ${pdfEscape(issued)}</div>
+                        <div><b>Period</b> ${pdfEscape(period)}</div>
+                    </div>
+                </div>
+                <div class="pdf-titleblock">
+                    <p class="pdf-eyebrow">Official Management Report</p>
+                    <h1 class="pdf-title">${pdfEscape(title)}</h1>
+                    <p class="pdf-sub">Prepared by ${pdfEscape(preparedBy)} &middot; Generated ${pdfEscape(issued)}</p>
+                </div>
+                <div class="pdf-body">${bodyHTML}</div>
+                <div class="pdf-footer">
+                    <span>Swara Jauhari MOF Sabah &mdash; Confidential</span>
+                    <span>${pdfEscape(title)} &middot; ${pdfEscape(issued)}</span>
+                </div>`;
+            document.body.appendChild(wrapper);
+
+            const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+            const options = {
+                margin: [11, 10, 13, 10],
+                filename: `Swara-Jauhari-${slug}-${stamp}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', logging: false },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: pdfNeedsLandscape(sectionId) ? 'landscape' : 'portrait' },
+                pagebreak: { mode: ['css', 'legacy'] }
+            };
+
+            try {
+                await html2pdf().set(options).from(wrapper).save();
+            } catch (err) {
+                console.error(err);
+                alert("Unable to generate the PDF report. Please try again.");
+            } finally {
+                wrapper.remove();
+            }
+        }
+
+        function executePostPayload(data) {
+            if (!isAdmin) return;
+            try {
+                data.userEmail = adminUserEmail;
+                // Fire-and-forget: swallow network rejections so offline use stays silent.
+                fetch(MACRO_ENDPOINT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(data) })
+                    .catch(err => console.warn('Sync deferred:', err && err.message));
+            } catch (err) {}
+        }
+    </script>
+</body>
+</html>
