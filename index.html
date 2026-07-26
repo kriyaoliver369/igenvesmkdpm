@@ -3,67 +3,270 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Attendance Management System</title>
+    <title>iGenVE SMKDPM — Attendance Management System</title>
+
+    <!-- ==================================================================== -->
+    <!--  APP_CONFIG — THE ONLY BLOCK YOU EDIT TO CLONE THIS APP              -->
+    <!--                                                                      -->
+    <!--  Everything below this block is shared engine code. To spin up a     -->
+    <!--  new group app, change the values here and nothing else. See         -->
+    <!--  TEMPLATE.md for a field-by-field walkthrough.                       -->
+    <!-- ==================================================================== -->
+    <script>
+const APP_CONFIG = {
+
+    /* ---------------------------------------------------------------- 1 */
+    identity: {
+        documentTitle:   "iGenVE SMKDPM — Attendance Management System",
+        loginTitle:      "Attendance Management System",
+        loginSubtitle:   "Executive Dashboard",
+        headerTitle:     "iGenVE SMKDPM Attendance",
+        headerSubtitle:  "iGenVE at OV",
+        brandIcon:       "mic",
+        footerYear:      "2026",
+        footerAuthor:    "K.LeeHuang",
+        footerDesignedFor: "Designed for iGenVE SMKDPM",
+        footerPoweredBy:   "Oongisvoce Academy of Music"
+    },
+
+    /* ---------------------------------------------------------------- 2 */
+    pdf: {
+        // The monogram sits in a 46px circle — 1-3 characters only.
+        // "iGenVE" would overflow it, so the short form is used here and
+        // the full name carries in orgName below.
+        monogram:         "iG",
+        orgName:          "iGenVE SMKDPM",                      // TODO: confirm full legal/org name
+        orgTagline:       "Vocal Ensemble Programme · Oongisvoce Academy of Music",  // TODO: confirm
+        eyebrow:          "Official Management Report",
+        refPrefix:        "IGENVE",                             // becomes IGENVE/2026/ATTENDANCE/07
+        filePrefix:       "iGenVESMKDPM",
+        confidentialNote: "iGenVE SMKDPM — Confidential",
+        accentHex:        "#b88600",
+        inkHex:           "#0d1526"
+    },
+
+    /* ---------------------------------------------------------------- 3 */
+    /*  Midnight blue surfaces · gold brand · dark yellow secondary       */
+    theme: {
+        fontFamily:     "Inter",
+        fontImportUrl:  "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap",
+        pageBackground: "#0d1526",
+        scrollbarTrack: "#172038",
+        scrollbarThumb: "#e0a800",
+        palette: {
+            brand: {     // gold
+                400: "#f5c542", 500: "#e0a800", 600: "#b88600", 950: "#3d2a00"
+            },
+            secondary: { // dark yellow
+                300: "#e8d27a", 400: "#d9bc4f", 500: "#c2a12a",
+                600: "#9c7f1c", 700: "#7a6214", 950: "#2b2107"
+            },
+            surface: {   // midnight blue
+                100: "#e9eef8", 200: "#ccd8ee", 300: "#a6b6d8", 400: "#7286b2",
+                500: "#4b5d8a", 600: "#34446b", 700: "#24304e", 800: "#172038",
+                900: "#0d1526", 950: "#070c17"
+            }
+        }
+    },
+
+    /* ---------------------------------------------------------------- 4 */
+    /*  Vocabulary kept as-is — the checklist said "keep" for every row.   */
+    vocabulary: {
+        memberSingular: "Student",
+        memberPlural:   "Students",
+        groupSingular:  "Section",
+        groupPlural:    "Sections",
+        gradeLabel:     "Vocal Grade",
+        gradeOptions:   ["Beginner", "Intermediate", "CC1"],
+        itemSingular:   "Song",
+        itemCollection: "Repertoire",
+        notesLabel:     "Coach Feedback Notes",
+        logLabel:       "Coaching Log",
+        collectiveNoun: "Choir",
+
+        sectionTitles: {
+            attendance: "Attendance Register",
+            students:   "Active Master Roster",
+            payments:   "Financial Ledger",
+            analytics:  "Performance Dashboard",
+            reportcard: "Student Report Card"
+        },
+
+        tabs: {
+            attendance: { label: "Attendance",          icon: "calendar-check" },
+            students:   { label: "Students",            icon: "users" },
+            payments:   { label: "Payments",            icon: "dollar-sign" },
+            analytics:  { label: "Executive Analytics", icon: "pie-chart" },
+            reportcard: { label: "Report Card",         icon: "clipboard-list" }
+        },
+
+        groups: [
+            { name: "Soprano", tone: "rose" },
+            { name: "Alto",    tone: "brand" },
+            { name: "Tenor",   tone: "secondary" },
+            { name: "Bass",    tone: "emerald" }
+        ],
+
+        criteria: [
+            { key: "technique", label: "Technique", short: "Tech"  },
+            { key: "rhythmic",  label: "Rhythm",    short: "Rhy"   },
+            { key: "accuracy",  label: "Accuracy",  short: "Acc"   },
+            { key: "dynamics",  label: "Dynamics",  short: "Dyn"   },
+            { key: "flair",     label: "Flair",     short: "Flair" }
+        ],
+        criterionLevels: [
+            { value: 1, label: "Needs Work",  classes: "text-rose-400 bg-rose-500/10 border-rose-500/20" },
+            { value: 2, label: "Capable",    classes: "text-brand-400 bg-brand-500/10 border-brand-500/20" },
+            { value: 3, label: "Proficient", classes: "text-secondary-400 bg-secondary-500/10 border-secondary-500/20" },
+            { value: 4, label: "Impressive", classes: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20" }
+        ],
+
+        reportCard: {
+            attendanceLabel: "Attendance",
+            groupLabel:      "Group Ensemble",
+            solo1Label:      "Solo Test 01",
+            solo2Label:      "Solo Test 02",
+            bands: [
+                { min: 9.0, label: "Higher Distinction", range: "9.0 – 10.0", classes: "text-emerald-400 bg-emerald-500/10 border-emerald-500/30" },
+                { min: 8.0, label: "Distinction",        range: "8.0 – 8.9",  classes: "text-teal-300 bg-teal-500/10 border-teal-500/30" },
+                { min: 7.0, label: "Merit",              range: "7.0 – 7.9",  classes: "text-secondary-400 bg-secondary-500/10 border-secondary-500/30" },
+                { min: 6.0, label: "Credit",             range: "6.0 – 6.9",  classes: "text-indigo-400 bg-indigo-500/10 border-indigo-500/30" },
+                { min: 5.0, label: "Pass",               range: "5.0 – 5.9",  classes: "text-brand-400 bg-brand-500/10 border-brand-500/30" },
+                { min: 4.0, label: "Marginal Pass",      range: "4.0 – 4.9",  classes: "text-orange-400 bg-orange-500/10 border-orange-500/30" },
+                { min: 0.0, label: "Needs Improvement",  range: "0.0 – 3.9",  classes: "text-rose-400 bg-rose-500/10 border-rose-500/30" }
+            ]
+        }
+    },
+
+    /* ---------------------------------------------------------------- 5 */
+    calendar: {
+        year: 2026,
+        months: [
+            { key: "June",      short: "Jun", monthIndex: 5  },
+            { key: "July",      short: "Jul", monthIndex: 6  },
+            { key: "August",    short: "Aug", monthIndex: 7  },
+            { key: "September", short: "Sep", monthIndex: 8  },
+            { key: "October",   short: "Oct", monthIndex: 9  },
+            { key: "November",  short: "Nov", monthIndex: 10 },
+            { key: "December",  short: "Dec", monthIndex: 11 }
+        ],
+        // TODO: confirm the real first-term rehearsal dates.
+        defaultSessionDates: ["2026-06-05", "2026-06-12", "2026-06-19", "2026-06-26"],
+        events: [
+            { name: "Penutupan Hari Kebangsaan", date: "2026-09-16" },
+            { name: "SCSM Int'l Exam",           date: "2026-11-21" }
+        ]
+    },
+
+    /* ---------------------------------------------------------------- 6 */
+    backend: {
+        // TODO — REQUIRED. Deploy a NEW Apps Script against a NEW Google
+        // Sheet and paste its /exec URL here. Reusing another app's URL
+        // would make this app read and write that app's data.
+        endpointUrl: "PASTE_NEW_EXEC_URL_HERE",
+        admins: [
+            "kriyaoliver369@gmail.com"
+        ],
+        memberIdPrefix: "IGENVE2026"   // TODO: confirm; set before the first import
+    },
+
+    /* ---------------------------------------------------------------- 7 */
+    seed: {
+        newItemTitle: "New Repertoire Title",
+        bulkImportFormats: {
+            Students:   "Name, Grade, Section\nAisyah Binti Karim, Intermediate, Soprano\nDaniel Lim, CC1, Tenor",
+            Attendance: "Attendance is synced from the register grid.\nPress Process & Import to push the current month's dates to the sheet.",
+            Payments:   "Name, Month, Day, Method\nAisyah Binti Karim, June, 6, Cash\nDaniel Lim, July, 12, Online"
+        },
+        savedAnalyticsMessage: "Digital Signature Confirmed. Repertoire matrix snapshot securely saved to Google Sheets."
+    }
+};
+    </script>
+    <!-- ==================== END OF APP_CONFIG ============================= -->
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #0f172a; }
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #1e293b; }
-        ::-webkit-scrollbar-thumb { background: #eab308; border-radius: 3px; }
-    </style>
+
+    <script>
+        // Feed the configured palette and font into Tailwind before it paints.
+        // Guarded so a blocked/slow CDN can't take the rest of the theme down.
+        if (typeof tailwind !== 'undefined') {
+            tailwind.config = {
+                theme: {
+                    extend: {
+                        colors: APP_CONFIG.theme.palette,
+                        fontFamily: { sans: [APP_CONFIG.theme.fontFamily, 'sans-serif'] }
+                    }
+                }
+            };
+        } else {
+            console.error('Tailwind CDN did not load — the page will render unstyled.');
+        }
+
+        // Font import and the handful of raw-CSS colours Tailwind can't reach.
+        document.write(
+            '<style>' +
+            "@import url('" + APP_CONFIG.theme.fontImportUrl + "');" +
+            'body { font-family: "' + APP_CONFIG.theme.fontFamily + '", sans-serif;' +
+            '       background-color: ' + APP_CONFIG.theme.pageBackground + '; }' +
+            '::-webkit-scrollbar { width: 6px; height: 6px; }' +
+            '::-webkit-scrollbar-track { background: ' + APP_CONFIG.theme.scrollbarTrack + '; }' +
+            '::-webkit-scrollbar-thumb { background: ' + APP_CONFIG.theme.scrollbarThumb + '; border-radius: 3px; }' +
+            '</style>'
+        );
+        document.title = APP_CONFIG.identity.documentTitle;
+    </script>
 </head>
-<body class="text-slate-200 min-h-screen flex flex-col selection:bg-amber-500 selection:text-slate-900">
+<body class="text-surface-200 min-h-screen flex flex-col selection:bg-brand-500 selection:text-surface-900">
 
     <div id="login-page" class="flex-1 flex flex-col justify-center items-center p-4">
-        <div class="w-full max-w-md bg-slate-800/80 backdrop-blur-md border border-amber-500/40 rounded-2xl p-8 shadow-2xl relative overflow-hidden">
-            <div class="absolute -top-24 -left-24 w-48 h-48 bg-amber-500/10 rounded-full blur-3xl"></div>
-            <div class="absolute -bottom-24 -right-24 w-48 h-48 bg-blue-500/10 rounded-full blur-3xl"></div>
+        <div class="w-full max-w-md bg-surface-800/80 backdrop-blur-md border border-brand-500/40 rounded-2xl p-8 shadow-2xl relative overflow-hidden">
+            <div class="absolute -top-24 -left-24 w-48 h-48 bg-brand-500/10 rounded-full blur-3xl"></div>
+            <div class="absolute -bottom-24 -right-24 w-48 h-48 bg-secondary-500/10 rounded-full blur-3xl"></div>
             <div class="flex flex-col items-center mb-8 relative z-10">
-                <div class="w-16 h-16 bg-slate-900 border-2 border-amber-500 rounded-full flex items-center justify-center shadow-lg mb-4">
-                    <i data-lucide="crown" class="w-8 h-8 text-amber-500"></i>
+                <div class="w-16 h-16 bg-surface-900 border-2 border-brand-500 rounded-full flex items-center justify-center shadow-lg mb-4">
+                    <i data-brand-icon="identity.brandIcon" data-lucide="crown" class="w-8 h-8 text-brand-500"></i>
                 </div>
-                <h1 class="text-2xl font-bold tracking-tight text-center text-slate-100">Attendance Management System</h1>
-                <p class="text-xs text-slate-400 mt-1">Executive Dashboard</p>
+                <h1 data-brand="identity.loginTitle" class="text-2xl font-bold tracking-tight text-center text-surface-100">Attendance Management System</h1>
+                <p data-brand="identity.loginSubtitle" class="text-xs text-surface-400 mt-1">Executive Dashboard</p>
             </div>
             <form id="login-form" class="space-y-4 relative z-10" onsubmit="handleLogin(event)">
                 <div>
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Admin Email Address</label>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-surface-400 mb-2">Admin Email Address</label>
                     <div class="relative">
-                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-500">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-surface-500">
                             <i data-lucide="mail" class="w-4 h-4"></i>
                         </span>
-                        <input type="email" id="admin-email" required class="w-full pl-10 pr-4 py-3 bg-slate-900/90 border border-slate-700 rounded-xl focus:outline-none focus:border-amber-500 transition-colors placeholder:text-slate-500 text-sm" placeholder="Enter admin email">
+                        <input type="email" id="admin-email" required class="w-full pl-10 pr-4 py-3 bg-surface-900/90 border border-surface-700 rounded-xl focus:outline-none focus:border-brand-500 transition-colors placeholder:text-surface-500 text-sm" placeholder="Enter admin email">
                     </div>
                 </div>
-                <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-semibold py-3 px-4 rounded-xl shadow-lg shadow-amber-500/10 hover:shadow-amber-500/20 active:scale-[0.99] transition-all text-sm flex items-center justify-center gap-2">
+                <button type="submit" class="w-full bg-brand-500 hover:bg-brand-600 text-surface-950 font-semibold py-3 px-4 rounded-xl shadow-lg shadow-brand-500/10 hover:shadow-brand-500/20 active:scale-[0.99] transition-all text-sm flex items-center justify-center gap-2">
                     <i data-lucide="log-in" class="w-4 h-4"></i> Login Dashboard
                 </button>
             </form>
             <div class="relative flex py-5 items-center my-2 relative z-10">
-                <div class="flex-grow border-t border-slate-700/60"></div>
-                <span class="flex-shrink mx-4 text-slate-500 text-xs font-bold tracking-widest uppercase">OR</span>
-                <div class="flex-grow border-t border-slate-700/60"></div>
+                <div class="flex-grow border-t border-surface-700/60"></div>
+                <span class="flex-shrink mx-4 text-surface-500 text-xs font-bold tracking-widest uppercase">OR</span>
+                <div class="flex-grow border-t border-surface-700/60"></div>
             </div>
-            <button onclick="handleViewOnly()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-xl shadow-lg shadow-blue-600/10 active:scale-[0.99] transition-all text-sm flex items-center justify-center gap-2 relative z-10">
+            <button onclick="handleViewOnly()" class="w-full bg-secondary-600 hover:bg-secondary-700 text-white font-medium py-3 px-4 rounded-xl shadow-lg shadow-secondary-600/10 active:scale-[0.99] transition-all text-sm flex items-center justify-center gap-2 relative z-10">
                 <i data-lucide="eye" class="w-4 h-4"></i> View-Only Access
             </button>
         </div>
     </div>
 
     <div id="app-container" class="hidden flex-1 flex flex-col">
-        <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-40 shadow-xl">
+        <header class="bg-surface-900 border-b border-surface-800 sticky top-0 z-40 shadow-xl">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex items-center justify-between h-16">
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-slate-800 border border-amber-500 rounded-full flex items-center justify-center shadow">
-                            <i data-lucide="crown" class="w-5 h-5 text-amber-500"></i>
+                        <div class="w-10 h-10 bg-surface-800 border border-brand-500 rounded-full flex items-center justify-center shadow">
+                            <i data-brand-icon="identity.brandIcon" data-lucide="crown" class="w-5 h-5 text-brand-500"></i>
                         </div>
                         <div>
-                            <div class="text-sm font-bold tracking-wide text-slate-200">Swara Jauhari Attendance</div>
-                            <div id="user-display" class="text-xs text-slate-400 font-medium truncate max-w-[180px] sm:max-w-xs">MOF Sabah</div>
+                            <div data-brand="identity.headerTitle" class="text-sm font-bold tracking-wide text-surface-200">iGenVE SMKDPM Attendance</div>
+                            <div id="user-display" class="text-xs text-surface-400 font-medium truncate max-w-[180px] sm:max-w-xs">MOF Sabah</div>
                         </div>
                     </div>
                     <div>
@@ -73,111 +276,70 @@
                     </div>
                 </div>
 
-                <nav class="flex space-x-1 pb-3 overflow-x-auto" aria-label="Tabs">
-                    <button onclick="switchTab('attendance')" id="tab-attendance" class="tab-btn px-4 py-2 text-xs rounded-lg flex items-center gap-2 transition-all whitespace-nowrap bg-amber-500 text-slate-950 font-semibold shadow-md">
-                        <i data-lucide="calendar-check" class="w-4 h-4"></i> Attendance
-                    </button>
-                    <button onclick="switchTab('students')" id="tab-students" class="tab-btn px-4 py-2 text-xs font-medium text-slate-400 hover:text-slate-200 rounded-lg flex items-center gap-2 transition-all whitespace-nowrap">
-                        <i data-lucide="users" class="w-4 h-4"></i> Students
-                    </button>
-                    <button onclick="switchTab('payments')" id="tab-payments" class="tab-btn px-4 py-2 text-xs font-medium text-slate-400 hover:text-slate-200 rounded-lg flex items-center gap-2 transition-all whitespace-nowrap">
-                        <i data-lucide="dollar-sign" class="w-4 h-4"></i> Payments
-                    </button>
-                    <button onclick="switchTab('analytics')" id="tab-analytics" class="tab-btn px-4 py-2 text-xs font-medium text-slate-400 hover:text-slate-200 rounded-lg flex items-center gap-2 transition-all whitespace-nowrap">
-                        <i data-lucide="pie-chart" class="w-4 h-4"></i> Executive Analytics
-                    </button>
-                    <button onclick="switchTab('reportcard')" id="tab-reportcard" class="tab-btn px-4 py-2 text-xs font-medium text-slate-400 hover:text-slate-200 rounded-lg flex items-center gap-2 transition-all whitespace-nowrap">
-                        <i data-lucide="clipboard-list" class="w-4 h-4"></i> Report Card
-                    </button>
-                </nav>
+                <!-- Tab buttons are rendered from APP_CONFIG.vocabulary.tabs -->
+                <nav id="main-tabs" class="flex space-x-1 pb-3 overflow-x-auto" aria-label="Tabs"></nav>
             </div>
         </header>
 
         <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-8">
             
             <!-- GLOBAL HEADER WIDGET: TODAY'S DATE & COUNTDOWNS -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
-                <div class="bg-slate-800 border border-slate-700/80 rounded-xl p-4 flex items-center justify-between shadow-md">
+            <!-- Event cards are appended here from APP_CONFIG.calendar.events -->
+            <div id="global-widget-row" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
+                <div class="bg-surface-800 border border-surface-700/80 rounded-xl p-4 flex items-center justify-between shadow-md">
                     <div>
-                        <p class="text-[10px] text-amber-500 font-bold uppercase tracking-widest">Today's Date</p>
-                        <h4 id="global-today-date" class="text-sm font-semibold text-slate-100 mt-1">--</h4>
-                        <p id="global-today-day" class="text-xs text-slate-400">--</p>
+                        <p class="text-[10px] text-brand-500 font-bold uppercase tracking-widest">Today's Date</p>
+                        <h4 id="global-today-date" class="text-sm font-semibold text-surface-100 mt-1">--</h4>
+                        <p id="global-today-day" class="text-xs text-surface-400">--</p>
                     </div>
-                    <div class="w-10 h-10 bg-amber-500/10 border border-amber-500/30 rounded-xl flex items-center justify-center text-amber-500">
+                    <div class="w-10 h-10 bg-brand-500/10 border border-brand-500/30 rounded-xl flex items-center justify-center text-brand-500">
                         <i data-lucide="calendar" class="w-5 h-5"></i>
                     </div>
                 </div>
 
-                <div class="bg-slate-800 border border-slate-700/80 rounded-xl p-4 flex items-center justify-between shadow-md">
-                    <div>
-                        <p class="text-[10px] text-amber-500 font-bold uppercase tracking-widest">Upcoming Event Target</p>
-                        <h4 class="text-sm font-semibold text-slate-200 mt-1">Pelancaran Hari Kebangsaan</h4>
-                        <p class="text-xs text-slate-400">1st August 2026</p>
-                    </div>
-                    <div class="text-right">
-                        <span id="countdown-1" class="text-3xl font-extrabold text-slate-100">--</span>
-                        <span class="text-[10px] text-slate-400 block uppercase tracking-widest mt-1">Days</span>
-                    </div>
-                </div>
-
-                <div class="bg-slate-800 border border-slate-700/80 rounded-xl p-4 flex items-center justify-between shadow-md">
-                    <div>
-                        <p class="text-[10px] text-amber-500 font-bold uppercase tracking-widest">Upcoming Event Target</p>
-                        <h4 class="text-sm font-semibold text-slate-200 mt-1">Persembahan Perarakan Hari Kebangsaan</h4>
-                        <p class="text-xs text-slate-400">31st August 2026</p>
-                    </div>
-                    <div class="text-right">
-                        <span id="countdown-2" class="text-3xl font-extrabold text-slate-100">--</span>
-                        <span class="text-[10px] text-slate-400 block uppercase tracking-widest mt-1">Days</span>
-                    </div>
-                </div>
             </div>
 
             <section id="view-attendance" class="tab-content space-y-6">
                 <div class="flex flex-wrap items-center justify-between gap-4">
-                    <h2 class="text-lg font-bold text-slate-200 tracking-wide flex items-center gap-2">
-                        <i data-lucide="calendar-days" class="w-5 h-5 text-amber-500"></i> Attendance Register
+                    <h2 class="text-lg font-bold text-surface-200 tracking-wide flex items-center gap-2">
+                        <i data-lucide="calendar-days" class="w-5 h-5 text-brand-500"></i> <span data-brand="vocabulary.sectionTitles.attendance">Attendance Register</span>
                     </h2>
-                    <button onclick="downloadPDF('view-attendance', 'Attendance Register')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2 rounded-xl text-xs transition-all flex items-center gap-1.5 shadow-md shadow-indigo-600/20">
+                    <button onclick="downloadPDF('view-attendance', CFG.vocabulary.sectionTitles.attendance)" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2 rounded-xl text-xs transition-all flex items-center gap-1.5 shadow-md shadow-indigo-600/20">
                         <i data-lucide="download-cloud" class="w-4 h-4"></i> Export PDF
                     </button>
                 </div>
                 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div class="lg:col-span-2 bg-slate-800 border border-slate-700/60 rounded-xl p-5 space-y-4 shadow-md">
-                        <h3 class="text-sm font-semibold tracking-wider text-amber-500 uppercase flex items-center gap-2">
+                    <div class="lg:col-span-2 bg-surface-800 border border-surface-700/60 rounded-xl p-5 space-y-4 shadow-md">
+                        <h3 class="text-sm font-semibold tracking-wider text-brand-500 uppercase flex items-center gap-2">
                             <i data-lucide="sliders" class="w-4 h-4"></i> Schedule Configuration
                         </h3>
                         <div class="flex flex-wrap items-end gap-4">
                             <div>
-                                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Target Month</label>
-                                <select id="config-month" onchange="fetchDashboardData()" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500">
-                                    <option value="June 2026">June 2026</option>
-                                    <option value="July 2026">July 2026</option>
-                                    <option value="August 2026">August 2026</option>
-                                    <option value="September 2026">September 2026</option>
-                                </select>
+                                <label class="block text-[10px] font-bold text-surface-400 uppercase tracking-wider mb-1">Target Month</label>
+                                <!-- Options are rendered from APP_CONFIG.calendar -->
+                                <select id="config-month" onchange="fetchDashboardData()" class="bg-surface-900 border border-surface-700 rounded-lg px-2.5 py-1.5 text-xs text-surface-200 focus:outline-none focus:border-brand-500"></select>
                             </div>
                             <div id="date-pickers-container" class="flex flex-wrap gap-2"></div>
-                            <button id="admin-add-date-btn" onclick="addNewLessonDateInput()" class="bg-slate-700 hover:bg-slate-600 border border-slate-600 text-amber-500 font-medium py-1.5 px-3 rounded-lg text-xs transition-all flex items-center gap-1 hidden">
+                            <button id="admin-add-date-btn" onclick="addNewLessonDateInput()" class="bg-surface-700 hover:bg-surface-600 border border-surface-600 text-brand-500 font-medium py-1.5 px-3 rounded-lg text-xs transition-all flex items-center gap-1 hidden">
                                 <i data-lucide="calendar-plus" class="w-3.5 h-3.5"></i> + Add Date
                             </button>
                         </div>
                     </div>
-                    <div id="admin-actions-card" data-pdf-omit class="bg-slate-800 border border-slate-700/60 rounded-xl p-5 flex flex-col justify-center items-start shadow-md hidden">
-                        <p class="text-xs text-slate-400 mb-3">Sync global attendance roster via text or CSV import.</p>
-                        <button onclick="openBulkImportModal('Attendance')" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-xl text-xs transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-600/10">
+                    <div id="admin-actions-card" data-pdf-omit class="bg-surface-800 border border-surface-700/60 rounded-xl p-5 flex flex-col justify-center items-start shadow-md hidden">
+                        <p class="text-xs text-surface-400 mb-3">Sync global attendance roster via text or CSV import.</p>
+                        <button onclick="openBulkImportModal('Attendance')" class="w-full bg-secondary-600 hover:bg-secondary-700 text-white font-medium py-2.5 px-4 rounded-xl text-xs transition-all flex items-center justify-center gap-2 shadow-lg shadow-secondary-600/10">
                             <i data-lucide="file-spreadsheet" class="w-4 h-4"></i> Bulk Import Attendance
                         </button>
                     </div>
                 </div>
-                <div class="bg-slate-800 border border-slate-700/60 rounded-xl shadow-lg overflow-hidden">
+                <div class="bg-surface-800 border border-surface-700/60 rounded-xl shadow-lg overflow-hidden">
                     <div class="overflow-x-auto">
                         <table class="w-full min-w-[600px] text-left text-sm">
-                            <thead class="text-xs text-slate-400 uppercase bg-slate-900/40 border-b border-slate-700/40">
+                            <thead class="text-xs text-surface-400 uppercase bg-surface-900/40 border-b border-surface-700/40">
                                 <tr></tr>
                             </thead>
-                            <tbody id="attendance-table-body" class="divide-y divide-slate-700/40"></tbody>
+                            <tbody id="attendance-table-body" class="divide-y divide-surface-700/40"></tbody>
                         </table>
                     </div>
                 </div>
@@ -185,33 +347,33 @@
 
             <section id="view-students" class="tab-content space-y-6 hidden">
                 <div class="flex flex-wrap items-center justify-between gap-4">
-                    <h2 class="text-lg font-bold text-slate-200 tracking-wide flex items-center gap-2">
-                        <i data-lucide="folder-user" class="w-5 h-5 text-amber-500"></i> Active Master Roster
+                    <h2 class="text-lg font-bold text-surface-200 tracking-wide flex items-center gap-2">
+                        <i data-lucide="folder-user" class="w-5 h-5 text-brand-500"></i> <span data-brand="vocabulary.sectionTitles.students">Active Master Roster</span>
                     </h2>
                     <div id="admin-student-controls" class="flex items-center gap-2 hidden">
-                        <button onclick="openAddStudentModal()" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-semibold px-4 py-2 rounded-xl text-xs transition-all flex items-center gap-1.5 shadow-md shadow-amber-500/5">
+                        <button onclick="openAddStudentModal()" class="bg-brand-500 hover:bg-brand-600 text-surface-950 font-semibold px-4 py-2 rounded-xl text-xs transition-all flex items-center gap-1.5 shadow-md shadow-brand-500/5">
                             <i data-lucide="user-plus" class="w-4 h-4"></i> Add Single
                         </button>
-                        <button onclick="openBulkImportModal('Students')" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-xl text-xs transition-all flex items-center gap-1.5 shadow-md shadow-blue-600/5">
+                        <button onclick="openBulkImportModal('Students')" class="bg-secondary-600 hover:bg-secondary-700 text-white font-medium px-4 py-2 rounded-xl text-xs transition-all flex items-center gap-1.5 shadow-md shadow-secondary-600/5">
                             <i data-lucide="upload-cloud" class="w-4 h-4"></i> Bulk Import
                         </button>
-                        <button onclick="downloadPDF('view-students', 'Master Roster Dashboard')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2 rounded-xl text-xs transition-all flex items-center gap-1.5 shadow-md shadow-indigo-600/20">
+                        <button onclick="downloadPDF('view-students', CFG.vocabulary.sectionTitles.students)" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2 rounded-xl text-xs transition-all flex items-center gap-1.5 shadow-md shadow-indigo-600/20">
                             <i data-lucide="download-cloud" class="w-4 h-4"></i> Export PDF
                         </button>
                     </div>
                 </div>
-                <div class="bg-slate-800 border border-slate-700/60 rounded-xl shadow-lg overflow-hidden">
+                <div class="bg-surface-800 border border-surface-700/60 rounded-xl shadow-lg overflow-hidden">
                     <div class="overflow-x-auto">
                         <table class="w-full min-w-[600px] text-left text-sm">
-                            <thead class="text-xs text-slate-400 uppercase bg-slate-900/40 border-b border-slate-700/40">
+                            <thead class="text-xs text-surface-400 uppercase bg-surface-900/40 border-b border-surface-700/40">
                                 <tr>
-                                    <th class="px-6 py-3.5 font-semibold">Student Name</th>
-                                    <th class="px-6 py-3.5 font-semibold">Vocal Grade</th>
-                                    <th class="px-6 py-3.5 font-semibold">Vocal Section</th>
+                                    <th data-brand="labels.memberName" class="px-6 py-3.5 font-semibold">Student Name</th>
+                                    <th data-brand="vocabulary.gradeLabel" class="px-6 py-3.5 font-semibold">Vocal Grade</th>
+                                    <th data-brand="labels.memberGroup" class="px-6 py-3.5 font-semibold">Vocal Section</th>
                                     <th id="student-action-header" class="px-6 py-3.5 text-right font-semibold hidden">Action</th>
                                 </tr>
                             </thead>
-                            <tbody id="students-table-body" class="divide-y divide-slate-700/40"></tbody>
+                            <tbody id="students-table-body" class="divide-y divide-surface-700/40"></tbody>
                         </table>
                     </div>
                 </div>
@@ -220,10 +382,10 @@
             <section id="view-payments" class="tab-content space-y-6 hidden">
                 <div class="flex flex-wrap items-center justify-between gap-4">
                     <div>
-                        <h2 class="text-lg font-bold text-slate-200 tracking-wide flex items-center gap-2">
-                            <i data-lucide="receipt" class="w-5 h-5 text-emerald-500"></i> Financial Ledger
+                        <h2 class="text-lg font-bold text-surface-200 tracking-wide flex items-center gap-2">
+                            <i data-lucide="receipt" class="w-5 h-5 text-emerald-500"></i> <span data-brand="vocabulary.sectionTitles.payments">Financial Ledger</span>
                         </h2>
-                        <p id="payments-roster-note" class="text-[11px] text-slate-400 mt-1">Roster synced automatically from the Master Roster.</p>
+                        <p id="payments-roster-note" class="text-[11px] text-surface-400 mt-1">Roster synced automatically from the Master Roster.</p>
                     </div>
                     <div class="flex items-center gap-2">
                         <div id="admin-payment-controls" class="hidden items-center gap-2 flex">
@@ -231,30 +393,30 @@
                                 <i data-lucide="file-check-2" class="w-4 h-4"></i> Bulk Import Payments
                             </button>
                         </div>
-                        <button onclick="downloadPDF('view-payments', 'Financial Ledger')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2 rounded-xl text-xs transition-all flex items-center gap-1.5 shadow-md shadow-indigo-600/20">
+                        <button onclick="downloadPDF('view-payments', CFG.vocabulary.sectionTitles.payments)" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2 rounded-xl text-xs transition-all flex items-center gap-1.5 shadow-md shadow-indigo-600/20">
                             <i data-lucide="download-cloud" class="w-4 h-4"></i> Export PDF
                         </button>
                     </div>
                 </div>
 
-                <div data-pdf-omit class="bg-slate-800 border border-slate-700 rounded-xl px-5 py-3 shadow-md">
-                    <p class="text-[10px] text-slate-400 uppercase tracking-widest font-mono">
-                        <span class="font-bold text-slate-300">How to record:</span>
-                        Enter only the <span class="text-amber-500 font-bold">day of the month</span> in a column
-                        (e.g. <span class="text-amber-500 font-bold">6</span> under June &rarr; paid on 6 June 2026),
+                <div data-pdf-omit class="bg-surface-800 border border-surface-700 rounded-xl px-5 py-3 shadow-md">
+                    <p class="text-[10px] text-surface-400 uppercase tracking-widest font-mono">
+                        <span class="font-bold text-surface-300">How to record:</span>
+                        Enter only the <span class="text-brand-500 font-bold">day of the month</span> in a column
+                        (e.g. <span class="text-brand-500 font-bold">6</span> under June &rarr; paid on 6 June 2026),
                         then pick <span class="text-emerald-400 font-semibold">Cash</span> or
-                        <span class="text-blue-400 font-semibold">Online</span>. Clear the day to mark a month unpaid.
+                        <span class="text-secondary-400 font-semibold">Online</span>. Clear the day to mark a month unpaid.
                     </p>
                 </div>
 
-                <div class="bg-slate-800 border border-slate-700/60 rounded-xl shadow-lg overflow-hidden">
+                <div class="bg-surface-800 border border-surface-700/60 rounded-xl shadow-lg overflow-hidden">
                     <div class="overflow-x-auto">
                         <table class="w-full min-w-[900px] text-left text-sm">
-                            <thead class="text-xs text-slate-400 uppercase bg-slate-900/40 border-b border-slate-700/40">
+                            <thead class="text-xs text-surface-400 uppercase bg-surface-900/40 border-b border-surface-700/40">
                                 <tr id="payments-head-row"></tr>
                             </thead>
-                            <tbody id="payments-table-body" class="divide-y divide-slate-700/40"></tbody>
-                            <tfoot class="bg-slate-900/60 font-bold border-t border-slate-600 text-xs">
+                            <tbody id="payments-table-body" class="divide-y divide-surface-700/40"></tbody>
+                            <tfoot class="bg-surface-900/60 font-bold border-t border-surface-600 text-xs">
                                 <tr id="payments-foot-row"></tr>
                             </tfoot>
                         </table>
@@ -264,100 +426,100 @@
 
             <section id="view-analytics" class="tab-content space-y-6 hidden">
                 
-                <div class="flex flex-wrap justify-between items-end border-b border-slate-700 pb-2 gap-4">
-                    <h2 class="text-xl font-bold text-slate-100 uppercase tracking-widest flex items-center gap-2">
-                        <i data-lucide="bar-chart-3" class="w-6 h-6 text-blue-500"></i> Performance Dashboard
+                <div class="flex flex-wrap justify-between items-end border-b border-surface-700 pb-2 gap-4">
+                    <h2 class="text-xl font-bold text-surface-100 uppercase tracking-widest flex items-center gap-2">
+                        <i data-lucide="bar-chart-3" class="w-6 h-6 text-secondary-500"></i> <span data-brand="vocabulary.sectionTitles.analytics">Performance Dashboard</span>
                     </h2>
                     <div class="flex gap-2">
                         <button onclick="saveAnalyticsToHistory()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-4 py-2 rounded-xl text-xs transition-all flex items-center gap-1.5 shadow-md shadow-emerald-600/20">
                             <i data-lucide="pen-tool" class="w-4 h-4"></i> Digitally Sign & Save
                         </button>
-                        <button onclick="downloadPDF('view-analytics', 'Executive Analytics Report')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2 rounded-xl text-xs transition-all flex items-center gap-1.5 shadow-md shadow-indigo-600/20">
+                        <button onclick="downloadPDF('view-analytics', CFG.vocabulary.sectionTitles.analytics)" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2 rounded-xl text-xs transition-all flex items-center gap-1.5 shadow-md shadow-indigo-600/20">
                             <i data-lucide="download-cloud" class="w-4 h-4"></i> Export PDF
                         </button>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div class="bg-slate-800/80 border border-slate-700 p-4 rounded-xl shadow-md text-center">
-                        <p class="text-[10px] text-slate-400 uppercase font-bold tracking-widest">Diagnostic Performance</p>
-                        <p id="kpi-diagnostic" class="text-3xl font-extrabold text-blue-500 mt-1">0%</p>
+                    <div class="bg-surface-800/80 border border-surface-700 p-4 rounded-xl shadow-md text-center">
+                        <p class="text-[10px] text-surface-400 uppercase font-bold tracking-widest">Diagnostic Performance</p>
+                        <p id="kpi-diagnostic" class="text-3xl font-extrabold text-secondary-500 mt-1">0%</p>
                     </div>
-                    <div class="bg-slate-800/80 border border-slate-700 p-4 rounded-xl shadow-md text-center">
-                        <p class="text-[10px] text-slate-400 uppercase font-bold tracking-widest">Repertoire Progress</p>
+                    <div class="bg-surface-800/80 border border-surface-700 p-4 rounded-xl shadow-md text-center">
+                        <p data-brand="labels.itemProgress" class="text-[10px] text-surface-400 uppercase font-bold tracking-widest">Repertoire Progress</p>
                         <p id="kpi-repertoire" class="text-3xl font-extrabold text-emerald-500 mt-1">0%</p>
                     </div>
-                    <div class="bg-slate-800/80 border border-slate-700 p-4 rounded-xl shadow-md text-center">
-                        <p class="text-[10px] text-slate-400 uppercase font-bold tracking-widest">Sessions Completed</p>
-                        <p id="kpi-sessions" class="text-3xl font-extrabold text-slate-200 mt-1">0 / 0</p>
+                    <div class="bg-surface-800/80 border border-surface-700 p-4 rounded-xl shadow-md text-center">
+                        <p class="text-[10px] text-surface-400 uppercase font-bold tracking-widest">Sessions Completed</p>
+                        <p id="kpi-sessions" class="text-3xl font-extrabold text-surface-200 mt-1">0 / 0</p>
                     </div>
-                    <div class="bg-slate-800/80 border border-slate-700 p-4 rounded-xl shadow-md text-center border-l-2 border-l-rose-500">
-                        <p class="text-[10px] text-slate-400 uppercase font-bold tracking-widest text-rose-400">Unpaid Balances</p>
+                    <div class="bg-surface-800/80 border border-surface-700 p-4 rounded-xl shadow-md text-center border-l-2 border-l-rose-500">
+                        <p class="text-[10px] text-surface-400 uppercase font-bold tracking-widest text-rose-400">Unpaid Balances</p>
                         <p id="kpi-unpaid" class="text-3xl font-extrabold text-rose-500 mt-1">0</p>
                     </div>
                 </div>
 
                 <!-- OVERALL CHOIR SESSION PROGRESS SECTION -->
-                <div class="bg-slate-800 border border-slate-700 rounded-xl shadow-md overflow-hidden">
-                    <div class="bg-slate-900/60 p-4 border-b border-slate-700 flex justify-between items-center">
+                <div class="bg-surface-800 border border-surface-700 rounded-xl shadow-md overflow-hidden">
+                    <div class="bg-surface-900/60 p-4 border-b border-surface-700 flex justify-between items-center">
                         <div>
-                            <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Overall Choir Session Progress</h3>
-                            <p class="text-[10px] text-slate-400 mt-0.5">Track repertoire ratings and historic coaching feedback timelines</p>
+                            <h3 data-brand="labels.overallProgressTitle" class="text-xs font-bold text-surface-300 uppercase tracking-wider">Overall Choir Session Progress</h3>
+                            <p class="text-[10px] text-surface-400 mt-0.5">Track repertoire ratings and historic coaching feedback timelines</p>
                         </div>
-                        <button onclick="addSong()" class="text-xs bg-blue-500/10 text-blue-400 border border-blue-500/30 hover:bg-blue-500 hover:text-white px-3 py-1.5 rounded-lg transition-all font-semibold flex items-center gap-1.5">+ Add Song Track</button>
+                        <button onclick="addSong()" class="text-xs bg-secondary-500/10 text-secondary-400 border border-secondary-500/30 hover:bg-secondary-500 hover:text-white px-3 py-1.5 rounded-lg transition-all font-semibold flex items-center gap-1.5" data-brand="labels.addItem">+ Add Song Track</button>
                     </div>
-                    <div class="px-5 py-2.5 bg-slate-800/50 border-b border-slate-700/50">
-                        <p class="text-[10px] text-slate-400 uppercase tracking-widest font-mono">
-                            <span class="font-bold text-slate-300">Legend Metric Matrix:</span> 1 = Not fully effective | 2 = Capable | 3 = Proficient | 4 = Impressive
+                    <div class="px-5 py-2.5 bg-surface-800/50 border-b border-surface-700/50">
+                        <p class="text-[10px] text-surface-400 uppercase tracking-widest font-mono">
+                            <span class="font-bold text-surface-300">Legend Metric Matrix:</span> 1 = Not fully effective | 2 = Capable | 3 = Proficient | 4 = Impressive
                         </p>
                     </div>
                     <div id="songs-container" class="p-5 space-y-6"></div>
                     
-                    <div class="bg-slate-900/80 p-4 border-t border-slate-700/60 flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-5">
+                    <div class="bg-surface-900/80 p-4 border-t border-surface-700/60 flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-5">
                         <div class="flex items-center gap-2">
-                            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Accumulated Repertoire Marks:</span>
-                            <span id="repertoire-aggregated-raw" class="text-sm font-mono font-bold text-amber-500">0 / 0 Pts</span>
+                            <span data-brand="labels.itemMarksTotal" class="text-xs font-bold text-surface-400 uppercase tracking-wider">Total Accumulated Repertoire Marks:</span>
+                            <span id="repertoire-aggregated-raw" class="text-sm font-mono font-bold text-brand-500">0 / 0 Pts</span>
                         </div>
                         <div class="flex items-center gap-2">
-                            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Scaled Total Progress:</span>
-                            <span id="repertoire-aggregated-percent" class="text-sm font-mono font-bold text-blue-400">0%</span>
+                            <span class="text-xs font-bold text-surface-400 uppercase tracking-wider">Scaled Total Progress:</span>
+                            <span id="repertoire-aggregated-percent" class="text-sm font-mono font-bold text-secondary-400">0%</span>
                         </div>
                     </div>
                 </div>
 
                 <!-- SECTIONAL GROUP PROGRESS LEDGER -->
-                <div class="bg-slate-800 border border-slate-700 rounded-xl shadow-md overflow-hidden">
-                    <div class="bg-slate-900/60 p-4 border-b border-slate-700">
-                        <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Sectional Group Progress Ledger</h3>
-                        <p class="text-[10px] text-slate-400 uppercase tracking-widest font-mono mt-1">
-                            <span class="font-bold text-slate-300">Section Score Metric Scale:</span> 0-4 (Needs Work) | 5-7 (Developing) | 8-10 (Performance Ready)
+                <div class="bg-surface-800 border border-surface-700 rounded-xl shadow-md overflow-hidden">
+                    <div class="bg-surface-900/60 p-4 border-b border-surface-700">
+                        <h3 class="text-xs font-bold text-surface-300 uppercase tracking-wider">Sectional Group Progress Ledger</h3>
+                        <p class="text-[10px] text-surface-400 uppercase tracking-widest font-mono mt-1">
+                            <span class="font-bold text-surface-300">Section Score Metric Scale:</span> 0-4 (Needs Work) | 5-7 (Developing) | 8-10 (Performance Ready)
                         </p>
                     </div>
                     <div class="p-5 grid grid-cols-1 md:grid-cols-2 gap-6" id="section-comments-container"></div>
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div class="lg:col-span-2 bg-slate-800 border border-slate-700 rounded-xl shadow-md overflow-hidden">
-                        <div class="bg-slate-900/60 p-4 border-b border-slate-700 flex justify-between items-center">
-                            <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Voice Section Breakdown Table</h3>
+                    <div class="lg:col-span-2 bg-surface-800 border border-surface-700 rounded-xl shadow-md overflow-hidden">
+                        <div class="bg-surface-900/60 p-4 border-b border-surface-700 flex justify-between items-center">
+                            <h3 data-brand="labels.groupBreakdownTitle" class="text-xs font-bold text-surface-300 uppercase tracking-wider">Voice Section Breakdown Table</h3>
                         </div>
                         <div class="overflow-x-auto">
                             <table class="w-full text-left text-sm">
-                                <thead class="text-[10px] text-slate-400 uppercase bg-slate-900/30">
+                                <thead class="text-[10px] text-surface-400 uppercase bg-surface-900/30">
                                     <tr>
-                                        <th class="px-5 py-3">Section</th>
-                                        <th class="px-5 py-3 text-center">Active Singers</th>
+                                        <th data-brand="vocabulary.groupSingular" class="px-5 py-3">Section</th>
+                                        <th data-brand="labels.activeMembers" class="px-5 py-3 text-center">Active Singers</th>
                                         <th class="px-5 py-3 text-center">Checkmarks Earned</th>
                                         <th class="px-5 py-3 text-right">Progress Toward Term Goal</th>
                                     </tr>
                                 </thead>
-                                <tbody id="analytics-section-table" class="divide-y divide-slate-700/50"></tbody>
-                                <tfoot class="bg-slate-900/60 font-bold border-t border-slate-600">
+                                <tbody id="analytics-section-table" class="divide-y divide-surface-700/50"></tbody>
+                                <tfoot class="bg-surface-900/60 font-bold border-t border-surface-600">
                                     <tr>
-                                        <td class="px-5 py-3 text-slate-200">Total Choir</td>
-                                        <td id="analytics-total-singers" class="px-5 py-3 text-center text-slate-200">0</td>
-                                        <td id="analytics-total-checks" class="px-5 py-3 text-center text-slate-200">0</td>
-                                        <td id="analytics-total-progress" class="px-5 py-3 text-right text-blue-400">0%</td>
+                                        <td data-brand="labels.collectiveTotal" class="px-5 py-3 text-surface-200">Total Choir</td>
+                                        <td id="analytics-total-singers" class="px-5 py-3 text-center text-surface-200">0</td>
+                                        <td id="analytics-total-checks" class="px-5 py-3 text-center text-surface-200">0</td>
+                                        <td id="analytics-total-progress" class="px-5 py-3 text-right text-secondary-400">0%</td>
                                     </tr>
                                 </tfoot>
                             </table>
@@ -365,15 +527,15 @@
                     </div>
 
                     <div class="space-y-6">
-                        <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-md">
+                        <div class="bg-surface-800 border border-surface-700 rounded-xl p-5 shadow-md">
                             <h3 class="text-xs font-bold text-emerald-500 uppercase tracking-widest mb-3 flex items-center gap-2">
                                 <i data-lucide="award" class="w-4 h-4"></i> Highest Attendance
                             </h3>
                             <div id="analytics-top-performers" class="space-y-2"></div>
                         </div>
 
-                        <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-md border-t-2 border-t-amber-500">
-                            <h3 class="text-xs font-bold text-amber-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                        <div class="bg-surface-800 border border-surface-700 rounded-xl p-5 shadow-md border-t-2 border-t-brand-500">
+                            <h3 class="text-xs font-bold text-brand-500 uppercase tracking-widest mb-3 flex items-center gap-2">
                                 <i data-lucide="alert-triangle" class="w-4 h-4"></i> Requires Attention
                             </h3>
                             <div id="analytics-needs-improvement" class="space-y-2"></div>
@@ -383,96 +545,96 @@
             </section>
 
             <section id="view-reportcard" class="tab-content space-y-6 hidden">
-                <div class="flex flex-wrap justify-between items-end border-b border-slate-700 pb-2 gap-4">
+                <div class="flex flex-wrap justify-between items-end border-b border-surface-700 pb-2 gap-4">
                     <div>
-                        <h2 class="text-xl font-bold text-slate-100 uppercase tracking-widest flex items-center gap-2">
-                            <i data-lucide="clipboard-list" class="w-6 h-6 text-amber-500"></i> Student Report Card
+                        <h2 class="text-xl font-bold text-surface-100 uppercase tracking-widest flex items-center gap-2">
+                            <i data-lucide="clipboard-list" class="w-6 h-6 text-brand-500"></i> <span data-brand="vocabulary.sectionTitles.reportcard">Student Report Card</span>
                         </h2>
-                        <p class="text-[11px] text-slate-400 mt-1">Aggregated 10-point assessment · Attendance · Group Ensemble · Solo Assessments</p>
+                        <p class="text-[11px] text-surface-400 mt-1">Aggregated 10-point assessment · Attendance · Group Ensemble · Solo Assessments</p>
                     </div>
                     <div class="flex gap-2">
                         <button id="reportcard-save-btn" onclick="saveReportCardMarks()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-4 py-2 rounded-xl text-xs transition-all flex items-center gap-1.5 shadow-md shadow-emerald-600/20 hidden">
                             <i data-lucide="save" class="w-4 h-4"></i> Save Solo Marks
                         </button>
-                        <button onclick="downloadPDF('view-reportcard', 'Student Report Card')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2 rounded-xl text-xs transition-all flex items-center gap-1.5 shadow-md shadow-indigo-600/20">
+                        <button onclick="downloadPDF('view-reportcard', CFG.vocabulary.sectionTitles.reportcard)" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2 rounded-xl text-xs transition-all flex items-center gap-1.5 shadow-md shadow-indigo-600/20">
                             <i data-lucide="download-cloud" class="w-4 h-4"></i> Export PDF
                         </button>
                     </div>
                 </div>
 
                 <!-- Weighting legend -->
-                <div class="bg-slate-800 border border-slate-700 rounded-xl px-5 py-3 shadow-md">
-                    <p class="text-[10px] text-slate-400 uppercase tracking-widest font-mono">
-                        <span class="font-bold text-slate-300">Scoring Model:</span>
-                        Each component is scaled to <span class="text-amber-500 font-bold">/10</span>.
-                        Overall = average of <span class="text-blue-400 font-semibold">Attendance</span>,
+                <div class="bg-surface-800 border border-surface-700 rounded-xl px-5 py-3 shadow-md">
+                    <p class="text-[10px] text-surface-400 uppercase tracking-widest font-mono">
+                        <span class="font-bold text-surface-300">Scoring Model:</span>
+                        Each component is scaled to <span class="text-brand-500 font-bold">/10</span>.
+                        Overall = average of <span class="text-secondary-400 font-semibold">Attendance</span>,
                         <span class="text-emerald-400 font-semibold">Group Ensemble</span> and
                         <span class="text-purple-400 font-semibold">Solo</span> (mean of Test 01 &amp; Test 02).
                         Enter test marks (0&ndash;10) as each assessment is completed.
                     </p>
                 </div>
 
-                <div class="bg-slate-800 border border-slate-700/60 rounded-xl shadow-lg overflow-hidden">
+                <div class="bg-surface-800 border border-surface-700/60 rounded-xl shadow-lg overflow-hidden">
                     <div class="overflow-x-auto">
                         <table class="w-full min-w-[820px] text-left text-sm">
-                            <thead class="text-[10px] text-slate-400 uppercase bg-slate-900/40 border-b border-slate-700/40">
+                            <thead class="text-[10px] text-surface-400 uppercase bg-surface-900/40 border-b border-surface-700/40">
                                 <tr>
-                                    <th class="px-5 py-3.5 font-semibold">Student Name</th>
-                                    <th class="px-4 py-3.5 font-semibold">Section</th>
-                                    <th class="px-4 py-3.5 text-center font-semibold text-blue-400">Attendance<br><span class="text-[9px] text-slate-500 normal-case">/10</span></th>
-                                    <th class="px-4 py-3.5 text-center font-semibold text-emerald-400">Group Ensemble<br><span class="text-[9px] text-slate-500 normal-case">/10</span></th>
-                                    <th class="px-4 py-3.5 text-center font-semibold text-purple-400">Solo Test 01<br><span class="text-[9px] text-slate-500 normal-case">/10</span></th>
-                                    <th class="px-4 py-3.5 text-center font-semibold text-purple-400">Solo Test 02<br><span class="text-[9px] text-slate-500 normal-case">/10</span></th>
-                                    <th class="px-4 py-3.5 text-center font-semibold text-amber-500">Overall<br><span class="text-[9px] text-slate-500 normal-case">/10</span></th>
+                                    <th data-brand="labels.memberName" class="px-5 py-3.5 font-semibold">Student Name</th>
+                                    <th data-brand="vocabulary.groupSingular" class="px-4 py-3.5 font-semibold">Section</th>
+                                    <th data-brand="vocabulary.reportCard.attendanceLabel" data-brand-keep-child class="px-4 py-3.5 text-center font-semibold text-secondary-400">Attendance<br><span class="text-[9px] text-surface-500 normal-case">/10</span></th>
+                                    <th data-brand="vocabulary.reportCard.groupLabel" data-brand-keep-child class="px-4 py-3.5 text-center font-semibold text-emerald-400">Group Ensemble<br><span class="text-[9px] text-surface-500 normal-case">/10</span></th>
+                                    <th data-brand="vocabulary.reportCard.solo1Label" data-brand-keep-child class="px-4 py-3.5 text-center font-semibold text-purple-400">Solo Test 01<br><span class="text-[9px] text-surface-500 normal-case">/10</span></th>
+                                    <th data-brand="vocabulary.reportCard.solo2Label" data-brand-keep-child class="px-4 py-3.5 text-center font-semibold text-purple-400">Solo Test 02<br><span class="text-[9px] text-surface-500 normal-case">/10</span></th>
+                                    <th class="px-4 py-3.5 text-center font-semibold text-brand-500">Overall<br><span class="text-[9px] text-surface-500 normal-case">/10</span></th>
                                     <th class="px-5 py-3.5 text-center font-semibold">Grade Band</th>
                                 </tr>
                             </thead>
-                            <tbody id="reportcard-table-body" class="divide-y divide-slate-700/40"></tbody>
+                            <tbody id="reportcard-table-body" class="divide-y divide-surface-700/40"></tbody>
                         </table>
                     </div>
                 </div>
 
                 <!-- Scaling / grading legend -->
-                <div class="bg-slate-800 border border-slate-700 rounded-xl shadow-md overflow-hidden">
-                    <div class="bg-slate-900/60 p-4 border-b border-slate-700">
-                        <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
-                            <i data-lucide="ruler" class="w-4 h-4 text-amber-500"></i> Grading Scale &amp; Legend
+                <div class="bg-surface-800 border border-surface-700 rounded-xl shadow-md overflow-hidden">
+                    <div class="bg-surface-900/60 p-4 border-b border-surface-700">
+                        <h3 class="text-xs font-bold text-surface-300 uppercase tracking-wider flex items-center gap-2">
+                            <i data-lucide="ruler" class="w-4 h-4 text-brand-500"></i> Grading Scale &amp; Legend
                         </h3>
-                        <p class="text-[10px] text-slate-400 mt-0.5">Descriptor bands applied to the aggregated 10-point overall score</p>
+                        <p class="text-[10px] text-surface-400 mt-0.5">Descriptor bands applied to the aggregated 10-point overall score</p>
                     </div>
                     <div id="reportcard-legend" class="p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
                 </div>
             </section>
         </main>
 
-        <footer class="w-full py-6 border-t border-slate-800/60 mt-auto bg-slate-950/20 backdrop-blur-sm">
-            <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4 text-[10px] md:text-[11px] font-medium tracking-wider uppercase text-slate-500 text-center md:text-left">
-                <div>&copy; 2026 <span class="text-blue-400 font-semibold">K.LeeHuang</span>. All Rights Reserved.</div>
-                <div class="flex flex-col sm:flex-row sm:items-center justify-center gap-1.5 sm:gap-2 text-slate-500">
-                    <span>Designed for Swara Jauhari MOF</span><span class="hidden sm:inline text-slate-700">•</span>
-                    <span>Powered by <span class="text-amber-500/80 font-semibold">Oongisvoce Academy of Music</span></span>
+        <footer class="w-full py-6 border-t border-surface-800/60 mt-auto bg-surface-950/20 backdrop-blur-sm">
+            <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4 text-[10px] md:text-[11px] font-medium tracking-wider uppercase text-surface-500 text-center md:text-left">
+                <div>&copy; <span data-brand="identity.footerYear">2026</span> <span data-brand="identity.footerAuthor" class="text-secondary-400 font-semibold">K.LeeHuang</span>. All Rights Reserved.</div>
+                <div class="flex flex-col sm:flex-row sm:items-center justify-center gap-1.5 sm:gap-2 text-surface-500">
+                    <span data-brand="identity.footerDesignedFor">Designed for iGenVE SMKDPM</span><span class="hidden sm:inline text-surface-700">•</span>
+                    <span>Powered by <span data-brand="identity.footerPoweredBy" class="text-brand-500/80 font-semibold">Oongisvoce Academy of Music</span></span>
                 </div>
             </div>
         </footer>
     </div>
 
     <!-- MODAL 1: BULK IMPORT -->
-    <div id="bulk-import-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-2xl p-6 space-y-4 shadow-2xl">
-            <h3 id="bulk-modal-title" class="text-lg font-bold text-slate-200 tracking-wide uppercase flex items-center gap-2">
-                <i data-lucide="upload-cloud" class="w-5 h-5 text-blue-500"></i> Bulk Import
+    <div id="bulk-import-modal" class="fixed inset-0 bg-surface-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-surface-800 border border-surface-700 rounded-2xl w-full max-w-2xl p-6 space-y-4 shadow-2xl">
+            <h3 id="bulk-modal-title" class="text-lg font-bold text-surface-200 tracking-wide uppercase flex items-center gap-2">
+                <i data-lucide="upload-cloud" class="w-5 h-5 text-secondary-500"></i> Bulk Import
             </h3>
-            <div class="bg-slate-900/50 border border-slate-700/50 p-4 rounded-xl">
-                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Required Format:</p>
-                <code id="bulk-modal-instructions" class="text-xs text-amber-500 font-mono block whitespace-pre-wrap"></code>
+            <div class="bg-surface-900/50 border border-surface-700/50 p-4 rounded-xl">
+                <p class="text-xs font-bold text-surface-400 uppercase tracking-wider mb-2">Required Format:</p>
+                <code id="bulk-modal-instructions" class="text-xs text-brand-500 font-mono block whitespace-pre-wrap"></code>
             </div>
             <form id="bulk-import-form" onsubmit="handleBulkImportSubmit(event)" class="space-y-4">
                 <div>
-                    <textarea id="bulk-import-textarea" required rows="8" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs font-mono focus:outline-none focus:border-blue-500 placeholder-slate-600" placeholder="Paste your rows here..."></textarea>
+                    <textarea id="bulk-import-textarea" required rows="8" class="w-full bg-surface-900 border border-surface-700 rounded-lg px-3 py-2 text-xs font-mono focus:outline-none focus:border-secondary-500 placeholder-surface-600" placeholder="Paste your rows here..."></textarea>
                 </div>
                 <div class="flex items-center justify-end gap-2 pt-2">
-                    <button type="button" onclick="closeBulkImportModal()" class="px-4 py-2 rounded-lg text-xs font-medium bg-slate-700 hover:bg-slate-600">Cancel</button>
-                    <button type="submit" id="bulk-submit-btn" class="px-4 py-2 rounded-lg text-xs font-semibold bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-1.5">
+                    <button type="button" onclick="closeBulkImportModal()" class="px-4 py-2 rounded-lg text-xs font-medium bg-surface-700 hover:bg-surface-600">Cancel</button>
+                    <button type="submit" id="bulk-submit-btn" class="px-4 py-2 rounded-lg text-xs font-semibold bg-secondary-600 text-white hover:bg-secondary-700 flex items-center gap-1.5">
                         <i data-lucide="check-circle-2" class="w-4 h-4"></i> Process & Import
                     </button>
                 </div>
@@ -481,99 +643,67 @@
     </div>
 
     <!-- MODAL 2: ADD SINGLE STUDENT -->
-    <div id="add-student-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl">
-            <h3 class="text-sm font-bold text-slate-200 tracking-wide uppercase text-amber-500">Register New Student</h3>
+    <div id="add-student-modal" class="fixed inset-0 bg-surface-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-surface-800 border border-surface-700 rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl">
+            <h3 data-brand="labels.registerMember" class="text-sm font-bold text-surface-200 tracking-wide uppercase text-brand-500">Register New Student</h3>
             <form id="add-student-form" onsubmit="handleAddStudentSubmit(event)" class="space-y-4">
                 <div>
-                    <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Full Name</label>
-                    <input id="modal-name" type="text" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-amber-500">
+                    <label class="block text-[11px] font-bold text-surface-400 uppercase mb-1">Full Name</label>
+                    <input id="modal-name" type="text" required class="w-full bg-surface-900 border border-surface-700 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-brand-500">
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Vocal Grade</label>
-                        <select id="modal-grade" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-amber-500">
-                            <option value="Beginner">Beginner</option><option value="Intermediate">Intermediate</option><option value="CC1">CC1</option>
-                        </select>
+                        <label data-brand="vocabulary.gradeLabel" class="block text-[11px] font-bold text-surface-400 uppercase mb-1">Vocal Grade</label>
+                        <!-- Options rendered from APP_CONFIG.vocabulary.gradeOptions -->
+                        <select id="modal-grade" class="w-full bg-surface-900 border border-surface-700 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-brand-500"></select>
                     </div>
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Section</label>
-                        <select id="modal-section" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-amber-500">
-                            <option value="Soprano">Soprano</option><option value="Alto">Alto</option><option value="Tenor">Tenor</option><option value="Bass">Bass</option>
-                        </select>
+                        <label data-brand="vocabulary.groupSingular" class="block text-[11px] font-bold text-surface-400 uppercase mb-1">Section</label>
+                        <!-- Options rendered from APP_CONFIG.vocabulary.groups -->
+                        <select id="modal-section" class="w-full bg-surface-900 border border-surface-700 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-brand-500"></select>
                     </div>
                 </div>
                 <div class="flex items-center justify-end gap-2 pt-2">
-                    <button type="button" onclick="closeAddStudentModal()" class="px-4 py-2 rounded-lg text-xs font-medium bg-slate-700 hover:bg-slate-600">Cancel</button>
-                    <button type="submit" class="px-4 py-2 rounded-lg text-xs font-semibold bg-amber-500 text-slate-950 hover:bg-amber-600">Save</button>
+                    <button type="button" onclick="closeAddStudentModal()" class="px-4 py-2 rounded-lg text-xs font-medium bg-surface-700 hover:bg-surface-600">Cancel</button>
+                    <button type="submit" class="px-4 py-2 rounded-lg text-xs font-semibold bg-brand-500 text-surface-950 hover:bg-brand-600">Save</button>
                 </div>
             </form>
         </div>
     </div>
 
     <!-- MODAL 3: ADD NEW REPORT / LOG ENTRY -->
-    <div id="add-log-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-lg p-6 space-y-4 shadow-2xl">
-            <div class="flex items-center justify-between border-b border-slate-700/60 pb-3">
-                <h3 id="add-log-modal-title" class="text-sm font-bold text-amber-500 uppercase tracking-wide">Submit New Coaching Log</h3>
-                <button onclick="closeAddLogModal()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button>
+    <div id="add-log-modal" class="fixed inset-0 bg-surface-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-surface-800 border border-surface-700 rounded-2xl w-full max-w-lg p-6 space-y-4 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-surface-700/60 pb-3">
+                <h3 id="add-log-modal-title" data-brand="labels.newLogTitle" class="text-sm font-bold text-brand-500 uppercase tracking-wide">Submit New Coaching Log</h3>
+                <button onclick="closeAddLogModal()" class="text-surface-400 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button>
             </div>
             <form id="add-log-form" onsubmit="handleAddLogSubmit(event)" class="space-y-4">
                 <input type="hidden" id="add-log-target-type"> <!-- 'song' or 'section' -->
                 <input type="hidden" id="add-log-target-key">  <!-- song index or section name -->
                 
                 <div>
-                    <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Session Date / Review Date</label>
-                    <input id="add-log-date" type="text" required placeholder="e.g., 22 Jul 2026 or Rehearsal #5" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-amber-500 text-slate-200">
+                    <label class="block text-[11px] font-bold text-surface-400 uppercase mb-1">Session Date / Review Date</label>
+                    <input id="add-log-date" type="text" required placeholder="e.g., 22 Jul 2026 or Rehearsal #5" class="w-full bg-surface-900 border border-surface-700 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-brand-500 text-surface-200">
                 </div>
 
                 <!-- Song Scores Section (Shown if type === 'song') -->
-                <div id="add-log-song-scores" class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 bg-slate-900/50 p-3 rounded-xl border border-slate-700/50 hidden">
-                    <div>
-                        <label class="block text-[9px] uppercase font-bold text-slate-400">Technique</label>
-                        <select id="log-score-tech" class="w-full bg-slate-950 border border-slate-700 rounded p-1.5 text-xs text-slate-200">
-                            <option value="1">1 - Needs Work</option><option value="2" selected>2 - Capable</option><option value="3">3 - Proficient</option><option value="4">4 - Impressive</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-[9px] uppercase font-bold text-slate-400">Rhythm</label>
-                        <select id="log-score-rhythm" class="w-full bg-slate-950 border border-slate-700 rounded p-1.5 text-xs text-slate-200">
-                            <option value="1">1 - Needs Work</option><option value="2" selected>2 - Capable</option><option value="3">3 - Proficient</option><option value="4">4 - Impressive</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-[9px] uppercase font-bold text-slate-400">Accuracy</label>
-                        <select id="log-score-acc" class="w-full bg-slate-950 border border-slate-700 rounded p-1.5 text-xs text-slate-200">
-                            <option value="1">1 - Needs Work</option><option value="2" selected>2 - Capable</option><option value="3">3 - Proficient</option><option value="4">4 - Impressive</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-[9px] uppercase font-bold text-slate-400">Dynamics</label>
-                        <select id="log-score-dyn" class="w-full bg-slate-950 border border-slate-700 rounded p-1.5 text-xs text-slate-200">
-                            <option value="1">1 - Needs Work</option><option value="2" selected>2 - Capable</option><option value="3">3 - Proficient</option><option value="4">4 - Impressive</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-[9px] uppercase font-bold text-slate-400">Flair</label>
-                        <select id="log-score-flair" class="w-full bg-slate-950 border border-slate-700 rounded p-1.5 text-xs text-slate-200">
-                            <option value="1" selected>1 - Needs Work</option><option value="2">2 - Capable</option><option value="3">3 - Proficient</option><option value="4">4 - Impressive</option>
-                        </select>
-                    </div>
-                </div>
+                <!-- Criterion selects are rendered from APP_CONFIG.vocabulary.criteria -->
+                <div id="add-log-song-scores" class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 bg-surface-900/50 p-3 rounded-xl border border-surface-700/50 hidden"></div>
 
                 <!-- Section Score (Shown if type === 'section') -->
                 <div id="add-log-section-score" class="hidden">
-                    <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Section Score (0 - 10 Marks)</label>
-                    <input id="log-score-sec" type="number" min="0" max="10" value="6" class="w-24 bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs font-bold text-amber-500 text-center">
+                    <label data-brand="labels.groupScore" class="block text-[11px] font-bold text-surface-400 uppercase mb-1">Section Score (0 - 10 Marks)</label>
+                    <input id="log-score-sec" type="number" min="0" max="10" value="6" class="w-24 bg-surface-900 border border-surface-700 rounded-lg px-3 py-1.5 text-xs font-bold text-brand-500 text-center">
                 </div>
 
                 <div>
-                    <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Coach Feedback Notes</label>
-                    <textarea id="add-log-comment" required rows="4" placeholder="Enter target vocal placement, pitch adjustments, or rehearsal feedback..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-amber-500 text-slate-200 resize-y"></textarea>
+                    <label data-brand="vocabulary.notesLabel" class="block text-[11px] font-bold text-surface-400 uppercase mb-1">Coach Feedback Notes</label>
+                    <textarea id="add-log-comment" required rows="4" placeholder="Enter target vocal placement, pitch adjustments, or rehearsal feedback..." class="w-full bg-surface-900 border border-surface-700 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-brand-500 text-surface-200 resize-y"></textarea>
                 </div>
 
-                <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-700/60">
-                    <button type="button" onclick="closeAddLogModal()" class="px-4 py-2 rounded-lg text-xs font-medium bg-slate-700 hover:bg-slate-600">Cancel</button>
+                <div class="flex items-center justify-end gap-2 pt-2 border-t border-surface-700/60">
+                    <button type="button" onclick="closeAddLogModal()" class="px-4 py-2 rounded-lg text-xs font-medium bg-surface-700 hover:bg-surface-600">Cancel</button>
                     <button type="submit" class="px-4 py-2 rounded-lg text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-500 flex items-center gap-1.5">
                         <i data-lucide="check-circle" class="w-4 h-4"></i> Save Feedback Entry
                     </button>
@@ -583,71 +713,179 @@
     </div>
 
     <script>
+        /* =================================================================
+           ENGINE — shared by every cloned app. Nothing below is app-specific;
+           every branded value is read from APP_CONFIG in the <head>.
+           ================================================================= */
+
+        const CFG = APP_CONFIG;
+
+        // Derived wording, so a single vocabulary change ripples everywhere.
+        CFG.labels = {
+            memberName:          CFG.vocabulary.memberSingular + " Name",
+            memberGroup:         CFG.vocabulary.groupSingular,
+            registerMember:      "Register New " + CFG.vocabulary.memberSingular,
+            groupScore:          CFG.vocabulary.groupSingular + " Score (0 - 10 Marks)",
+            groupBreakdownTitle: CFG.vocabulary.groupSingular + " Breakdown Table",
+            addItem:             "+ Add " + CFG.vocabulary.itemSingular + " Track",
+            itemProgress:        CFG.vocabulary.itemCollection + " Progress",
+            itemMarksTotal:      "Total Accumulated " + CFG.vocabulary.itemCollection + " Marks:",
+            overallProgressTitle: "Overall " + CFG.vocabulary.collectiveNoun + " Session Progress",
+            activeMembers:       "Active " + CFG.vocabulary.memberPlural,
+            collectiveTotal:     "Total " + CFG.vocabulary.collectiveNoun,
+            newLogTitle:         "Submit New " + CFG.vocabulary.logLabel
+        };
+
+        const GROUP_NAMES = CFG.vocabulary.groups.map(g => g.name);
+        const MEMBER_ID_PATTERN = new RegExp(
+            CFG.backend.memberIdPrefix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + "-(\\d+)");
+        const MAX_ITEM_POINTS = CFG.vocabulary.criteria.length * CFG.vocabulary.criterionLevels.length;
+
+        function groupTone(name) {
+            const g = CFG.vocabulary.groups.find(x => x.name === name);
+            return g ? g.tone : "purple";
+        }
+        function groupBadgeClasses(name) {
+            const t = groupTone(name);
+            return `bg-${t}-950/40 text-${t}-400 border-${t}-500/20`;
+        }
+        function groupDotClass(name) { return `bg-${groupTone(name)}-400`; }
+
+        function levelLabel(v) {
+            const lv = CFG.vocabulary.criterionLevels.find(l => l.value === Number(v));
+            return lv ? `${lv.value} - ${lv.label}` : v;
+        }
+        function levelClasses(v) {
+            const lv = CFG.vocabulary.criterionLevels.find(l => l.value === Number(v));
+            return lv ? lv.classes : "text-surface-300";
+        }
+
+        function readConfigPath(path) {
+            return path.split('.').reduce((acc, key) => (acc == null ? acc : acc[key]), CFG);
+        }
+
+        // Push every configured string into the markup that carries data-brand.
+        // data-brand-keep-child preserves trailing markup (e.g. a "/10" caption).
+        function applyBranding() {
+            document.querySelectorAll('[data-brand]').forEach(el => {
+                const value = readConfigPath(el.getAttribute('data-brand'));
+                if (value === undefined || value === null) return;
+                if (el.hasAttribute('data-brand-keep-child')) {
+                    if (el.firstChild && el.firstChild.nodeType === Node.TEXT_NODE) {
+                        el.firstChild.nodeValue = value;
+                    }
+                } else {
+                    el.textContent = value;
+                }
+            });
+            document.querySelectorAll('[data-brand-icon]').forEach(el => {
+                const value = readConfigPath(el.getAttribute('data-brand-icon'));
+                if (value) el.setAttribute('data-lucide', value);
+            });
+
+            document.getElementById('user-display').innerText = CFG.identity.headerSubtitle;
+            renderTabs();
+            renderEventCards();
+            renderMonthOptions();
+            renderMemberModalOptions();
+            renderCriterionInputs();
+        }
+
+        function renderTabs() {
+            const nav = document.getElementById('main-tabs');
+            if (!nav) return;
+            nav.innerHTML = Object.keys(CFG.vocabulary.tabs).map((key, idx) => {
+                const tab = CFG.vocabulary.tabs[key];
+                const cls = idx === 0 ? TAB_ACTIVE_CLASS : TAB_IDLE_CLASS;
+                return `<button onclick="switchTab('${key}')" id="tab-${key}" class="${cls}">
+                            <i data-lucide="${tab.icon}" class="w-4 h-4"></i> ${tab.label}
+                        </button>`;
+            }).join('');
+        }
+
+        const TAB_ACTIVE_CLASS = "tab-btn px-4 py-2 text-xs rounded-lg flex items-center gap-2 transition-all whitespace-nowrap bg-brand-500 text-surface-950 font-semibold shadow-md";
+        const TAB_IDLE_CLASS   = "tab-btn px-4 py-2 text-xs font-medium text-surface-400 hover:text-surface-200 rounded-lg flex items-center gap-2 transition-all whitespace-nowrap";
+
+        // "2026-08-01" -> "1st August 2026"
+        function formatEventDate(iso) {
+            const d = new Date(iso + "T00:00:00");
+            if (isNaN(d.getTime())) return iso;
+            const day = d.getDate();
+            const suffix = (day % 10 === 1 && day !== 11) ? "st"
+                         : (day % 10 === 2 && day !== 12) ? "nd"
+                         : (day % 10 === 3 && day !== 13) ? "rd" : "th";
+            return `${day}${suffix} ${d.toLocaleDateString('en-GB', { month: 'long' })} ${d.getFullYear()}`;
+        }
+
+        function renderEventCards() {
+            const row = document.getElementById('global-widget-row');
+            if (!row) return;
+            row.querySelectorAll('[data-event-card]').forEach(el => el.remove());
+            CFG.calendar.events.forEach((ev, idx) => {
+                const card = document.createElement('div');
+                card.setAttribute('data-event-card', '');
+                card.className = "bg-surface-800 border border-surface-700/80 rounded-xl p-4 flex items-center justify-between shadow-md";
+                card.innerHTML = `
+                    <div>
+                        <p class="text-[10px] text-brand-500 font-bold uppercase tracking-widest">Upcoming Event Target</p>
+                        <h4 class="text-sm font-semibold text-surface-200 mt-1">${ev.name}</h4>
+                        <p class="text-xs text-surface-400">${formatEventDate(ev.date)}</p>
+                    </div>
+                    <div class="text-right">
+                        <span id="countdown-${idx}" class="text-3xl font-extrabold text-surface-100">--</span>
+                        <span class="text-[10px] text-surface-400 block uppercase tracking-widest mt-1">Days</span>
+                    </div>`;
+                row.appendChild(card);
+            });
+        }
+
+        function renderMonthOptions() {
+            const sel = document.getElementById('config-month');
+            if (!sel) return;
+            sel.innerHTML = CFG.calendar.months
+                .map(m => `<option value="${m.key} ${CFG.calendar.year}">${m.key} ${CFG.calendar.year}</option>`)
+                .join('');
+        }
+
+        function renderMemberModalOptions() {
+            const grade = document.getElementById('modal-grade');
+            const group = document.getElementById('modal-section');
+            if (grade) grade.innerHTML = CFG.vocabulary.gradeOptions.map(g => `<option value="${g}">${g}</option>`).join('');
+            if (group) group.innerHTML = GROUP_NAMES.map(g => `<option value="${g}">${g}</option>`).join('');
+        }
+
+        function renderCriterionInputs() {
+            const wrap = document.getElementById('add-log-song-scores');
+            if (!wrap) return;
+            const options = CFG.vocabulary.criterionLevels
+                .map(l => `<option value="${l.value}">${l.value} - ${l.label}</option>`).join('');
+            wrap.innerHTML = CFG.vocabulary.criteria.map(c => `
+                <div>
+                    <label class="block text-[9px] uppercase font-bold text-surface-400">${c.label}</label>
+                    <select id="log-score-${c.key}" class="w-full bg-surface-950 border border-surface-700 rounded p-1.5 text-xs text-surface-200">
+                        ${options}
+                    </select>
+                </div>`).join('');
+        }
+
+        /* ------------------------------------------------------- app state */
         let studentsState = [];
         let paymentsState = [];
         let isAdmin = false;
-        let activeLessonDates = ["2026-06-05", "2026-06-12", "2026-06-19", "2026-06-26"];
+        let activeLessonDates = CFG.calendar.defaultSessionDates.slice();
         let globalTotalSessions = 0;
         let globalCompletedSessions = 0;
         let adminUserEmail = "";
-        
-        // Track selected sidebar date indices for Sectional Group Progress
-        let selectedSectionDateIndex = { Soprano: 0, Alto: 0, Tenor: 0, Bass: 0 };
 
-        let analyticsPayload = {
-            songs: [
-                {
-                    id: Date.now(),
-                    title: "Sabah Maju Jaya",
-                    logs: [
-                        {
-                            id: "log-1",
-                            date: "22 Jul 2026",
-                            scores: { technique: 2, rhythmic: 2, accuracy: 2, dynamics: 2, flair: 1 },
-                            comment: "Singers are capable of singing the assigned vocal arrangements. They need to work on pitch and vocal technique to ensure overall tonal quality."
-                        },
-                        {
-                            id: "log-2",
-                            date: "15 Jul 2026",
-                            scores: { technique: 1, rhythmic: 2, accuracy: 1, dynamics: 1, flair: 1 },
-                            comment: "Initial exposition. Need closer attention to dynamic contrast."
-                        }
-                    ]
-                }
-            ],
-            sections: {
-                Soprano: {
-                    logs: [
-                        { id: "sec-sop-1", date: "22 Jul 2026", score: 7, comment: "You are currently on transition state to good performance. Singers need to be aware of each other to make a quality sound." },
-                        { id: "sec-sop-2", date: "15 Jul 2026", score: 5, comment: "Sopranos struggling with pitch accuracy in measure 24-32." }
-                    ]
-                },
-                Alto: {
-                    logs: [
-                        { id: "sec-alt-1", date: "22 Jul 2026", score: 8, comment: "This group shows much effort in producing good vocal tone. Pitch holds well." }
-                    ]
-                },
-                Tenor: {
-                    logs: [
-                        { id: "sec-ten-1", date: "22 Jul 2026", score: 6, comment: "The tenors are quick learners yet struggling to blend their tone." }
-                    ]
-                },
-                Bass: {
-                    logs: [
-                        { id: "sec-bas-1", date: "22 Jul 2026", score: 5, comment: "Bridge tone requires immediate focus." }
-                    ]
-                }
-            }
-        };
-        
-        const MACRO_ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbym0QHXQujNGuvq4tMKnyhoch6pVRFodzjqHp5MLzL1ecdFc8gJjeY4OGWx4zxvxsf2/exec"; 
+        // Which log date each group panel is currently showing.
+        let selectedSectionDateIndex = {};
+        GROUP_NAMES.forEach(g => { selectedSectionDateIndex[g] = 0; });
 
-        const AUTHORIZED_ADMINS = [
-            "kriyaoliver369@gmail.com",
-            "admin@system.com",
-            "director@swarajauhari.com",
-            "management@swarajauhari.com"
-        ];
+        let analyticsPayload = { songs: [], sections: {} };
+        GROUP_NAMES.forEach(g => { analyticsPayload.sections[g] = { logs: [] }; });
+
+        const MACRO_ENDPOINT_URL = CFG.backend.endpointUrl;
+        const AUTHORIZED_ADMINS = CFG.backend.admins;
 
         // --- BACKWARD COMPATIBILITY NORMALIZE DATA ---
         function ensureAnalyticsLogsStructure() {
@@ -658,7 +896,7 @@
             analyticsPayload.songs.forEach(song => {
                 if (!song.logs || !Array.isArray(song.logs) || song.logs.length === 0) {
                     const fallbackComment = song.comment || "Initial baseline report created.";
-                    const fallbackScores = song.scores || { technique: 1, rhythmic: 1, accuracy: 1, dynamics: 1, flair: 1 };
+                    const fallbackScores = song.scores || blankScoreSet();
                     song.logs = [{
                         id: "log-" + Date.now(),
                         date: "Baseline",
@@ -668,10 +906,9 @@
                 }
             });
 
-            // Normalize voice sections
-            const secNames = ['Soprano', 'Alto', 'Tenor', 'Bass'];
+            // Normalize groups
             if (!analyticsPayload.sections) analyticsPayload.sections = {};
-            secNames.forEach(sec => {
+            GROUP_NAMES.forEach(sec => {
                 if (!analyticsPayload.sections[sec]) {
                     analyticsPayload.sections[sec] = { logs: [{ id: "sec-" + Date.now(), date: "Baseline", score: 0, comment: "No logs recorded." }] };
                 } else if (!analyticsPayload.sections[sec].logs || !Array.isArray(analyticsPayload.sections[sec].logs) || analyticsPayload.sections[sec].logs.length === 0) {
@@ -752,8 +989,8 @@
         function switchTab(targetTab) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.getElementById(`view-${targetTab}`).classList.remove('hidden');
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.className = "tab-btn px-4 py-2 text-xs font-medium text-slate-400 hover:text-slate-200 rounded-lg flex items-center gap-2 transition-all whitespace-nowrap");
-            document.getElementById(`tab-${targetTab}`).className = "tab-btn px-4 py-2 text-xs rounded-lg flex items-center gap-2 transition-all whitespace-nowrap bg-amber-500 text-slate-950 font-semibold shadow-md";
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.className = TAB_IDLE_CLASS);
+            document.getElementById(`tab-${targetTab}`).className = TAB_ACTIVE_CLASS;
             
             if(targetTab === 'analytics') {
                 renderAnalyticsUI();
@@ -776,16 +1013,12 @@
                 if (dayEl) dayEl.innerText = now.toLocaleDateString('en-US', dayOptions);
 
                 const nowTime = now.getTime();
-                const d1 = new Date("2026-08-01T00:00:00").getTime();
-                const d2 = new Date("2026-08-31T00:00:00").getTime();
-
-                const diff1 = Math.ceil((d1 - nowTime) / (1000 * 60 * 60 * 24));
-                const diff2 = Math.ceil((d2 - nowTime) / (1000 * 60 * 60 * 24));
-
-                const cd1 = document.getElementById('countdown-1');
-                const cd2 = document.getElementById('countdown-2');
-                if (cd1) cd1.innerText = diff1 > 0 ? diff1 : 0;
-                if (cd2) cd2.innerText = diff2 > 0 ? diff2 : 0;
+                CFG.calendar.events.forEach((ev, idx) => {
+                    const target = new Date(ev.date + "T00:00:00").getTime();
+                    const days = Math.ceil((target - nowTime) / (1000 * 60 * 60 * 24));
+                    const el = document.getElementById('countdown-' + idx);
+                    if (el) el.innerText = days > 0 ? days : 0;
+                });
             }
             update();
             setInterval(update, 60000); 
@@ -803,58 +1036,50 @@
                 const historyCount = song.logs.length - 1;
 
                 return `
-                <div class="p-5 bg-slate-900/50 border border-slate-700/60 rounded-xl space-y-4 shadow-sm">
+                <div class="p-5 bg-surface-900/50 border border-surface-700/60 rounded-xl space-y-4 shadow-sm">
                     <!-- Song Header -->
                     <div class="flex flex-wrap justify-between items-center gap-3">
-                        <input type="text" value="${song.title}" onchange="updateSongTitle(${songIndex}, this.value)" ${!isAdmin ? 'disabled' : ''} class="bg-transparent border-b border-slate-700 focus:border-amber-500 focus:outline-none text-base text-slate-100 font-bold py-0.5 transition-colors max-w-xs sm:max-w-md">
+                        <input type="text" value="${song.title}" onchange="updateSongTitle(${songIndex}, this.value)" ${!isAdmin ? 'disabled' : ''} class="bg-transparent border-b border-surface-700 focus:border-brand-500 focus:outline-none text-base text-surface-100 font-bold py-0.5 transition-colors max-w-xs sm:max-w-md">
                         <div class="flex items-center gap-2">
-                            <span class="text-xs font-mono font-bold text-amber-500 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-lg" id="song-total-${songIndex}">${latestTotalPts}/20 Pts</span>
-                            ${isAdmin ? `<button onclick="openAddLogModal('song', ${songIndex})" class="text-xs bg-amber-500 hover:bg-amber-600 text-slate-950 px-3 py-1 rounded-lg font-bold flex items-center gap-1 transition-all"><i data-lucide="plus-circle" class="w-3.5 h-3.5"></i> Add Report</button>` : ''}
+                            <span class="text-xs font-mono font-bold text-brand-500 bg-brand-500/10 border border-brand-500/20 px-2.5 py-1 rounded-lg" id="song-total-${songIndex}">${latestTotalPts}/${MAX_ITEM_POINTS} Pts</span>
+                            ${isAdmin ? `<button onclick="openAddLogModal('song', ${songIndex})" class="text-xs bg-brand-500 hover:bg-brand-600 text-surface-950 px-3 py-1 rounded-lg font-bold flex items-center gap-1 transition-all"><i data-lucide="plus-circle" class="w-3.5 h-3.5"></i> Add Report</button>` : ''}
                             ${isAdmin ? `<button onclick="removeSong(${songIndex})" class="text-rose-500 hover:text-rose-400 p-1.5"><i data-lucide="trash-2" class="w-4 h-4"></i></button>` : ''}
                         </div>
                     </div>
 
                     <!-- Latest Report Display (Current Active) -->
-                    <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-4 space-y-3">
-                        <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                    <div class="bg-surface-950/80 border border-surface-800 rounded-xl p-4 space-y-3">
+                        <div class="flex justify-between items-center border-b border-surface-800 pb-2">
                             <span class="text-[10px] font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
                                 <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Active Report
                             </span>
-                            <span class="text-[10px] font-mono text-slate-400">${latestLog.date}</span>
+                            <span class="text-[10px] font-mono text-surface-400">${latestLog.date}</span>
                         </div>
-                        <div class="grid grid-cols-2 sm:grid-cols-5 gap-2">
-                            ${renderMetricPill('Technique', latestLog.scores.technique)}
-                            ${renderMetricPill('Rhythm', latestLog.scores.rhythmic)}
-                            ${renderMetricPill('Accuracy', latestLog.scores.accuracy)}
-                            ${renderMetricPill('Dynamics', latestLog.scores.dynamics)}
-                            ${renderMetricPill('Flair', latestLog.scores.flair)}
+                        <div class="grid gap-2" style="grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));">
+                            ${CFG.vocabulary.criteria.map(c => renderMetricPill(c.label, latestLog.scores[c.key])).join('')}
                         </div>
-                        <p class="text-xs text-slate-200 italic leading-relaxed pt-1">${latestLog.comment || 'No notes logged.'}</p>
+                        <p class="text-xs text-surface-200 italic leading-relaxed pt-1">${latestLog.comment || 'No notes logged.'}</p>
                     </div>
 
                     <!-- Past History Accordion Dropdown -->
                     ${historyCount > 0 ? `
                         <div>
-                            <button onclick="toggleSongHistoryAccordion(${songIndex})" class="text-xs text-blue-400 hover:text-blue-300 font-semibold flex items-center gap-1.5 transition-colors">
+                            <button onclick="toggleSongHistoryAccordion(${songIndex})" class="text-xs text-secondary-400 hover:text-secondary-300 font-semibold flex items-center gap-1.5 transition-colors">
                                 <i data-lucide="history" class="w-3.5 h-3.5"></i> 
                                 <span id="accordion-btn-text-${songIndex}">View Past Session Reports (${historyCount})</span>
                                 <i data-lucide="chevron-down" id="accordion-icon-${songIndex}" class="w-3.5 h-3.5 transition-transform"></i>
                             </button>
-                            <div id="song-history-accordion-${songIndex}" class="hidden space-y-3 pt-3 pl-2 border-l-2 border-slate-800 mt-2">
+                            <div id="song-history-accordion-${songIndex}" class="hidden space-y-3 pt-3 pl-2 border-l-2 border-surface-800 mt-2">
                                 ${song.logs.slice(1).map((log) => `
-                                    <div class="bg-slate-950/40 border border-slate-800 rounded-lg p-3 space-y-2">
-                                        <div class="flex justify-between items-center text-[10px] font-mono text-slate-400">
-                                            <span>Date: <strong class="text-slate-200">${log.date}</strong></span>
-                                            <span class="text-amber-500 font-bold">${calculateSingleSongTotal(log.scores)}/20 Pts</span>
+                                    <div class="bg-surface-950/40 border border-surface-800 rounded-lg p-3 space-y-2">
+                                        <div class="flex justify-between items-center text-[10px] font-mono text-surface-400">
+                                            <span>Date: <strong class="text-surface-200">${log.date}</strong></span>
+                                            <span class="text-brand-500 font-bold">${calculateSingleSongTotal(log.scores)}/${MAX_ITEM_POINTS} Pts</span>
                                         </div>
-                                        <div class="grid grid-cols-5 gap-1 text-[9px] font-mono">
-                                            <span class="bg-slate-900 p-1 rounded text-center">Tech: ${log.scores.technique}</span>
-                                            <span class="bg-slate-900 p-1 rounded text-center">Rhy: ${log.scores.rhythmic}</span>
-                                            <span class="bg-slate-900 p-1 rounded text-center">Acc: ${log.scores.accuracy}</span>
-                                            <span class="bg-slate-900 p-1 rounded text-center">Dyn: ${log.scores.dynamics}</span>
-                                            <span class="bg-slate-900 p-1 rounded text-center">Flair: ${log.scores.flair}</span>
+                                        <div class="grid gap-1 text-[9px] font-mono" style="grid-template-columns: repeat(auto-fit, minmax(56px, 1fr));">
+                                            ${CFG.vocabulary.criteria.map(c => `<span class="bg-surface-900 p-1 rounded text-center">${c.short}: ${log.scores[c.key]}</span>`).join('')}
                                         </div>
-                                        <p class="text-xs text-slate-300 italic">${log.comment}</p>
+                                        <p class="text-xs text-surface-300 italic">${log.comment}</p>
                                     </div>
                                 `).join('')}
                             </div>
@@ -865,28 +1090,27 @@
 
             // 2. RENDER VOICE SECTIONS (LEFT SIDEBAR FOR DATES + RIGHT CONTENT PANEL)
             const sectionContainer = document.getElementById('section-comments-container');
-            const sections = ['Soprano', 'Alto', 'Tenor', 'Bass'];
-            
-            sectionContainer.innerHTML = sections.map(sec => {
+
+            sectionContainer.innerHTML = GROUP_NAMES.map(sec => {
                 const secObj = analyticsPayload.sections[sec];
                 const logs = secObj.logs || [];
                 const activeIdx = selectedSectionDateIndex[sec] !== undefined ? selectedSectionDateIndex[sec] : 0;
                 const activeLog = logs[activeIdx] || logs[0] || { date: 'N/A', score: 0, comment: 'No notes logged.' };
 
                 const dateListHTML = logs.map((log, idx) => `
-                    <button onclick="selectSectionDate('${sec}', ${idx})" class="w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-mono transition-all flex items-center justify-between ${idx === activeIdx ? 'bg-amber-500 text-slate-950 font-bold shadow' : 'bg-slate-950/60 text-slate-400 hover:bg-slate-800 hover:text-slate-200'}">
+                    <button onclick="selectSectionDate('${sec}', ${idx})" class="w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-mono transition-all flex items-center justify-between ${idx === activeIdx ? 'bg-brand-500 text-surface-950 font-bold shadow' : 'bg-surface-950/60 text-surface-400 hover:bg-surface-800 hover:text-surface-200'}">
                         <span>${log.date}</span>
-                        ${idx === 0 ? '<span class="text-[8px] uppercase tracking-wider bg-slate-900 text-amber-400 px-1 rounded">Latest</span>' : ''}
+                        ${idx === 0 ? '<span class="text-[8px] uppercase tracking-wider bg-surface-900 text-brand-400 px-1 rounded">Latest</span>' : ''}
                     </button>
                 `).join('');
 
                 return `
-                <div class="bg-slate-900/50 border border-slate-700/60 rounded-xl p-4 flex flex-col space-y-3">
+                <div class="bg-surface-900/50 border border-surface-700/60 rounded-xl p-4 flex flex-col space-y-3">
                     <!-- Section Header -->
-                    <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-                        <h4 class="text-sm font-bold text-slate-100 flex items-center gap-2">
-                            <span class="w-2.5 h-2.5 rounded-full ${sec==='Soprano'?'bg-rose-400':sec==='Alto'?'bg-amber-400':sec==='Tenor'?'bg-blue-400':'bg-emerald-400'}"></span>
-                            ${sec} Section
+                    <div class="flex justify-between items-center border-b border-surface-800 pb-2">
+                        <h4 class="text-sm font-bold text-surface-100 flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full ${groupDotClass(sec)}"></span>
+                            ${sec} ${CFG.vocabulary.groupSingular}
                         </h4>
                         ${isAdmin ? `<button onclick="openAddLogModal('section', '${sec}')" class="text-xs bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600 hover:text-white border border-emerald-500/30 px-2.5 py-1 rounded-lg font-semibold flex items-center gap-1"><i data-lucide="plus" class="w-3.5 h-3.5"></i> Add Log</button>` : ''}
                     </div>
@@ -894,19 +1118,19 @@
                     <!-- Split View: Left Date Sidebar + Right Comment Panel -->
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 flex-1 min-h-[160px]">
                         <!-- Left Date Sidebar -->
-                        <div class="space-y-1.5 border-r border-slate-800 pr-2 max-h-[180px] overflow-y-auto">
-                            <p class="text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-1">Select Review Date</p>
+                        <div class="space-y-1.5 border-r border-surface-800 pr-2 max-h-[180px] overflow-y-auto">
+                            <p class="text-[9px] font-bold text-surface-500 uppercase tracking-wider mb-1">Select Review Date</p>
                             ${dateListHTML}
                         </div>
 
                         <!-- Right Selected Comment View -->
-                        <div class="sm:col-span-2 bg-slate-950/70 border border-slate-800 rounded-xl p-3 flex flex-col justify-between space-y-2">
+                        <div class="sm:col-span-2 bg-surface-950/70 border border-surface-800 rounded-xl p-3 flex flex-col justify-between space-y-2">
                             <div>
                                 <div class="flex justify-between items-center mb-1">
-                                    <span class="text-[10px] font-mono text-amber-400 font-bold">${activeLog.date} Log</span>
-                                    <span class="text-xs font-mono font-bold bg-amber-500/10 text-amber-500 border border-amber-500/20 px-2 py-0.5 rounded">Score: ${activeLog.score} / 10</span>
+                                    <span class="text-[10px] font-mono text-brand-400 font-bold">${activeLog.date} Log</span>
+                                    <span class="text-xs font-mono font-bold bg-brand-500/10 text-brand-500 border border-brand-500/20 px-2 py-0.5 rounded">Score: ${activeLog.score} / 10</span>
                                 </div>
-                                <p class="text-xs text-slate-200 leading-relaxed italic pt-1">${activeLog.comment || 'No feedback logged for this date.'}</p>
+                                <p class="text-xs text-surface-200 leading-relaxed italic pt-1">${activeLog.comment || 'No feedback logged for this date.'}</p>
                             </div>
                         </div>
                     </div>
@@ -935,18 +1159,26 @@
         }
 
         function renderMetricPill(label, val) {
-            const levelLabels = { 1: "1 - Needs Work", 2: "2 - Capable", 3: "3 - Proficient", 4: "4 - Impressive" };
-            const levelColors = { 1: "text-rose-400 bg-rose-500/10 border-rose-500/20", 2: "text-amber-400 bg-amber-500/10 border-amber-500/20", 3: "text-blue-400 bg-blue-500/10 border-blue-500/20", 4: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20" };
             return `
-            <div class="bg-slate-900 border border-slate-800 rounded-lg p-1.5 flex flex-col">
-                <span class="text-[9px] uppercase font-bold text-slate-500 truncate">${label}</span>
-                <span class="text-[11px] font-semibold ${levelColors[val] || 'text-slate-300'} truncate">${levelLabels[val] || val}</span>
+            <div class="bg-surface-900 border border-surface-800 rounded-lg p-1.5 flex flex-col">
+                <span class="text-[9px] uppercase font-bold text-surface-500 truncate">${label}</span>
+                <span class="text-[11px] font-semibold ${levelClasses(val)} truncate">${levelLabel(val)}</span>
             </div>`;
         }
 
+        // A fresh score set with every configured criterion at the lowest level.
+        function blankScoreSet() {
+            const lowest = CFG.vocabulary.criterionLevels[0].value;
+            const out = {};
+            CFG.vocabulary.criteria.forEach(c => { out[c.key] = lowest; });
+            return out;
+        }
+
         function calculateSingleSongTotal(scores) {
-            if(!scores) return 5;
-            return parseInt(scores.technique||1) + parseInt(scores.rhythmic||1) + parseInt(scores.accuracy||1) + parseInt(scores.dynamics||1) + parseInt(scores.flair||1);
+            const lowest = CFG.vocabulary.criterionLevels[0].value;
+            if (!scores) return CFG.vocabulary.criteria.length * lowest;
+            return CFG.vocabulary.criteria.reduce(
+                (sum, c) => sum + (parseInt(scores[c.key], 10) || lowest), 0);
         }
 
         function calculateRepertoireMastery() {
@@ -958,7 +1190,7 @@
                 return;
             }
             let totalPoints = 0;
-            const maxPoints = totalSongs * 20;
+            const maxPoints = totalSongs * MAX_ITEM_POINTS;
             analyticsPayload.songs.forEach(song => { 
                 const latestLog = song.logs[0];
                 totalPoints += calculateSingleSongTotal(latestLog ? latestLog.scores : null); 
@@ -974,9 +1206,9 @@
             if(!isAdmin) return;
             analyticsPayload.songs.push({ 
                 id: Date.now(), 
-                title: "New Repertoire Title", 
+                title: CFG.seed.newItemTitle,
                 logs: [
-                    { id: "log-" + Date.now(), date: new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric'}), scores: { technique: 1, rhythmic: 1, accuracy: 1, dynamics: 1, flair: 1 }, comment: "Initial song report created." }
+                    { id: "log-" + Date.now(), date: new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric'}), scores: blankScoreSet(), comment: `Initial ${CFG.vocabulary.itemSingular.toLowerCase()} report created.` }
                 ]
             });
             renderAnalyticsUI();
@@ -984,7 +1216,7 @@
 
         function removeSong(index) {
             if(!isAdmin) return;
-            if(confirm("Remove this song from the progress tracker?")) {
+            if(confirm(`Remove this ${CFG.vocabulary.itemSingular.toLowerCase()} from the progress tracker?`)) {
                 analyticsPayload.songs.splice(index, 1);
                 renderAnalyticsUI();
             }
@@ -1007,7 +1239,7 @@
                 document.getElementById('add-log-song-scores').classList.remove('hidden');
                 document.getElementById('add-log-section-score').classList.add('hidden');
             } else {
-                document.getElementById('add-log-modal-title').innerText = `Add Log: ${targetKey} Section`;
+                document.getElementById('add-log-modal-title').innerText = `Add Log: ${targetKey} ${CFG.vocabulary.groupSingular}`;
                 document.getElementById('add-log-song-scores').classList.add('hidden');
                 document.getElementById('add-log-section-score').classList.remove('hidden');
             }
@@ -1031,13 +1263,7 @@
                 song.logs.unshift({
                     id: "log-" + Date.now(),
                     date: dateStr,
-                    scores: {
-                        technique: parseInt(document.getElementById('log-score-tech').value),
-                        rhythmic: parseInt(document.getElementById('log-score-rhythm').value),
-                        accuracy: parseInt(document.getElementById('log-score-acc').value),
-                        dynamics: parseInt(document.getElementById('log-score-dyn').value),
-                        flair: parseInt(document.getElementById('log-score-flair').value)
-                    },
+                    scores: readCriterionInputs(),
                     comment: commentStr
                 });
             } else {
@@ -1056,6 +1282,16 @@
             renderAnalyticsUI();
         }
 
+        // Read the rendered criterion selects back into a score object.
+        function readCriterionInputs() {
+            const out = {};
+            CFG.vocabulary.criteria.forEach(c => {
+                const el = document.getElementById('log-score-' + c.key);
+                out[c.key] = el ? parseInt(el.value, 10) : CFG.vocabulary.criterionLevels[0].value;
+            });
+            return out;
+        }
+
         async function saveAnalyticsToHistory() {
             if(!isAdmin) return;
             const btn = document.querySelector("button[onclick='saveAnalyticsToHistory()']");
@@ -1070,7 +1306,7 @@
             
             setTimeout(() => {
                 btn.innerHTML = ogText;
-                alert("Digital Signature Confirmed. Repertoire matrix snapshot securely saved to Google Sheets.");
+                alert(CFG.seed.savedAnalyticsMessage);
             }, 1000);
         }
 
@@ -1086,8 +1322,8 @@
             const container = document.getElementById('date-pickers-container');
             if(!container) return;
             container.innerHTML = activeLessonDates.map((date, idx) => `
-                <div class="relative flex items-center bg-slate-900 border border-slate-700 rounded-lg px-2 py-1">
-                    <input type="date" value="${date}" onchange="handleDatePickerChange(${idx}, this.value)" ${!isAdmin ? 'disabled' : ''} class="bg-transparent text-xs text-slate-200 focus:outline-none ${!isAdmin ? 'cursor-not-allowed' : ''}">
+                <div class="relative flex items-center bg-surface-900 border border-surface-700 rounded-lg px-2 py-1">
+                    <input type="date" value="${date}" onchange="handleDatePickerChange(${idx}, this.value)" ${!isAdmin ? 'disabled' : ''} class="bg-transparent text-xs text-surface-200 focus:outline-none ${!isAdmin ? 'cursor-not-allowed' : ''}">
                     ${isAdmin ? `<button onclick="removeDatePickerDate(${idx})" class="text-rose-500 hover:text-rose-400 ml-1.5 p-0.5" title="Remove Date"><i data-lucide="x" class="w-3 h-3"></i></button>` : ''}
                 </div>
             `).join('');
@@ -1178,7 +1414,7 @@
                 `<th class="px-6 py-3.5 text-right font-semibold">Total</th>`;
 
             if (studentsState.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="${activeLessonDates.length + 2}" class="p-6 text-center text-xs text-slate-500 italic">No record data found inside sheet workspace.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="${activeLessonDates.length + 2}" class="p-6 text-center text-xs text-surface-500 italic">No record data found inside sheet workspace.</td></tr>`;
                 return;
             }
 
@@ -1186,19 +1422,19 @@
                 const totalCount = student.attendance ? student.attendance.filter(Boolean).length : 0;
                 const disabledAttr = !isAdmin ? 'disabled' : '';
                 return `
-                    <tr class="hover:bg-slate-700/20 transition-colors">
-                        <td class="px-6 py-4 font-medium text-slate-200 text-left">${student.name || "Unknown"}</td>
+                    <tr class="hover:bg-surface-700/20 transition-colors">
+                        <td class="px-6 py-4 font-medium text-surface-200 text-left">${student.name || "Unknown"}</td>
                         ${activeLessonDates.map((date, idx) => {
                             const isChecked = student.attendance && student.attendance[idx] ? true : false;
                             return `
                                 <td class="px-2 py-4 text-center">
                                     <input type="checkbox" ${isChecked ? 'checked' : ''} ${disabledAttr}
                                         onclick="toggleAttendanceState('${student.id}', ${idx})"
-                                        class="w-4 h-4 rounded text-blue-600 bg-slate-900 border-slate-700 focus:ring-amber-500 accent-amber-500 transform scale-110 ${!isAdmin ? 'cursor-not-allowed' : 'cursor-pointer'}">
+                                        class="w-4 h-4 rounded text-secondary-600 bg-surface-900 border-surface-700 focus:ring-brand-500 accent-brand-500 transform scale-110 ${!isAdmin ? 'cursor-not-allowed' : 'cursor-pointer'}">
                                 </td>
                             `;
                         }).join('')}
-                        <td class="px-6 py-4 text-right font-mono font-bold text-amber-500">${totalCount}/${activeLessonDates.length}</td>
+                        <td class="px-6 py-4 text-right font-mono font-bold text-brand-500">${totalCount}/${activeLessonDates.length}</td>
                     </tr>
                 `;
             }).join('');
@@ -1208,25 +1444,21 @@
             const tbody = document.getElementById('students-table-body');
             if(!tbody) return;
             if (studentsState.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-xs text-slate-500 italic">No student student rosters synchronized.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-xs text-surface-500 italic">No student student rosters synchronized.</td></tr>`;
                 return;
             }
             tbody.innerHTML = studentsState.map((student, index) => {
-                let badgeClass = "bg-purple-950/40 text-purple-400 border-purple-500/20";
-                if (student.section === "Soprano") badgeClass = "bg-rose-950/40 text-rose-400 border-rose-500/20";
-                if (student.section === "Alto") badgeClass = "bg-amber-950/40 text-amber-400 border-amber-500/20";
-                if (student.section === "Tenor") badgeClass = "bg-blue-950/40 text-blue-400 border-blue-500/20";
-                if (student.section === "Bass") badgeClass = "bg-emerald-950/40 text-emerald-400 border-emerald-500/20";
+                const badgeClass = groupBadgeClasses(student.section);
 
                 return `
-                <tr class="hover:bg-slate-700/20 transition-colors">
-                    <td class="px-6 py-4 font-medium text-slate-200">${student.name || "Unknown"}</td>
-                    <td class="px-6 py-4 text-slate-400">${student.grade || 'N/A'}</td>
-                    <td class="px-6 py-4"><span class="${badgeClass} border text-xs px-2.5 py-0.5 rounded-full font-medium">${student.section || 'Soprano'}</span></td>
+                <tr class="hover:bg-surface-700/20 transition-colors">
+                    <td class="px-6 py-4 font-medium text-surface-200">${student.name || "Unknown"}</td>
+                    <td class="px-6 py-4 text-surface-400">${student.grade || 'N/A'}</td>
+                    <td class="px-6 py-4"><span class="${badgeClass} border text-xs px-2.5 py-0.5 rounded-full font-medium">${student.section || GROUP_NAMES[0]}</span></td>
                     ${isAdmin ? `
                     <td class="px-6 py-4 text-right flex items-center justify-end gap-3">
-                        <button onclick="moveStudent(${index}, -1)" class="text-slate-400 hover:text-white" title="Move Up"><i data-lucide="arrow-up" class="w-4 h-4"></i></button>
-                        <button onclick="moveStudent(${index}, 1)" class="text-slate-400 hover:text-white" title="Move Down"><i data-lucide="arrow-down" class="w-4 h-4"></i></button>
+                        <button onclick="moveStudent(${index}, -1)" class="text-surface-400 hover:text-white" title="Move Up"><i data-lucide="arrow-up" class="w-4 h-4"></i></button>
+                        <button onclick="moveStudent(${index}, 1)" class="text-surface-400 hover:text-white" title="Move Down"><i data-lucide="arrow-down" class="w-4 h-4"></i></button>
                         <button onclick="deleteStudent('${student.id}')" class="text-xs bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white border border-rose-500/30 px-2 py-1 rounded transition-all font-semibold ml-2">Drop</button>
                     </td>` : ''}
                 </tr>`;
@@ -1235,13 +1467,8 @@
         }
 
         // --- PAYMENT MATRIX (auto-populated from the student roster) ---
-        const PAYMENT_YEAR = 2026;
-        const PAYMENT_MONTHS = [
-            { key: "June",      short: "Jun", monthIndex: 5 },
-            { key: "July",      short: "Jul", monthIndex: 6 },
-            { key: "August",    short: "Aug", monthIndex: 7 },
-            { key: "September", short: "Sep", monthIndex: 8 }
-        ];
+        const PAYMENT_YEAR = CFG.calendar.year;
+        const PAYMENT_MONTHS = CFG.calendar.months;
         const DEFAULT_PAYMENT_METHOD = "Cash";
 
         // { [studentId]: { June: { day: 6, method: "Cash" }, ... } }
@@ -1419,26 +1646,26 @@
             }
 
             headRow.innerHTML =
-                `<th class="px-5 py-3.5 font-semibold sticky left-0 bg-slate-900/40">Student Name</th>
+                `<th class="px-5 py-3.5 font-semibold sticky left-0 bg-surface-900/40">Student Name</th>
                  <th class="px-4 py-3.5 font-semibold">Section</th>` +
                 PAYMENT_MONTHS.map(m => `
                     <th class="px-3 py-3 text-center font-semibold">
                         <div>${m.key} ${PAYMENT_YEAR}</div>
-                        <div class="text-[9px] normal-case tracking-normal text-slate-500 font-normal mt-0.5">day &middot; method</div>
+                        <div class="text-[9px] normal-case tracking-normal text-surface-500 font-normal mt-0.5">day &middot; method</div>
                         ${isAdmin ? `
-                        <select data-pdf-omit onchange="setColumnPaymentMethod('${m.key}', this.value); this.selectedIndex=0;" class="mt-1.5 bg-slate-950 border border-slate-700 rounded px-1 py-0.5 text-[9px] text-slate-400 normal-case font-normal focus:outline-none focus:border-amber-500">
+                        <select data-pdf-omit onchange="setColumnPaymentMethod('${m.key}', this.value); this.selectedIndex=0;" class="mt-1.5 bg-surface-950 border border-surface-700 rounded px-1 py-0.5 text-[9px] text-surface-400 normal-case font-normal focus:outline-none focus:border-brand-500">
                             <option value="">Set all…</option>
                             <option value="Cash">All Cash</option>
                             <option value="Online">All Online</option>
                         </select>` : ''}
                     </th>`).join('') +
-                `<th class="px-5 py-3.5 text-center font-semibold text-amber-500">Payment Status</th>`;
+                `<th class="px-5 py-3.5 text-center font-semibold text-brand-500">Payment Status</th>`;
 
             if (studentsState.length === 0) {
                 tbody.innerHTML = `
-                    <tr><td colspan="${totalMonths + 3}" class="p-6 text-center text-xs text-slate-500">
+                    <tr><td colspan="${totalMonths + 3}" class="p-6 text-center text-xs text-surface-500">
                         <div class="italic">No students on the roster yet — the ledger fills itself from the Master Roster.</div>
-                        ${isAdmin ? `<button data-pdf-omit onclick="switchTab('students'); openAddStudentModal();" class="mt-3 bg-amber-500 hover:bg-amber-600 text-slate-950 font-semibold px-3 py-1.5 rounded-lg text-[11px] transition-all not-italic">Add a student</button>` : ''}
+                        ${isAdmin ? `<button data-pdf-omit onclick="switchTab('students'); openAddStudentModal();" class="mt-3 bg-brand-500 hover:bg-brand-600 text-surface-950 font-semibold px-3 py-1.5 rounded-lg text-[11px] transition-all not-italic">Add a student</button>` : ''}
                     </td></tr>`;
                 footRow.innerHTML = '';
                 lucide.createIcons();
@@ -1449,21 +1676,17 @@
             const lockedCls = !isAdmin ? 'cursor-not-allowed opacity-70' : '';
 
             tbody.innerHTML = studentsState.map(student => {
-                let badgeClass = "bg-purple-950/40 text-purple-400 border-purple-500/20";
-                if (student.section === "Soprano") badgeClass = "bg-rose-950/40 text-rose-400 border-rose-500/20";
-                if (student.section === "Alto") badgeClass = "bg-amber-950/40 text-amber-400 border-amber-500/20";
-                if (student.section === "Tenor") badgeClass = "bg-blue-950/40 text-blue-400 border-blue-500/20";
-                if (student.section === "Bass") badgeClass = "bg-emerald-950/40 text-emerald-400 border-emerald-500/20";
+                const badgeClass = groupBadgeClasses(student.section);
 
                 const monthCells = PAYMENT_MONTHS.map(m => {
                     const entry = getPaymentEntry(student.id, m.key);
                     const dayVal = entry ? entry.day : '';
                     const methodVal = entry ? entry.method : pendingMethodFor(student.id, m.key);
-                    const methodColor = methodVal === "Online" ? "text-blue-400" : "text-emerald-400";
+                    const methodColor = methodVal === "Online" ? "text-secondary-400" : "text-emerald-400";
 
                     const caption = entry
                         ? `<div class="text-[9px] font-mono mt-1 ${methodColor}">${formatPaymentDate(entry.day, m)} &middot; ${entry.method}</div>`
-                        : `<div class="text-[9px] font-mono mt-1 text-slate-600">Unpaid</div>`;
+                        : `<div class="text-[9px] font-mono mt-1 text-surface-600">Unpaid</div>`;
 
                     return `
                         <td class="px-3 py-3 text-center align-top">
@@ -1472,10 +1695,10 @@
                                     value="${dayVal}" placeholder="—" ${disabledAttr}
                                     onchange="updatePaymentDay('${student.id}', '${m.key}', this.value)"
                                     title="Day of ${m.key} ${PAYMENT_YEAR}"
-                                    class="w-12 bg-slate-900 border ${entry ? 'border-emerald-600/50' : 'border-slate-700'} rounded-lg px-1.5 py-1 text-xs text-center font-mono text-slate-100 focus:outline-none focus:border-amber-500 ${lockedCls}">
+                                    class="w-12 bg-surface-900 border ${entry ? 'border-emerald-600/50' : 'border-surface-700'} rounded-lg px-1.5 py-1 text-xs text-center font-mono text-surface-100 focus:outline-none focus:border-brand-500 ${lockedCls}">
                                 <select ${disabledAttr}
                                     onchange="updatePaymentMethod('${student.id}', '${m.key}', this.value)"
-                                    class="bg-slate-900 border border-slate-700 rounded-lg px-1 py-1 text-[10px] ${methodColor} focus:outline-none focus:border-amber-500 ${lockedCls}">
+                                    class="bg-surface-900 border border-surface-700 rounded-lg px-1 py-1 text-[10px] ${methodColor} focus:outline-none focus:border-brand-500 ${lockedCls}">
                                     <option value="Cash" ${methodVal === 'Cash' ? 'selected' : ''}>Cash</option>
                                     <option value="Online" ${methodVal === 'Online' ? 'selected' : ''}>Online</option>
                                 </select>
@@ -1489,11 +1712,11 @@
                     ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
                     : paidCount === 0
                         ? "bg-rose-500/10 text-rose-400 border-rose-500/30"
-                        : "bg-amber-500/10 text-amber-400 border-amber-500/30";
+                        : "bg-brand-500/10 text-brand-400 border-brand-500/30";
 
                 return `
-                    <tr class="hover:bg-slate-700/20 transition-colors">
-                        <td class="px-5 py-3 font-medium text-slate-200 whitespace-nowrap">${student.name || "Unknown"}</td>
+                    <tr class="hover:bg-surface-700/20 transition-colors">
+                        <td class="px-5 py-3 font-medium text-surface-200 whitespace-nowrap">${student.name || "Unknown"}</td>
                         <td class="px-4 py-3"><span class="${badgeClass} border text-[10px] px-2 py-0.5 rounded-full font-medium">${student.section || 'N/A'}</span></td>
                         ${monthCells}
                         <td class="px-5 py-3 text-center">
@@ -1513,16 +1736,16 @@
                 const paid = cash + online;
                 return `
                     <td class="px-3 py-3 text-center">
-                        <div class="font-mono ${paid === studentsState.length ? 'text-emerald-400' : paid === 0 ? 'text-rose-400' : 'text-amber-400'}">${paid}/${studentsState.length}</div>
-                        <div class="text-[9px] font-normal text-slate-500 mt-0.5">${cash} cash &middot; ${online} online</div>
+                        <div class="font-mono ${paid === studentsState.length ? 'text-emerald-400' : paid === 0 ? 'text-rose-400' : 'text-brand-400'}">${paid}/${studentsState.length}</div>
+                        <div class="text-[9px] font-normal text-surface-500 mt-0.5">${cash} cash &middot; ${online} online</div>
                     </td>`;
             }).join('');
 
             const fullyPaid = studentsState.filter(s => countPaidMonths(s.id) === totalMonths).length;
             footRow.innerHTML =
-                `<td colspan="2" class="px-5 py-3 text-slate-200">Collection Summary</td>` +
+                `<td colspan="2" class="px-5 py-3 text-surface-200">Collection Summary</td>` +
                 monthTotals +
-                `<td class="px-5 py-3 text-center text-blue-400 font-mono">${fullyPaid}/${studentsState.length} fully paid</td>`;
+                `<td class="px-5 py-3 text-center text-secondary-400 font-mono">${fullyPaid}/${studentsState.length} fully paid</td>`;
 
             lucide.createIcons();
         }
@@ -1559,15 +1782,15 @@
                     const possible = stats.activeSingers * totalSessions;
                     const progress = possible === 0 ? 0 : Math.round((stats.checksEarned / possible) * 1000) / 10;
                     return `
-                        <tr class="hover:bg-slate-700/20 transition-colors">
-                            <td class="px-5 py-3 font-semibold text-slate-300">${sec}</td>
-                            <td class="px-5 py-3 text-center text-slate-400">${stats.activeSingers}</td>
-                            <td class="px-5 py-3 text-center text-slate-400">${stats.checksEarned}</td>
-                            <td class="px-5 py-3 text-right font-bold ${progress >= 90 ? 'text-emerald-500' : progress >= 60 ? 'text-amber-500' : 'text-rose-500'}">${progress}%</td>
+                        <tr class="hover:bg-surface-700/20 transition-colors">
+                            <td class="px-5 py-3 font-semibold text-surface-300">${sec}</td>
+                            <td class="px-5 py-3 text-center text-surface-400">${stats.activeSingers}</td>
+                            <td class="px-5 py-3 text-center text-surface-400">${stats.checksEarned}</td>
+                            <td class="px-5 py-3 text-right font-bold ${progress >= 90 ? 'text-emerald-500' : progress >= 60 ? 'text-brand-500' : 'text-rose-500'}">${progress}%</td>
                         </tr>
                     `;
                 }).join('');
-                tbody.innerHTML = rowsHTML || `<tr><td colspan="4" class="text-center py-4 text-xs text-slate-500">No data available</td></tr>`;
+                tbody.innerHTML = rowsHTML || `<tr><td colspan="4" class="text-center py-4 text-xs text-surface-500">No data available</td></tr>`;
             }
 
             document.getElementById('analytics-total-singers').innerText = totalStudents;
@@ -1580,19 +1803,19 @@
 
             if (topDiv && bottomDiv) {
                 if (sortedStudents.length === 0) {
-                    topDiv.innerHTML = `<p class="text-xs text-slate-500">No data</p>`;
-                    bottomDiv.innerHTML = `<p class="text-xs text-slate-500">No data</p>`;
+                    topDiv.innerHTML = `<p class="text-xs text-surface-500">No data</p>`;
+                    bottomDiv.innerHTML = `<p class="text-xs text-surface-500">No data</p>`;
                 } else {
                     topDiv.innerHTML = sortedStudents.slice(0, 4).map(s => `
-                        <div class="flex justify-between items-center bg-slate-900/40 px-3 py-2 rounded border border-slate-700/50">
-                            <span class="text-xs text-slate-300 truncate font-medium">${s.name || "Unknown"}</span>
+                        <div class="flex justify-between items-center bg-surface-900/40 px-3 py-2 rounded border border-surface-700/50">
+                            <span class="text-xs text-surface-300 truncate font-medium">${s.name || "Unknown"}</span>
                             <span class="text-[10px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded font-bold">${s.count} / ${totalSessions}</span>
                         </div>
                     `).join('');
 
                     bottomDiv.innerHTML = sortedStudents.slice(-4).reverse().map(s => `
-                        <div class="flex justify-between items-center bg-slate-900/40 px-3 py-2 rounded border border-slate-700/50">
-                            <span class="text-xs text-slate-300 truncate font-medium">${s.name || "Unknown"}</span>
+                        <div class="flex justify-between items-center bg-surface-900/40 px-3 py-2 rounded border border-surface-700/50">
+                            <span class="text-xs text-surface-300 truncate font-medium">${s.name || "Unknown"}</span>
                             <span class="text-[10px] bg-rose-500/20 text-rose-400 px-2 py-0.5 rounded font-bold">${s.count} / ${totalSessions}</span>
                         </div>
                     `).join('');
@@ -1602,15 +1825,7 @@
 
         // --- REPORT CARD PIPELINE ---
         // Grade descriptor bands applied to the aggregated 10-point overall score.
-        const REPORT_CARD_BANDS = [
-            { min: 9.0, max: 10.0, label: "Higher Distinction", range: "9.0 – 10.0", classes: "text-emerald-400 bg-emerald-500/10 border-emerald-500/30" },
-            { min: 8.0, max: 8.9, label: "Distinction",        range: "8.0 – 8.9",  classes: "text-teal-300 bg-teal-500/10 border-teal-500/30" },
-            { min: 7.0, max: 7.9, label: "Merit",              range: "7.0 – 7.9",  classes: "text-blue-400 bg-blue-500/10 border-blue-500/30" },
-            { min: 6.0, max: 6.9, label: "Credit",             range: "6.0 – 6.9",  classes: "text-indigo-400 bg-indigo-500/10 border-indigo-500/30" },
-            { min: 5.0, max: 5.9, label: "Pass",               range: "5.0 – 5.9",  classes: "text-amber-400 bg-amber-500/10 border-amber-500/30" },
-            { min: 4.0, max: 4.9, label: "Marginal Pass",      range: "4.0 – 4.9",  classes: "text-orange-400 bg-orange-500/10 border-orange-500/30" },
-            { min: 0.0, max: 3.9, label: "Needs Improvement",  range: "0.0 – 3.9",  classes: "text-rose-400 bg-rose-500/10 border-rose-500/30" }
-        ];
+        const REPORT_CARD_BANDS = CFG.vocabulary.reportCard.bands;
 
         function getReportCardBand(score) {
             for (const band of REPORT_CARD_BANDS) {
@@ -1672,7 +1887,7 @@
             }
 
             if (studentsState.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-xs text-slate-500 italic">No students available to score.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-xs text-surface-500 italic">No students available to score.</td></tr>`;
                 lucide.createIcons();
                 return;
             }
@@ -1696,32 +1911,28 @@
                 const band = getReportCardBand(overall);
 
                 const grpDisplay = grp === null
-                    ? `<span class="text-slate-500 italic text-[10px]">No section log</span>`
+                    ? `<span class="text-surface-500 italic text-[10px]">No section log</span>`
                     : `<span class="font-mono font-bold text-emerald-400">${grp.toFixed(1)}</span>`;
 
-                let badgeClass = "bg-purple-950/40 text-purple-400 border-purple-500/20";
-                if (student.section === "Soprano") badgeClass = "bg-rose-950/40 text-rose-400 border-rose-500/20";
-                if (student.section === "Alto") badgeClass = "bg-amber-950/40 text-amber-400 border-amber-500/20";
-                if (student.section === "Tenor") badgeClass = "bg-blue-950/40 text-blue-400 border-blue-500/20";
-                if (student.section === "Bass") badgeClass = "bg-emerald-950/40 text-emerald-400 border-emerald-500/20";
+                const badgeClass = groupBadgeClasses(student.section);
 
                 return `
-                    <tr class="hover:bg-slate-700/20 transition-colors">
-                        <td class="px-5 py-3.5 font-medium text-slate-200 whitespace-nowrap">${student.name || "Unknown"}</td>
+                    <tr class="hover:bg-surface-700/20 transition-colors">
+                        <td class="px-5 py-3.5 font-medium text-surface-200 whitespace-nowrap">${student.name || "Unknown"}</td>
                         <td class="px-4 py-3.5"><span class="${badgeClass} border text-[10px] px-2 py-0.5 rounded-full font-medium">${student.section || 'N/A'}</span></td>
-                        <td class="px-4 py-3.5 text-center font-mono font-bold text-blue-400">${att.toFixed(1)}</td>
+                        <td class="px-4 py-3.5 text-center font-mono font-bold text-secondary-400">${att.toFixed(1)}</td>
                         <td class="px-4 py-3.5 text-center">${grpDisplay}</td>
                         <td class="px-4 py-3.5 text-center">
                             <input type="number" min="0" max="10" step="0.1" value="${t1 === null ? '' : t1.toFixed(1)}" placeholder="—" ${disabledAttr}
                                 onchange="updateSoloMark('${student.id}', 'soloTest01', this.value)"
-                                class="w-16 bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-center font-mono text-purple-300 focus:outline-none focus:border-purple-500 ${!isAdmin ? 'cursor-not-allowed opacity-70' : ''}">
+                                class="w-16 bg-surface-900 border border-surface-700 rounded-lg px-2 py-1 text-xs text-center font-mono text-purple-300 focus:outline-none focus:border-purple-500 ${!isAdmin ? 'cursor-not-allowed opacity-70' : ''}">
                         </td>
                         <td class="px-4 py-3.5 text-center">
                             <input type="number" min="0" max="10" step="0.1" value="${t2 === null ? '' : t2.toFixed(1)}" placeholder="—" ${disabledAttr}
                                 onchange="updateSoloMark('${student.id}', 'soloTest02', this.value)"
-                                class="w-16 bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-center font-mono text-purple-300 focus:outline-none focus:border-purple-500 ${!isAdmin ? 'cursor-not-allowed opacity-70' : ''}">
+                                class="w-16 bg-surface-900 border border-surface-700 rounded-lg px-2 py-1 text-xs text-center font-mono text-purple-300 focus:outline-none focus:border-purple-500 ${!isAdmin ? 'cursor-not-allowed opacity-70' : ''}">
                         </td>
-                        <td class="px-4 py-3.5 text-center font-mono font-extrabold text-amber-500 text-base">${overall.toFixed(1)}</td>
+                        <td class="px-4 py-3.5 text-center font-mono font-extrabold text-brand-500 text-base">${overall.toFixed(1)}</td>
                         <td class="px-5 py-3.5 text-center">
                             <span class="inline-block border text-[10px] font-semibold px-2.5 py-1 rounded-full ${band.classes}">${band.label}</span>
                         </td>
@@ -1770,7 +1981,7 @@
                     let maxCounter = 0;
                     studentsState.forEach(s => {
                         if (s.id) {
-                            const match = s.id.match(/SJ2026013108-(\d+)/);
+                            const match = s.id.match(MEMBER_ID_PATTERN);
                             if (match && parseInt(match[1], 10) > maxCounter) maxCounter = parseInt(match[1], 10);
                         }
                     });
@@ -1782,7 +1993,7 @@
                                 if (row[0].toLowerCase().includes('studentid')) return; 
                                 name = row[1] || 'Unknown'; grade = row[2] || 'N/A'; section = row[4] || 'N/A';
                             }
-                            const formattedId = "SJ2026013108-" + String(nextCounter).padStart(2, '0');
+                            const formattedId = CFG.backend.memberIdPrefix + "-" + String(nextCounter).padStart(2, '0');
                             nextCounter++;
                             studentsState.push({ id: formattedId, name: name, grade: grade, section: section, attendance: new Array(activeLessonDates.length).fill(false), cumulativeChecks: 0 });
                             backendRows.push([formattedId, name, grade, 'Active', section]);
@@ -1844,7 +2055,8 @@
 
         async function fetchDashboardData() {
             try {
-                const chosenMonth = document.getElementById('config-month').value || "July 2026";
+                const chosenMonth = document.getElementById('config-month').value
+                    || `${CFG.calendar.months[0].key} ${CFG.calendar.year}`;
                 const response = await fetch(MACRO_ENDPOINT_URL + "?action=getDashboard&month=" + encodeURIComponent(chosenMonth));
                 if (response.ok) {
                     const jsonPayload = await response.json();
@@ -1927,11 +2139,11 @@
             let maxCounter = 0;
             studentsState.forEach(s => {
                 if (s.id) {
-                    const match = s.id.match(/SJ2026013108-(\d+)/);
+                    const match = s.id.match(MEMBER_ID_PATTERN);
                     if (match && parseInt(match[1], 10) > maxCounter) maxCounter = parseInt(match[1], 10);
                 }
             });
-            const formattedId = "SJ2026013108-" + String(maxCounter + 1).padStart(2, '0');
+            const formattedId = CFG.backend.memberIdPrefix + "-" + String(maxCounter + 1).padStart(2, '0');
             studentsState.push({ id: formattedId, name: name, grade: grade, section: section, attendance: new Array(activeLessonDates.length).fill(false), cumulativeChecks: 0 });
             renderAllData();
             closeAddStudentModal();
@@ -1941,17 +2153,13 @@
         // --- BULK IMPORT MODAL ---
         let currentImportContext = "Students";
 
-        const BULK_IMPORT_FORMATS = {
-            Students: "Name, Grade, Section\nAisyah Binti Karim, Intermediate, Soprano\nDaniel Lim, CC1, Tenor",
-            Attendance: "Attendance is synced from the register grid.\nPress Process & Import to push the current month's dates to the sheet.",
-            Payments: "Name, Month, Day, Method\nAisyah Binti Karim, June, 6, Cash\nDaniel Lim, July, 12, Online"
-        };
+        const BULK_IMPORT_FORMATS = CFG.seed.bulkImportFormats;
 
         function openBulkImportModal(context) {
             if (!isAdmin) return;
             currentImportContext = context;
             document.getElementById('bulk-modal-title').innerHTML =
-                `<i data-lucide="upload-cloud" class="w-5 h-5 text-blue-500"></i> Bulk Import ${context}`;
+                `<i data-lucide="upload-cloud" class="w-5 h-5 text-secondary-500"></i> Bulk Import ${context}`;
             document.getElementById('bulk-modal-instructions').innerText = BULK_IMPORT_FORMATS[context] || "";
             const ta = document.getElementById('bulk-import-textarea');
             ta.value = "";
@@ -1986,15 +2194,15 @@
         }
 
         // --- PROFESSIONAL PDF REPORT EXPORT ---
-        const PDF_REPORT_STYLES = `
+        const PDF_REPORT_STYLES = ((accent, ink) => `
             #pdf-render-root { width: 900px; background: #ffffff; color: #0f172a;
                 font-family: 'Inter', Arial, Helvetica, sans-serif; padding: 4px 2px; }
             #pdf-render-root * { box-sizing: border-box; }
             #pdf-render-root .pdf-letterhead { display: flex; justify-content: space-between;
-                align-items: flex-start; border-bottom: 3px solid #b45309; padding-bottom: 14px; margin-bottom: 20px; }
+                align-items: flex-start; border-bottom: 3px solid ${accent}; padding-bottom: 14px; margin-bottom: 20px; }
             #pdf-render-root .pdf-brand { display: flex; gap: 13px; align-items: center; }
-            #pdf-render-root .pdf-mark { width: 46px; height: 46px; border-radius: 50%; border: 2px solid #b45309;
-                display: flex; align-items: center; justify-content: center; font-weight: 800; color: #b45309;
+            #pdf-render-root .pdf-mark { width: 46px; height: 46px; border-radius: 50%; border: 2px solid ${accent};
+                display: flex; align-items: center; justify-content: center; font-weight: 800; color: ${accent};
                 font-size: 15px; letter-spacing: 0.5px; flex-shrink: 0; }
             #pdf-render-root .pdf-org { font-size: 17px; font-weight: 800; margin: 0; color: #0f172a; letter-spacing: 0.2px; }
             #pdf-render-root .pdf-orgsub { font-size: 9px; color: #64748b; margin: 3px 0 0;
@@ -2003,7 +2211,7 @@
             #pdf-render-root .pdf-meta b { color: #0f172a; }
             #pdf-render-root .pdf-titleblock { margin-bottom: 18px; }
             #pdf-render-root .pdf-eyebrow { font-size: 8.5px; text-transform: uppercase; letter-spacing: 2.2px;
-                color: #b45309; font-weight: 700; margin: 0 0 5px; }
+                color: ${accent}; font-weight: 700; margin: 0 0 5px; }
             #pdf-render-root .pdf-title { font-size: 23px; font-weight: 800; margin: 0; color: #0f172a; letter-spacing: -0.3px; }
             #pdf-render-root .pdf-sub { font-size: 10px; color: #64748b; margin: 6px 0 0; }
             #pdf-render-root .pdf-body { font-size: 10px; color: #1e293b; line-height: 1.55; }
@@ -2026,7 +2234,7 @@
             #pdf-render-root .pdf-footer { margin-top: 22px; border-top: 1px solid #e2e8f0; padding-top: 9px;
                 font-size: 7.5px; color: #94a3b8; display: flex; justify-content: space-between;
                 text-transform: uppercase; letter-spacing: 0.7px; }
-        `;
+        `)(CFG.pdf.accentHex, CFG.pdf.inkHex);
 
         function pdfEscape(str) {
             return (str || "").toString()
@@ -2101,7 +2309,7 @@
             const now = new Date();
             const issued = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
             const stamp = now.toISOString().split('T')[0];
-            const ref = `SJ/${now.getFullYear()}/${sectionId.replace('view-', '').toUpperCase()}/${String(now.getMonth() + 1).padStart(2, '0')}`;
+            const ref = `${CFG.pdf.refPrefix}/${now.getFullYear()}/${sectionId.replace('view-', '').toUpperCase()}/${String(now.getMonth() + 1).padStart(2, '0')}`;
             const period = (document.getElementById('config-month') || {}).value || `${now.getFullYear()}`;
             const preparedBy = adminUserEmail || "Guest (View-Only Access)";
 
@@ -2112,10 +2320,10 @@
                 <style>${PDF_REPORT_STYLES}</style>
                 <div class="pdf-letterhead">
                     <div class="pdf-brand">
-                        <div class="pdf-mark">SJ</div>
+                        <div class="pdf-mark">${pdfEscape(CFG.pdf.monogram)}</div>
                         <div>
-                            <p class="pdf-org">Swara Jauhari MOF Sabah</p>
-                            <p class="pdf-orgsub">Choral Excellence Programme &middot; Oongisvoce Academy of Music</p>
+                            <p class="pdf-org">${pdfEscape(CFG.pdf.orgName)}</p>
+                            <p class="pdf-orgsub">${pdfEscape(CFG.pdf.orgTagline)}</p>
                         </div>
                     </div>
                     <div class="pdf-meta">
@@ -2125,13 +2333,13 @@
                     </div>
                 </div>
                 <div class="pdf-titleblock">
-                    <p class="pdf-eyebrow">Official Management Report</p>
+                    <p class="pdf-eyebrow">${pdfEscape(CFG.pdf.eyebrow)}</p>
                     <h1 class="pdf-title">${pdfEscape(title)}</h1>
                     <p class="pdf-sub">Prepared by ${pdfEscape(preparedBy)} &middot; Generated ${pdfEscape(issued)}</p>
                 </div>
                 <div class="pdf-body">${bodyHTML}</div>
                 <div class="pdf-footer">
-                    <span>Swara Jauhari MOF Sabah &mdash; Confidential</span>
+                    <span>${pdfEscape(CFG.pdf.confidentialNote)}</span>
                     <span>${pdfEscape(title)} &middot; ${pdfEscape(issued)}</span>
                 </div>`;
             document.body.appendChild(wrapper);
@@ -2139,7 +2347,7 @@
             const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
             const options = {
                 margin: [11, 10, 13, 10],
-                filename: `Swara-Jauhari-${slug}-${stamp}.pdf`,
+                filename: `${CFG.pdf.filePrefix}-${slug}-${stamp}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', logging: false },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: pdfNeedsLandscape(sectionId) ? 'landscape' : 'portrait' },
@@ -2155,6 +2363,12 @@
                 wrapper.remove();
             }
         }
+
+        // Paint every configured string/colour into the page on first load.
+        document.addEventListener('DOMContentLoaded', () => {
+            applyBranding();
+            lucide.createIcons();
+        });
 
         function executePostPayload(data) {
             if (!isAdmin) return;
