@@ -1304,7 +1304,10 @@ const APP_CONFIG = {
         }
 
         function toggleAttendanceState(studentId, dateIdx) {
-            if (!isAdmin) return;
+            if (!isAdmin) {
+                alert("Please log in with an authorized admin email to make changes.");
+                return;
+            }
             
             const student = studentsState.find(s => s.id === studentId);
             if (!student) return;
@@ -1880,7 +1883,7 @@ const APP_CONFIG = {
             const rawText = document.getElementById('bulk-import-textarea').value.trim();
             if(!rawText) return;
             const btn = document.getElementById('bulk-submit-btn');
-            btn.innerHTML = `<i class="w-4 h-4 animate-spin"></i> Processing...`;
+            btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Processing...`;
             btn.disabled = true;
 
             try {
@@ -1952,7 +1955,7 @@ const APP_CONFIG = {
                 alert(`Successfully synchronized data parameters for ${currentImportContext}.`);
             } catch (err) {
                 console.error(err);
-                alert("Error parsing input payload structure maps.");
+                alert("Error parsing input payload: " + (err && err.message));
             } finally {
                 closeBulkImportModal();
                 btn.innerHTML = `<i data-lucide="check-circle-2" class="w-4 h-4"></i> Process & Import`;
@@ -1966,19 +1969,34 @@ const APP_CONFIG = {
                 const chosenMonth = document.getElementById('config-month').value
                     || `${CFG.calendar.months[0].key} ${CFG.calendar.year}`;
                 const response = await fetch(MACRO_ENDPOINT_URL + "?action=getDashboard&month=" + encodeURIComponent(chosenMonth));
-                if (response.ok) {
-                    const jsonPayload = await response.json();
-                    activeLessonDates = (jsonPayload && jsonPayload.dates && jsonPayload.dates.length > 0) ? jsonPayload.dates : activeLessonDates;
-                    studentsState = (jsonPayload && jsonPayload.students) ? jsonPayload.students : [];
-                    paymentsState = (jsonPayload && jsonPayload.payments) ? jsonPayload.payments : [];
+                const text = await response.text();
+                
+                let jsonPayload;
+                try {
+                    jsonPayload = JSON.parse(text);
+                } catch(e) {
+                    console.error("Dashboard Non-JSON response:", text);
+                    alert("Dashboard Load Error (HTML returned instead of JSON). Check Apps Script deployment settings:\n\n" + text.slice(0, 150));
+                    return;
+                }
+
+                if (jsonPayload && jsonPayload.error) {
+                    alert("Database Error: " + jsonPayload.error);
+                    return;
+                }
+
+                if (jsonPayload) {
+                    activeLessonDates = (jsonPayload.dates && jsonPayload.dates.length > 0) ? jsonPayload.dates : activeLessonDates;
+                    studentsState = jsonPayload.students || [];
+                    paymentsState = jsonPayload.payments || [];
                     globalTotalSessions = jsonPayload.globalTotalSessions || activeLessonDates.length;
                     globalCompletedSessions = jsonPayload.globalCompletedSessions || 0;
-                    if (jsonPayload && jsonPayload.analyticsPayload) {
+                    if (jsonPayload.analyticsPayload) {
                         analyticsPayload = jsonPayload.analyticsPayload;
                     }
 
                     paymentsMatrix = {};
-                    if (jsonPayload && Array.isArray(jsonPayload.paymentsMatrix)) {
+                    if (Array.isArray(jsonPayload.paymentsMatrix)) {
                         jsonPayload.paymentsMatrix.forEach(rec => {
                             if (!rec || !rec.id || !rec.month) return;
                             const month = PAYMENT_MONTHS.find(m => m.key.toLowerCase() === rec.month.toString().trim().toLowerCase());
@@ -1989,7 +2007,7 @@ const APP_CONFIG = {
                     }
                     seedPaymentsMatrixFromLedger();
 
-                    if (jsonPayload && Array.isArray(jsonPayload.reportCardMarks)) {
+                    if (Array.isArray(jsonPayload.reportCardMarks)) {
                         const markMap = {};
                         jsonPayload.reportCardMarks.forEach(m => { if (m && m.id) markMap[m.id] = m; });
                         studentsState.forEach(student => {
@@ -2263,7 +2281,10 @@ const APP_CONFIG = {
         });
 
         async function executePostPayload(data) {
-            if (!isAdmin) return;
+            if (!isAdmin) {
+                alert("Action cancelled: You are in View-Only mode.");
+                return;
+            }
             try {
                 data.userEmail = adminUserEmail;
                 const response = await fetch(MACRO_ENDPOINT_URL, {
@@ -2271,15 +2292,24 @@ const APP_CONFIG = {
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     body: JSON.stringify(data)
                 });
-                if (response.ok) {
-                    const res = await response.json();
-                    if (res && res.result === 'error') {
-                        console.error('Backend write error:', res.error);
-                        alert('Sync Error: ' + res.error);
-                    }
+                
+                const text = await response.text();
+                let res;
+                try {
+                    res = JSON.parse(text);
+                } catch(e) {
+                    console.error("Non-JSON response:", text);
+                    alert("Server Connection Error (HTML returned instead of JSON). Make sure Apps Script deployment access is set to 'Anyone':\n\n" + text.slice(0, 150));
+                    return;
+                }
+
+                if (res && res.result === 'error') {
+                    console.error('Backend write error:', res.error);
+                    alert('Backend Write Error: ' + res.error);
                 }
             } catch (err) {
-                console.warn('Network sync failed:', err && err.message);
+                console.error('Network sync failed:', err);
+                alert('Network Connection Error: ' + (err && err.message));
             }
         }
     </script>
