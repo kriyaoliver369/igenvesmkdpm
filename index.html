@@ -5,13 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>iGenVE SMKDPM — Attendance Management System</title>
 
-    <!-- ==================================================================== -->
-    <!--  APP_CONFIG — THE ONLY BLOCK YOU EDIT TO CLONE THIS APP              -->
-    <!--                                                                      -->
-    <!--  Everything below this block is shared engine code. To spin up a     -->
-    <!--  new group app, change the values here and nothing else. See         -->
-    <!--  TEMPLATE.md for a field-by-field walkthrough.                       -->
-    <!-- ==================================================================== -->
     <script>
 const APP_CONFIG = {
 
@@ -31,14 +24,11 @@ const APP_CONFIG = {
 
     /* ---------------------------------------------------------------- 2 */
     pdf: {
-        // The monogram sits in a 46px circle — 1-3 characters only.
-        // "iGenVE" would overflow it, so the short form is used here and
-        // the full name carries in orgName below.
         monogram:         "iG",
-        orgName:          "iGenVE SMKDPM",                      // TODO: confirm full legal/org name
-        orgTagline:       "Vocal Ensemble Programme · Oongisvoce Academy of Music",  // TODO: confirm
+        orgName:          "iGenVE SMKDPM",
+        orgTagline:       "Vocal Ensemble Programme · Oongisvoce Academy of Music",
         eyebrow:          "Official Management Report",
-        refPrefix:        "IGENVE",                             // becomes IGENVE/2026/ATTENDANCE/07
+        refPrefix:        "IGENVE",
         filePrefix:       "iGenVESMKDPM",
         confidentialNote: "iGenVE SMKDPM — Confidential",
         accentHex:        "#b88600",
@@ -46,7 +36,6 @@ const APP_CONFIG = {
     },
 
     /* ---------------------------------------------------------------- 3 */
-    /*  Midnight blue surfaces · gold brand · dark yellow secondary       */
     theme: {
         fontFamily:     "Inter",
         fontImportUrl:  "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap",
@@ -54,14 +43,14 @@ const APP_CONFIG = {
         scrollbarTrack: "#172038",
         scrollbarThumb: "#e0a800",
         palette: {
-            brand: {     // gold
+            brand: {
                 400: "#f5c542", 500: "#e0a800", 600: "#b88600", 950: "#3d2a00"
             },
-            secondary: { // dark yellow
+            secondary: {
                 300: "#e8d27a", 400: "#d9bc4f", 500: "#c2a12a",
                 600: "#9c7f1c", 700: "#7a6214", 950: "#2b2107"
             },
-            surface: {   // midnight blue
+            surface: {
                 100: "#e9eef8", 200: "#ccd8ee", 300: "#a6b6d8", 400: "#7286b2",
                 500: "#4b5d8a", 600: "#34446b", 700: "#24304e", 800: "#172038",
                 900: "#0d1526", 950: "#070c17"
@@ -70,7 +59,6 @@ const APP_CONFIG = {
     },
 
     /* ---------------------------------------------------------------- 4 */
-    /*  Vocabulary kept as-is — the checklist said "keep" for every row.   */
     vocabulary: {
         memberSingular: "Student",
         memberPlural:   "Students",
@@ -116,7 +104,7 @@ const APP_CONFIG = {
         ],
         criterionLevels: [
             { value: 1, label: "Needs Work",  classes: "text-rose-400 bg-rose-500/10 border-rose-500/20" },
-            { value: 2, label: "Capable",    classes: "text-brand-400 bg-brand-500/10 border-brand-500/20" },
+            { value: 2, label: "Capable",     classes: "text-brand-400 bg-brand-500/10 border-brand-500/20" },
             { value: 3, label: "Proficient", classes: "text-secondary-400 bg-secondary-500/10 border-secondary-500/20" },
             { value: 4, label: "Impressive", classes: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20" }
         ],
@@ -150,7 +138,6 @@ const APP_CONFIG = {
             { key: "November",  short: "Nov", monthIndex: 10 },
             { key: "December",  short: "Dec", monthIndex: 11 }
         ],
-        // TODO: confirm the real first-term rehearsal dates.
         defaultSessionDates: ["2026-06-05", "2026-06-12", "2026-06-19", "2026-06-26"],
         events: [
             { name: "Penutupan Hari Kebangsaan", date: "2026-09-16" },
@@ -160,14 +147,11 @@ const APP_CONFIG = {
 
     /* ---------------------------------------------------------------- 6 */
     backend: {
-        // TODO — REQUIRED. Deploy a NEW Apps Script against a NEW Google
-        // Sheet and paste its /exec URL here. Reusing another app's URL
-        // would make this app read and write that app's data.
-        endpointUrl: "https://script.google.com/a/macros/oongisvocemusic.com/s/AKfycbxukPbz3YJF06RAEkpWCoulnR_IXNlJETEPfwOyu_Vwvo3_Uqw8eWs86m39BJbe7qKC_g/exec",
+        endpointUrl: "https://script.google.com/macros/s/AKfycbxukPbz3YJF06RAEkpWCoulnR_IXNlJETEPfwOyu_Vwvo3_Uqw8eWs86m39BJbe7qKC_g/exec",
         admins: [
             "kriyaoliver369@gmail.com"
         ],
-        memberIdPrefix: "IGENVE2026"   // TODO: confirm; set before the first import
+        memberIdPrefix: "IGENVE2026"
     },
 
     /* ---------------------------------------------------------------- 7 */
@@ -182,15 +166,12 @@ const APP_CONFIG = {
     }
 };
     </script>
-    <!-- ==================== END OF APP_CONFIG ============================= -->
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <script>
-        // Feed the configured palette and font into Tailwind before it paints.
-        // Guarded so a blocked/slow CDN can't take the rest of the theme down.
         if (typeof tailwind !== 'undefined') {
             tailwind.config = {
                 theme: {
@@ -200,11 +181,8 @@ const APP_CONFIG = {
                     }
                 }
             };
-        } else {
-            console.error('Tailwind CDN did not load — the page will render unstyled.');
         }
 
-        // Font import and the handful of raw-CSS colours Tailwind can't reach.
         document.write(
             '<style>' +
             "@import url('" + APP_CONFIG.theme.fontImportUrl + "');" +
@@ -276,15 +254,11 @@ const APP_CONFIG = {
                     </div>
                 </div>
 
-                <!-- Tab buttons are rendered from APP_CONFIG.vocabulary.tabs -->
                 <nav id="main-tabs" class="flex space-x-1 pb-3 overflow-x-auto" aria-label="Tabs"></nav>
             </div>
         </header>
 
         <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-8">
-            
-            <!-- GLOBAL HEADER WIDGET: TODAY'S DATE & COUNTDOWNS -->
-            <!-- Event cards are appended here from APP_CONFIG.calendar.events -->
             <div id="global-widget-row" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
                 <div class="bg-surface-800 border border-surface-700/80 rounded-xl p-4 flex items-center justify-between shadow-md">
                     <div>
@@ -296,7 +270,6 @@ const APP_CONFIG = {
                         <i data-lucide="calendar" class="w-5 h-5"></i>
                     </div>
                 </div>
-
             </div>
 
             <section id="view-attendance" class="tab-content space-y-6">
@@ -317,7 +290,6 @@ const APP_CONFIG = {
                         <div class="flex flex-wrap items-end gap-4">
                             <div>
                                 <label class="block text-[10px] font-bold text-surface-400 uppercase tracking-wider mb-1">Target Month</label>
-                                <!-- Options are rendered from APP_CONFIG.calendar -->
                                 <select id="config-month" onchange="fetchDashboardData()" class="bg-surface-900 border border-surface-700 rounded-lg px-2.5 py-1.5 text-xs text-surface-200 focus:outline-none focus:border-brand-500"></select>
                             </div>
                             <div id="date-pickers-container" class="flex flex-wrap gap-2"></div>
@@ -425,7 +397,6 @@ const APP_CONFIG = {
             </section>
 
             <section id="view-analytics" class="tab-content space-y-6 hidden">
-                
                 <div class="flex flex-wrap justify-between items-end border-b border-surface-700 pb-2 gap-4">
                     <h2 class="text-xl font-bold text-surface-100 uppercase tracking-widest flex items-center gap-2">
                         <i data-lucide="bar-chart-3" class="w-6 h-6 text-secondary-500"></i> <span data-brand="vocabulary.sectionTitles.analytics">Performance Dashboard</span>
@@ -459,7 +430,6 @@ const APP_CONFIG = {
                     </div>
                 </div>
 
-                <!-- OVERALL CHOIR SESSION PROGRESS SECTION -->
                 <div class="bg-surface-800 border border-surface-700 rounded-xl shadow-md overflow-hidden">
                     <div class="bg-surface-900/60 p-4 border-b border-surface-700 flex justify-between items-center">
                         <div>
@@ -487,7 +457,6 @@ const APP_CONFIG = {
                     </div>
                 </div>
 
-                <!-- SECTIONAL GROUP PROGRESS LEDGER -->
                 <div class="bg-surface-800 border border-surface-700 rounded-xl shadow-md overflow-hidden">
                     <div class="bg-surface-900/60 p-4 border-b border-surface-700">
                         <h3 class="text-xs font-bold text-surface-300 uppercase tracking-wider">Sectional Group Progress Ledger</h3>
@@ -562,7 +531,6 @@ const APP_CONFIG = {
                     </div>
                 </div>
 
-                <!-- Weighting legend -->
                 <div class="bg-surface-800 border border-surface-700 rounded-xl px-5 py-3 shadow-md">
                     <p class="text-[10px] text-surface-400 uppercase tracking-widest font-mono">
                         <span class="font-bold text-surface-300">Scoring Model:</span>
@@ -594,7 +562,6 @@ const APP_CONFIG = {
                     </div>
                 </div>
 
-                <!-- Scaling / grading legend -->
                 <div class="bg-surface-800 border border-surface-700 rounded-xl shadow-md overflow-hidden">
                     <div class="bg-surface-900/60 p-4 border-b border-surface-700">
                         <h3 class="text-xs font-bold text-surface-300 uppercase tracking-wider flex items-center gap-2">
@@ -654,12 +621,10 @@ const APP_CONFIG = {
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label data-brand="vocabulary.gradeLabel" class="block text-[11px] font-bold text-surface-400 uppercase mb-1">Vocal Grade</label>
-                        <!-- Options rendered from APP_CONFIG.vocabulary.gradeOptions -->
                         <select id="modal-grade" class="w-full bg-surface-900 border border-surface-700 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-brand-500"></select>
                     </div>
                     <div>
                         <label data-brand="vocabulary.groupSingular" class="block text-[11px] font-bold text-surface-400 uppercase mb-1">Section</label>
-                        <!-- Options rendered from APP_CONFIG.vocabulary.groups -->
                         <select id="modal-section" class="w-full bg-surface-900 border border-surface-700 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-brand-500"></select>
                     </div>
                 </div>
@@ -679,19 +644,16 @@ const APP_CONFIG = {
                 <button onclick="closeAddLogModal()" class="text-surface-400 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button>
             </div>
             <form id="add-log-form" onsubmit="handleAddLogSubmit(event)" class="space-y-4">
-                <input type="hidden" id="add-log-target-type"> <!-- 'song' or 'section' -->
-                <input type="hidden" id="add-log-target-key">  <!-- song index or section name -->
+                <input type="hidden" id="add-log-target-type">
+                <input type="hidden" id="add-log-target-key">
                 
                 <div>
                     <label class="block text-[11px] font-bold text-surface-400 uppercase mb-1">Session Date / Review Date</label>
                     <input id="add-log-date" type="text" required placeholder="e.g., 22 Jul 2026 or Rehearsal #5" class="w-full bg-surface-900 border border-surface-700 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-brand-500 text-surface-200">
                 </div>
 
-                <!-- Song Scores Section (Shown if type === 'song') -->
-                <!-- Criterion selects are rendered from APP_CONFIG.vocabulary.criteria -->
                 <div id="add-log-song-scores" class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 bg-surface-900/50 p-3 rounded-xl border border-surface-700/50 hidden"></div>
 
-                <!-- Section Score (Shown if type === 'section') -->
                 <div id="add-log-section-score" class="hidden">
                     <label data-brand="labels.groupScore" class="block text-[11px] font-bold text-surface-400 uppercase mb-1">Section Score (0 - 10 Marks)</label>
                     <input id="log-score-sec" type="number" min="0" max="10" value="6" class="w-24 bg-surface-900 border border-surface-700 rounded-lg px-3 py-1.5 text-xs font-bold text-brand-500 text-center">
@@ -713,14 +675,8 @@ const APP_CONFIG = {
     </div>
 
     <script>
-        /* =================================================================
-           ENGINE — shared by every cloned app. Nothing below is app-specific;
-           every branded value is read from APP_CONFIG in the <head>.
-           ================================================================= */
-
         const CFG = APP_CONFIG;
 
-        // Derived wording, so a single vocabulary change ripples everywhere.
         CFG.labels = {
             memberName:          CFG.vocabulary.memberSingular + " Name",
             memberGroup:         CFG.vocabulary.groupSingular,
@@ -764,8 +720,6 @@ const APP_CONFIG = {
             return path.split('.').reduce((acc, key) => (acc == null ? acc : acc[key]), CFG);
         }
 
-        // Push every configured string into the markup that carries data-brand.
-        // data-brand-keep-child preserves trailing markup (e.g. a "/10" caption).
         function applyBranding() {
             document.querySelectorAll('[data-brand]').forEach(el => {
                 const value = readConfigPath(el.getAttribute('data-brand'));
@@ -806,7 +760,6 @@ const APP_CONFIG = {
         const TAB_ACTIVE_CLASS = "tab-btn px-4 py-2 text-xs rounded-lg flex items-center gap-2 transition-all whitespace-nowrap bg-brand-500 text-surface-950 font-semibold shadow-md";
         const TAB_IDLE_CLASS   = "tab-btn px-4 py-2 text-xs font-medium text-surface-400 hover:text-surface-200 rounded-lg flex items-center gap-2 transition-all whitespace-nowrap";
 
-        // "2026-08-01" -> "1st August 2026"
         function formatEventDate(iso) {
             const d = new Date(iso + "T00:00:00");
             if (isNaN(d.getTime())) return iso;
@@ -868,7 +821,6 @@ const APP_CONFIG = {
                 </div>`).join('');
         }
 
-        /* ------------------------------------------------------- app state */
         let studentsState = [];
         let paymentsState = [];
         let isAdmin = false;
@@ -877,7 +829,6 @@ const APP_CONFIG = {
         let globalCompletedSessions = 0;
         let adminUserEmail = "";
 
-        // Which log date each group panel is currently showing.
         let selectedSectionDateIndex = {};
         GROUP_NAMES.forEach(g => { selectedSectionDateIndex[g] = 0; });
 
@@ -887,12 +838,10 @@ const APP_CONFIG = {
         const MACRO_ENDPOINT_URL = CFG.backend.endpointUrl;
         const AUTHORIZED_ADMINS = CFG.backend.admins;
 
-        // --- BACKWARD COMPATIBILITY NORMALIZE DATA ---
         function ensureAnalyticsLogsStructure() {
             if (!analyticsPayload) return;
             if (!analyticsPayload.songs) analyticsPayload.songs = [];
             
-            // Normalize songs
             analyticsPayload.songs.forEach(song => {
                 if (!song.logs || !Array.isArray(song.logs) || song.logs.length === 0) {
                     const fallbackComment = song.comment || "Initial baseline report created.";
@@ -906,7 +855,6 @@ const APP_CONFIG = {
                 }
             });
 
-            // Normalize groups
             if (!analyticsPayload.sections) analyticsPayload.sections = {};
             GROUP_NAMES.forEach(sec => {
                 if (!analyticsPayload.sections[sec]) {
@@ -920,7 +868,6 @@ const APP_CONFIG = {
             });
         }
 
-        // --- DYNAMIC CURRENT MONTH SETUP ---
         function setDefaultMonthToCurrent() {
             const now = new Date();
             const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -949,7 +896,7 @@ const APP_CONFIG = {
         function handleLogin(e) {
             e.preventDefault();
             const emailInput = document.getElementById('admin-email').value.trim().toLowerCase();
-            if (AUTHORIZED_ADMINS.map(email => email.toLowerCase()).includes(emailInput)) {
+            if (AUTHORIZED_ADMINS.map(email => email.toLowerCase().trim()).includes(emailInput)) {
                 isAdmin = true;
                 adminUserEmail = emailInput;
                 initializeSession(emailInput);
@@ -1024,20 +971,17 @@ const APP_CONFIG = {
             setInterval(update, 60000); 
         }
 
-        // --- NEW EXECUTIVE ANALYTICS RENDER PIPELINE ---
         function renderAnalyticsUI() {
             ensureAnalyticsLogsStructure();
             
-            // 1. RENDER SONGS (CHOIR SESSION PROGRESS)
             const songsContainer = document.getElementById('songs-container');
             songsContainer.innerHTML = analyticsPayload.songs.map((song, songIndex) => {
-                const latestLog = song.logs[0]; // Newest at index 0
+                const latestLog = song.logs[0];
                 const latestTotalPts = calculateSingleSongTotal(latestLog.scores);
                 const historyCount = song.logs.length - 1;
 
                 return `
                 <div class="p-5 bg-surface-900/50 border border-surface-700/60 rounded-xl space-y-4 shadow-sm">
-                    <!-- Song Header -->
                     <div class="flex flex-wrap justify-between items-center gap-3">
                         <input type="text" value="${song.title}" onchange="updateSongTitle(${songIndex}, this.value)" ${!isAdmin ? 'disabled' : ''} class="bg-transparent border-b border-surface-700 focus:border-brand-500 focus:outline-none text-base text-surface-100 font-bold py-0.5 transition-colors max-w-xs sm:max-w-md">
                         <div class="flex items-center gap-2">
@@ -1047,7 +991,6 @@ const APP_CONFIG = {
                         </div>
                     </div>
 
-                    <!-- Latest Report Display (Current Active) -->
                     <div class="bg-surface-950/80 border border-surface-800 rounded-xl p-4 space-y-3">
                         <div class="flex justify-between items-center border-b border-surface-800 pb-2">
                             <span class="text-[10px] font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
@@ -1061,7 +1004,6 @@ const APP_CONFIG = {
                         <p class="text-xs text-surface-200 italic leading-relaxed pt-1">${latestLog.comment || 'No notes logged.'}</p>
                     </div>
 
-                    <!-- Past History Accordion Dropdown -->
                     ${historyCount > 0 ? `
                         <div>
                             <button onclick="toggleSongHistoryAccordion(${songIndex})" class="text-xs text-secondary-400 hover:text-secondary-300 font-semibold flex items-center gap-1.5 transition-colors">
@@ -1088,7 +1030,6 @@ const APP_CONFIG = {
                 </div>`;
             }).join('');
 
-            // 2. RENDER VOICE SECTIONS (LEFT SIDEBAR FOR DATES + RIGHT CONTENT PANEL)
             const sectionContainer = document.getElementById('section-comments-container');
 
             sectionContainer.innerHTML = GROUP_NAMES.map(sec => {
@@ -1106,7 +1047,6 @@ const APP_CONFIG = {
 
                 return `
                 <div class="bg-surface-900/50 border border-surface-700/60 rounded-xl p-4 flex flex-col space-y-3">
-                    <!-- Section Header -->
                     <div class="flex justify-between items-center border-b border-surface-800 pb-2">
                         <h4 class="text-sm font-bold text-surface-100 flex items-center gap-2">
                             <span class="w-2.5 h-2.5 rounded-full ${groupDotClass(sec)}"></span>
@@ -1115,15 +1055,12 @@ const APP_CONFIG = {
                         ${isAdmin ? `<button onclick="openAddLogModal('section', '${sec}')" class="text-xs bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600 hover:text-white border border-emerald-500/30 px-2.5 py-1 rounded-lg font-semibold flex items-center gap-1"><i data-lucide="plus" class="w-3.5 h-3.5"></i> Add Log</button>` : ''}
                     </div>
 
-                    <!-- Split View: Left Date Sidebar + Right Comment Panel -->
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 flex-1 min-h-[160px]">
-                        <!-- Left Date Sidebar -->
                         <div class="space-y-1.5 border-r border-surface-800 pr-2 max-h-[180px] overflow-y-auto">
                             <p class="text-[9px] font-bold text-surface-500 uppercase tracking-wider mb-1">Select Review Date</p>
                             ${dateListHTML}
                         </div>
 
-                        <!-- Right Selected Comment View -->
                         <div class="sm:col-span-2 bg-surface-950/70 border border-surface-800 rounded-xl p-3 flex flex-col justify-between space-y-2">
                             <div>
                                 <div class="flex justify-between items-center mb-1">
@@ -1166,7 +1103,6 @@ const APP_CONFIG = {
             </div>`;
         }
 
-        // A fresh score set with every configured criterion at the lowest level.
         function blankScoreSet() {
             const lowest = CFG.vocabulary.criterionLevels[0].value;
             const out = {};
@@ -1224,7 +1160,6 @@ const APP_CONFIG = {
 
         function updateSongTitle(index, val) { analyticsPayload.songs[index].title = val; }
 
-        // --- ADD LOG ENTRY MODAL LOGIC ---
         function openAddLogModal(type, targetKey) {
             if(!isAdmin) return;
             document.getElementById('add-log-target-type').value = type;
@@ -1259,7 +1194,6 @@ const APP_CONFIG = {
             if (type === 'song') {
                 const song = analyticsPayload.songs[key];
                 if (!song.logs) song.logs = [];
-                // Unshift to place newest log at index 0 (top)
                 song.logs.unshift({
                     id: "log-" + Date.now(),
                     date: dateStr,
@@ -1275,14 +1209,13 @@ const APP_CONFIG = {
                     score: parseInt(document.getElementById('log-score-sec').value),
                     comment: commentStr
                 });
-                selectedSectionDateIndex[key] = 0; // Reset view to newly added log
+                selectedSectionDateIndex[key] = 0;
             }
 
             closeAddLogModal();
             renderAnalyticsUI();
         }
 
-        // Read the rendered criterion selects back into a score object.
         function readCriterionInputs() {
             const out = {};
             CFG.vocabulary.criteria.forEach(c => {
@@ -1298,19 +1231,16 @@ const APP_CONFIG = {
             const ogText = btn.innerHTML;
             btn.innerHTML = `<i class="w-4 h-4 animate-spin"></i> Committing Logs...`;
             
-            executePostPayload({
+            await executePostPayload({
                 action: "saveAnalytics",
                 analyticsPayload: analyticsPayload,
                 userEmail: adminUserEmail
             });
             
-            setTimeout(() => {
-                btn.innerHTML = ogText;
-                alert(CFG.seed.savedAnalyticsMessage);
-            }, 1000);
+            btn.innerHTML = ogText;
+            alert(CFG.seed.savedAnalyticsMessage);
         }
 
-        // --- DASHBOARD DATA & ATTENDANCE RENDERING ---
         function renderAllData() {
             renderAttendance();
             renderStudents();
@@ -1466,12 +1396,10 @@ const APP_CONFIG = {
             lucide.createIcons();
         }
 
-        // --- PAYMENT MATRIX (auto-populated from the student roster) ---
         const PAYMENT_YEAR = CFG.calendar.year;
         const PAYMENT_MONTHS = CFG.calendar.months;
         const DEFAULT_PAYMENT_METHOD = "Cash";
 
-        // { [studentId]: { June: { day: 6, method: "Cash" }, ... } }
         let paymentsMatrix = {};
 
         function daysInPaymentMonth(monthIndex) {
@@ -1493,12 +1421,10 @@ const APP_CONFIG = {
             return PAYMENT_MONTHS.filter(m => getPaymentEntry(studentId, m.key)).length;
         }
 
-        // Convert a stored day number into a readable "6 Jun 2026" label.
         function formatPaymentDate(day, month) {
             return `${day} ${month.short} ${PAYMENT_YEAR}`;
         }
 
-        // Seed the matrix from any legacy flat ledger rows ({name, amount, date}).
         function seedPaymentsMatrixFromLedger() {
             if (!Array.isArray(paymentsState) || paymentsState.length === 0) return;
             paymentsState.forEach(pay => {
@@ -1507,7 +1433,6 @@ const APP_CONFIG = {
                 if (!student) return;
                 const parsed = parseLegacyPaymentDate(pay.date);
                 if (!parsed) return;
-                // Never clobber an explicitly recorded matrix entry.
                 if (getPaymentEntry(student.id, parsed.month.key)) return;
                 setPaymentEntry(student.id, parsed.month.key, {
                     day: parsed.day,
@@ -1523,7 +1448,6 @@ const APP_CONFIG = {
             return DEFAULT_PAYMENT_METHOD;
         }
 
-        // Tolerant parser for legacy date strings: "2026-06-06", "6 Jun", "6-june", "6/6/2026".
         function parseLegacyPaymentDate(raw) {
             if (!raw) return null;
             const str = raw.toString().trim();
@@ -1579,7 +1503,6 @@ const APP_CONFIG = {
             if (!isAdmin) return;
             const existing = getPaymentEntry(studentId, monthKey);
             const clean = normalizePaymentMethod(method);
-            // Remember the preference even before a day is entered.
             if (!existing) {
                 if (!paymentsMatrix[studentId]) paymentsMatrix[studentId] = {};
                 paymentsMatrix[studentId]["_pending_" + monthKey] = clean;
@@ -1596,7 +1519,6 @@ const APP_CONFIG = {
             return (row && row["_pending_" + monthKey]) || DEFAULT_PAYMENT_METHOD;
         }
 
-        // Column-level convenience: set the method for every student already paid that month.
         function setColumnPaymentMethod(monthKey, method) {
             if (!isAdmin) return;
             const clean = normalizePaymentMethod(method);
@@ -1725,7 +1647,6 @@ const APP_CONFIG = {
                     </tr>`;
             }).join('');
 
-            // Footer: per-month collection tally split by method.
             const monthTotals = PAYMENT_MONTHS.map(m => {
                 let cash = 0, online = 0;
                 studentsState.forEach(s => {
@@ -1771,7 +1692,6 @@ const APP_CONFIG = {
             document.getElementById('kpi-diagnostic').innerText = `${overallPerformance}%`;
             document.getElementById('kpi-sessions').innerText = `${completedSessions} / ${totalSessions}`;
             
-            // Unpaid = students with no recorded payment in any billing month.
             const unpaidCount = studentsState.filter(s => countPaidMonths(s.id) === 0).length;
             document.getElementById('kpi-unpaid').innerText = unpaidCount;
 
@@ -1823,8 +1743,6 @@ const APP_CONFIG = {
             }
         }
 
-        // --- REPORT CARD PIPELINE ---
-        // Grade descriptor bands applied to the aggregated 10-point overall score.
         const REPORT_CARD_BANDS = CFG.vocabulary.reportCard.bands;
 
         function getReportCardBand(score) {
@@ -1836,7 +1754,6 @@ const APP_CONFIG = {
 
         function round1(n) { return Math.round(n * 10) / 10; }
 
-        // Attendance scaled to /10 from the student's current attendance record.
         function computeAttendanceScore(student) {
             const totalSessions = globalTotalSessions > 0 ? globalTotalSessions : activeLessonDates.length;
             if (!totalSessions) return 0;
@@ -1846,7 +1763,6 @@ const APP_CONFIG = {
             return round1(Math.min(attended / totalSessions, 1) * 10);
         }
 
-        // Group ensemble mark = latest recorded section score (0-10) from Analytics.
         function computeGroupScore(student) {
             const sec = student.section || "";
             const secObj = analyticsPayload && analyticsPayload.sections ? analyticsPayload.sections[sec] : null;
@@ -1876,7 +1792,6 @@ const APP_CONFIG = {
             const legend = document.getElementById('reportcard-legend');
             if (!tbody) return;
 
-            // Render legend bands
             if (legend) {
                 legend.innerHTML = REPORT_CARD_BANDS.map(b => `
                     <div class="flex items-center justify-between gap-3 border rounded-lg px-3 py-2 ${b.classes}">
@@ -1899,11 +1814,9 @@ const APP_CONFIG = {
                 const t1 = (typeof student.soloTest01 === 'number') ? student.soloTest01 : null;
                 const t2 = (typeof student.soloTest02 === 'number') ? student.soloTest02 : null;
 
-                // Solo category = mean of whichever tests are entered (blank ignored).
                 const soloVals = [t1, t2].filter(v => v !== null);
                 const soloAvg = soloVals.length ? soloVals.reduce((a, b) => a + b, 0) / soloVals.length : null;
 
-                // Overall = average of available category scores (attendance, group, solo).
                 const cats = [att];
                 if (grp !== null) cats.push(grp);
                 if (soloAvg !== null) cats.push(soloAvg);
@@ -1955,13 +1868,11 @@ const APP_CONFIG = {
                 soloTest02: (typeof s.soloTest02 === 'number') ? s.soloTest02 : ""
             }));
 
-            executePostPayload({ action: "saveReportCard", marks: marks, userEmail: adminUserEmail });
+            await executePostPayload({ action: "saveReportCard", marks: marks, userEmail: adminUserEmail });
 
-            setTimeout(() => {
-                btn.innerHTML = ogText;
-                lucide.createIcons();
-                alert("Solo assessment marks saved.");
-            }, 1000);
+            btn.innerHTML = ogText;
+            lucide.createIcons();
+            alert("Solo assessment marks saved.");
         }
 
         async function handleBulkImportSubmit(e) {
@@ -2000,18 +1911,17 @@ const APP_CONFIG = {
                             rowsProcessed++;
                         }
                     });
-                    if (backendRows.length > 0) executePostPayload({ action: "bulkImportStudents", data: backendRows });
+                    if (backendRows.length > 0) await executePostPayload({ action: "bulkImportStudents", data: backendRows });
                 } else if (currentImportContext === "Attendance") {
                     await executePostPayload({ action: "bulkImportAttendance", month: document.getElementById('config-month').value, dates: activeLessonDates.join(",") });
                     rowsProcessed = studentsState.length * activeLessonDates.length;
                 } else if (currentImportContext === "Payments") {
-                    // Expected columns: Name, Month, Day, Method
                     const paymentRows = [];
                     const skipped = [];
                     rows.forEach(row => {
                         if (row.length < 3) return;
                         const [rawName, rawMonth, rawDay, rawMethod] = row;
-                        if ((rawName || "").toLowerCase() === "name") return; // header line
+                        if ((rawName || "").toLowerCase() === "name") return;
 
                         const student = studentsState.find(s =>
                             (s.name || "").toString().trim().toLowerCase() === (rawName || "").toString().trim().toLowerCase());
@@ -2030,7 +1940,7 @@ const APP_CONFIG = {
                         paymentRows.push([student.id, student.name, month.key, PAYMENT_YEAR, day, method]);
                         rowsProcessed++;
                     });
-                    if (paymentRows.length > 0) executePostPayload({ action: "bulkImportPayments", data: paymentRows });
+                    if (paymentRows.length > 0) await executePostPayload({ action: "bulkImportPayments", data: paymentRows });
                     renderPayments();
                     calculateAnalyticsMetrics();
                     if (skipped.length > 0) {
@@ -2038,10 +1948,8 @@ const APP_CONFIG = {
                     }
                 }
 
-                setTimeout(async () => {
-                    await fetchDashboardData();
-                    alert(`Successfully synchronized data parameters for ${currentImportContext}.`);
-                }, 3500);
+                await fetchDashboardData();
+                alert(`Successfully synchronized data parameters for ${currentImportContext}.`);
             } catch (err) {
                 console.error(err);
                 alert("Error parsing input payload structure maps.");
@@ -2069,7 +1977,6 @@ const APP_CONFIG = {
                         analyticsPayload = jsonPayload.analyticsPayload;
                     }
 
-                    // Rebuild the payment matrix: prefer explicit rows, else derive from the flat ledger.
                     paymentsMatrix = {};
                     if (jsonPayload && Array.isArray(jsonPayload.paymentsMatrix)) {
                         jsonPayload.paymentsMatrix.forEach(rec => {
@@ -2082,7 +1989,6 @@ const APP_CONFIG = {
                     }
                     seedPaymentsMatrixFromLedger();
 
-                    // Merge any persisted report-card solo marks (keyed by student id).
                     if (jsonPayload && Array.isArray(jsonPayload.reportCardMarks)) {
                         const markMap = {};
                         jsonPayload.reportCardMarks.forEach(m => { if (m && m.id) markMap[m.id] = m; });
@@ -2097,7 +2003,6 @@ const APP_CONFIG = {
                         });
                     }
 
-                    // Normalize solo marks that may already live on the student objects.
                     studentsState.forEach(student => {
                         if (student.soloTest01 !== undefined && student.soloTest01 !== null && student.soloTest01 !== "") {
                             const v = parseFloat(student.soloTest01);
@@ -2109,7 +2014,6 @@ const APP_CONFIG = {
                         }
                     });
 
-                    // Normalize student attendance arrays
                     studentsState.forEach(student => {
                         if (!student.attendance || !Array.isArray(student.attendance)) {
                             student.attendance = [];
@@ -2131,7 +2035,7 @@ const APP_CONFIG = {
 
         function openAddStudentModal() { if(isAdmin) document.getElementById('add-student-modal').classList.remove('hidden'); }
         function closeAddStudentModal() { document.getElementById('add-student-modal').classList.add('hidden'); document.getElementById('add-student-form').reset(); }
-        function handleAddStudentSubmit(e) {
+        async function handleAddStudentSubmit(e) {
             e.preventDefault(); 
             const name = document.getElementById('modal-name').value.trim();
             const grade = document.getElementById('modal-grade').value;
@@ -2147,12 +2051,10 @@ const APP_CONFIG = {
             studentsState.push({ id: formattedId, name: name, grade: grade, section: section, attendance: new Array(activeLessonDates.length).fill(false), cumulativeChecks: 0 });
             renderAllData();
             closeAddStudentModal();
-            executePostPayload({ action: "bulkImportStudents", data: [[formattedId, name, grade, 'Active', section]] });
+            await executePostPayload({ action: "bulkImportStudents", data: [[formattedId, name, grade, 'Active', section]] });
         }
 
-        // --- BULK IMPORT MODAL ---
         let currentImportContext = "Students";
-
         const BULK_IMPORT_FORMATS = CFG.seed.bulkImportFormats;
 
         function openBulkImportModal(context) {
@@ -2173,27 +2075,26 @@ const APP_CONFIG = {
             document.getElementById('bulk-import-form').reset();
         }
 
-        function deleteStudent(id) {
+        async function deleteStudent(id) {
             if (!isAdmin) return;
             if (confirm("Are you sure you want to completely clear this student record?")) {
                 studentsState = studentsState.filter(s => s.id !== id);
                 delete paymentsMatrix[id];
                 renderAllData();
-                executePostPayload({ action: "deleteStudent", id: id });
+                await executePostPayload({ action: "deleteStudent", id: id });
             }
         }
 
-        function moveStudent(index, direction) {
+        async function moveStudent(index, direction) {
             if (!isAdmin) return;
             const target = index + direction;
             if (target < 0 || target >= studentsState.length) return;
             const [row] = studentsState.splice(index, 1);
             studentsState.splice(target, 0, row);
             renderAllData();
-            executePostPayload({ action: "reorderStudents", orderedIds: studentsState.map(s => s.id) });
+            await executePostPayload({ action: "reorderStudents", orderedIds: studentsState.map(s => s.id) });
         }
 
-        // --- PROFESSIONAL PDF REPORT EXPORT ---
         const PDF_REPORT_STYLES = ((accent, ink) => `
             #pdf-render-root { width: 900px; background: #ffffff; color: #0f172a;
                 font-family: 'Inter', Arial, Helvetica, sans-serif; padding: 4px 2px; }
@@ -2241,15 +2142,11 @@ const APP_CONFIG = {
                 .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         }
 
-        // Flatten a live dashboard section into clean, print-ready markup.
         function buildPdfBody(sectionId) {
             const src = document.getElementById(sectionId);
             if (!src) return null;
             const clone = src.cloneNode(true);
 
-            // Freeze form controls into their CURRENT values first, while the clone is still
-            // structurally identical to the source. cloneNode copies attributes but not live
-            // state (a select's selectedIndex, a typed-in value), so read the source element.
             ['input', 'select', 'textarea'].forEach(tag => {
                 const liveEls = src.querySelectorAll(tag);
                 clone.querySelectorAll(tag).forEach((el, i) => {
@@ -2268,15 +2165,11 @@ const APP_CONFIG = {
                 });
             });
 
-            // Anything hidden on screen stays out of the report (keeps tables aligned).
             clone.querySelectorAll('.hidden').forEach(el => el.remove());
-            // Controls, icons and on-screen-only hints carry no meaning on paper.
             clone.querySelectorAll('button, svg, i[data-lucide], [data-pdf-omit]').forEach(el => el.remove());
-            // The letterhead already states the report title, so drop the duplicate heading.
             const firstHeading = clone.querySelector('h2');
             if (firstHeading) firstHeading.remove();
 
-            // Drop the dark-theme styling so the report renders on white stock.
             clone.querySelectorAll('*').forEach(el => {
                 el.removeAttribute('class');
                 el.removeAttribute('style');
@@ -2364,20 +2257,30 @@ const APP_CONFIG = {
             }
         }
 
-        // Paint every configured string/colour into the page on first load.
         document.addEventListener('DOMContentLoaded', () => {
             applyBranding();
             lucide.createIcons();
         });
 
-        function executePostPayload(data) {
+        async function executePostPayload(data) {
             if (!isAdmin) return;
             try {
                 data.userEmail = adminUserEmail;
-                // Fire-and-forget: swallow network rejections so offline use stays silent.
-                fetch(MACRO_ENDPOINT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(data) })
-                    .catch(err => console.warn('Sync deferred:', err && err.message));
-            } catch (err) {}
+                const response = await fetch(MACRO_ENDPOINT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify(data)
+                });
+                if (response.ok) {
+                    const res = await response.json();
+                    if (res && res.result === 'error') {
+                        console.error('Backend write error:', res.error);
+                        alert('Sync Error: ' + res.error);
+                    }
+                }
+            } catch (err) {
+                console.warn('Network sync failed:', err && err.message);
+            }
         }
     </script>
 </body>
