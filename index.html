@@ -1440,7 +1440,17 @@ const APP_CONFIG = {
         }
 
         function countPaidMonths(studentId) {
-            return PAYMENT_MONTHS.filter(m => getPaymentEntry(studentId, m.key)).length;
+            return PAYMENT_MONTHS.filter(m => {
+                const e = getPaymentEntry(studentId, m.key);
+                return e && e.method !== "N/A";
+            }).length;
+        }
+
+        function countEligibleMonths(studentId) {
+            return PAYMENT_MONTHS.filter(m => {
+                const e = getPaymentEntry(studentId, m.key);
+                return !e || e.method !== "N/A";
+            }).length;
         }
 
         function formatPaymentDate(day, month) {
@@ -1466,6 +1476,7 @@ const APP_CONFIG = {
         function normalizePaymentMethod(raw) {
             const v = (raw || "").toString().trim().toLowerCase();
             if (v === "online" || v === "transfer" || v === "bank") return "Online";
+            if (v === "n/a" || v === "na" || v === "exempt") return "N/A";
             if (v === "cash") return "Cash";
             return DEFAULT_PAYMENT_METHOD;
         }
@@ -1514,7 +1525,7 @@ const APP_CONFIG = {
             day = Math.max(1, Math.min(daysInPaymentMonth(month.monthIndex), day));
 
             const existing = getPaymentEntry(studentId, monthKey);
-            const method = existing ? existing.method : DEFAULT_PAYMENT_METHOD;
+            const method = (existing && existing.method !== "N/A") ? existing.method : DEFAULT_PAYMENT_METHOD;
             setPaymentEntry(studentId, monthKey, { day: day, method: method });
             persistPaymentEntry(studentId, monthKey, day, method);
             renderPayments();
@@ -1523,17 +1534,29 @@ const APP_CONFIG = {
 
         function updatePaymentMethod(studentId, monthKey, method) {
             if (!isAdmin) return;
-            const existing = getPaymentEntry(studentId, monthKey);
             const clean = normalizePaymentMethod(method);
-            if (!existing) {
+            const existing = getPaymentEntry(studentId, monthKey);
+
+            if (clean === "N/A") {
+                setPaymentEntry(studentId, monthKey, { day: "—", method: "N/A" });
+                persistPaymentEntry(studentId, monthKey, "—", "N/A");
+                renderPayments();
+                calculateAnalyticsMetrics();
+                return;
+            }
+
+            if (!existing || existing.method === "N/A") {
                 if (!paymentsMatrix[studentId]) paymentsMatrix[studentId] = {};
                 paymentsMatrix[studentId]["_pending_" + monthKey] = clean;
+                setPaymentEntry(studentId, monthKey, null);
                 renderPayments();
                 return;
             }
+
             existing.method = clean;
             persistPaymentEntry(studentId, monthKey, existing.day, clean);
             renderPayments();
+            calculateAnalyticsMetrics();
         }
 
         function pendingMethodFor(studentId, monthKey) {
@@ -1601,6 +1624,7 @@ const APP_CONFIG = {
                             <option value="">Set all…</option>
                             <option value="Cash">All Cash</option>
                             <option value="Online">All Online</option>
+                            <option value="N/A">All N/A</option>
                         </select>` : ''}
                     </th>`).join('') +
                 `<th class="px-5 py-3.5 text-center font-semibold text-brand-500">Payment Status</th>`;
@@ -1624,27 +1648,31 @@ const APP_CONFIG = {
 
                 const monthCells = PAYMENT_MONTHS.map(m => {
                     const entry = getPaymentEntry(student.id, m.key);
-                    const dayVal = entry ? entry.day : '';
+                    const isExempt = entry && entry.method === "N/A";
+                    const dayVal = isExempt ? '' : (entry ? entry.day : '');
                     const methodVal = entry ? entry.method : pendingMethodFor(student.id, m.key);
-                    const methodColor = methodVal === "Online" ? "text-secondary-400" : "text-emerald-400";
+                    const methodColor = methodVal === "Online" ? "text-secondary-400" : (methodVal === "N/A" ? "text-surface-500" : "text-emerald-400");
 
-                    const caption = entry
-                        ? `<div class="text-[9px] font-mono mt-1 ${methodColor}">${formatPaymentDate(entry.day, m)} &middot; ${entry.method}</div>`
-                        : `<div class="text-[9px] font-mono mt-1 text-surface-600">Unpaid</div>`;
+                    const caption = isExempt
+                        ? `<div class="text-[9px] font-mono mt-1 text-surface-500 font-semibold">Exempt (N/A)</div>`
+                        : (entry
+                            ? `<div class="text-[9px] font-mono mt-1 ${methodColor}">${formatPaymentDate(entry.day, m)} &middot; ${entry.method}</div>`
+                            : `<div class="text-[9px] font-mono mt-1 text-surface-600">Unpaid</div>`);
 
                     return `
-                        <td class="px-3 py-3 text-center align-top">
+                        <td class="px-3 py-3 text-center align-top ${isExempt ? 'bg-surface-950/20' : ''}">
                             <div data-pdf-omit class="flex items-center justify-center gap-1">
                                 <input type="number" min="1" max="${daysInPaymentMonth(m.monthIndex)}" step="1"
-                                    value="${dayVal}" placeholder="—" ${disabledAttr}
+                                    value="${dayVal}" placeholder="${isExempt ? '—' : '—'}" ${disabledAttr || isExempt ? 'disabled' : ''}
                                     onchange="updatePaymentDay('${student.id}', '${m.key}', this.value)"
                                     title="Day of ${m.key} ${PAYMENT_YEAR}"
-                                    class="w-12 bg-surface-900 border ${entry ? 'border-emerald-600/50' : 'border-surface-700'} rounded-lg px-1.5 py-1 text-xs text-center font-mono text-surface-100 focus:outline-none focus:border-brand-500 ${lockedCls}">
+                                    class="w-12 bg-surface-900 border ${entry && !isExempt ? 'border-emerald-600/50' : 'border-surface-700'} rounded-lg px-1.5 py-1 text-xs text-center font-mono text-surface-100 focus:outline-none focus:border-brand-500 ${isExempt ? 'opacity-30 cursor-not-allowed' : lockedCls}">
                                 <select ${disabledAttr}
                                     onchange="updatePaymentMethod('${student.id}', '${m.key}', this.value)"
                                     class="bg-surface-900 border border-surface-700 rounded-lg px-1 py-1 text-[10px] ${methodColor} focus:outline-none focus:border-brand-500 ${lockedCls}">
                                     <option value="Cash" ${methodVal === 'Cash' ? 'selected' : ''}>Cash</option>
                                     <option value="Online" ${methodVal === 'Online' ? 'selected' : ''}>Online</option>
+                                    <option value="N/A" ${methodVal === 'N/A' ? 'selected' : ''}>N/A (Exempt)</option>
                                 </select>
                             </div>
                             ${caption}
@@ -1652,11 +1680,14 @@ const APP_CONFIG = {
                 }).join('');
 
                 const paidCount = countPaidMonths(student.id);
-                const statusCls = paidCount === totalMonths
+                const eligibleCount = countEligibleMonths(student.id);
+                const statusCls = (eligibleCount === 0 || paidCount === eligibleCount)
                     ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
                     : paidCount === 0
                         ? "bg-rose-500/10 text-rose-400 border-rose-500/30"
                         : "bg-brand-500/10 text-brand-400 border-brand-500/30";
+
+                const badgeText = eligibleCount === 0 ? "Exempt" : `Paid ${paidCount}/${eligibleCount}`;
 
                 return `
                     <tr class="hover:bg-surface-700/20 transition-colors">
@@ -1664,31 +1695,38 @@ const APP_CONFIG = {
                         <td class="px-4 py-3"><span class="${badgeClass} border text-[10px] px-2 py-0.5 rounded-full font-medium">${student.section || 'N/A'}</span></td>
                         ${monthCells}
                         <td class="px-5 py-3 text-center">
-                            <span class="inline-block border text-[11px] font-bold px-3 py-1 rounded-full ${statusCls}">Paid ${paidCount}/${totalMonths}</span>
+                            <span class="inline-block border text-[11px] font-bold px-3 py-1 rounded-full ${statusCls}">${badgeText}</span>
                         </td>
                     </tr>`;
             }).join('');
 
             const monthTotals = PAYMENT_MONTHS.map(m => {
-                let cash = 0, online = 0;
+                let cash = 0, online = 0, exempt = 0;
                 studentsState.forEach(s => {
                     const e = getPaymentEntry(s.id, m.key);
                     if (!e) return;
-                    if (e.method === "Online") online++; else cash++;
+                    if (e.method === "Online") online++;
+                    else if (e.method === "N/A") exempt++;
+                    else cash++;
                 });
                 const paid = cash + online;
+                const activeForMonth = studentsState.length - exempt;
                 return `
                     <td class="px-3 py-3 text-center">
-                        <div class="font-mono ${paid === studentsState.length ? 'text-emerald-400' : paid === 0 ? 'text-rose-400' : 'text-brand-400'}">${paid}/${studentsState.length}</div>
-                        <div class="text-[9px] font-normal text-surface-500 mt-0.5">${cash} cash &middot; ${online} online</div>
+                        <div class="font-mono ${paid === activeForMonth && activeForMonth > 0 ? 'text-emerald-400' : (paid === 0 && activeForMonth > 0 ? 'text-rose-400' : 'text-brand-400')}">${paid}/${activeForMonth}</div>
+                        <div class="text-[9px] font-normal text-surface-500 mt-0.5">${cash} cash &middot; ${online} online${exempt > 0 ? ` &middot; ${exempt} N/A` : ''}</div>
                     </td>`;
             }).join('');
 
-            const fullyPaid = studentsState.filter(s => countPaidMonths(s.id) === totalMonths).length;
+            const fullyPaid = studentsState.filter(s => {
+                const eligible = countEligibleMonths(s.id);
+                return eligible > 0 && countPaidMonths(s.id) === eligible;
+            }).length;
+
             footRow.innerHTML =
                 `<td colspan="2" class="px-5 py-3 text-surface-200">Collection Summary</td>` +
                 monthTotals +
-                `<td class="px-5 py-3 text-center text-secondary-400 font-mono">${fullyPaid}/${studentsState.length} fully paid</td>`;
+                `<td class="px-5 py-3 text-center text-secondary-400 font-mono">${fullyPaid}/${studentsState.length} fully settled</td>`;
 
             lucide.createIcons();
         }
@@ -2064,9 +2102,16 @@ const APP_CONFIG = {
                         jsonPayload.paymentsMatrix.forEach(rec => {
                             if (!rec || !rec.id || !rec.month) return;
                             const month = PAYMENT_MONTHS.find(m => m.key.toLowerCase() === rec.month.toString().trim().toLowerCase());
-                            const day = parseInt(rec.day, 10);
-                            if (!month || isNaN(day)) return;
-                            setPaymentEntry(rec.id, month.key, { day: day, method: normalizePaymentMethod(rec.method) });
+                            if (!month) return;
+                            const methodClean = normalizePaymentMethod(rec.method);
+                            if (methodClean === "N/A") {
+                                setPaymentEntry(rec.id, month.key, { day: "—", method: "N/A" });
+                            } else {
+                                const day = parseInt(rec.day, 10);
+                                if (!isNaN(day)) {
+                                    setPaymentEntry(rec.id, month.key, { day: day, method: methodClean });
+                                }
+                            }
                         });
                     }
                     seedPaymentsMatrixFromLedger();
