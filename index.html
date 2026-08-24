@@ -138,7 +138,7 @@ const APP_CONFIG = {
             { key: "November",  short: "Nov", monthIndex: 10 },
             { key: "December",  short: "Dec", monthIndex: 11 }
         ],
-        defaultSessionDates: ["2026-06-05", "2026-06-12", "2026-06-19", "2026-06-26"],
+        defaultSessionDates: ["2026-07-11", "2026-07-18", "2026-07-25"],
         events: [
             { name: "Penutupan Hari Kebangsaan", date: "2026-09-16" },
             { name: "SCSM Int'l Exam",           date: "2026-11-21" }
@@ -159,7 +159,7 @@ const APP_CONFIG = {
         newItemTitle: "New Repertoire Title",
         bulkImportFormats: {
             Students:   "Name, Grade, Section\nAisyah Binti Karim, Intermediate, Soprano\nDaniel Lim, CC1, Tenor",
-            Attendance: "Attendance is synced from the register grid.\nPress Process & Import to push the current month's dates to the sheet.",
+            Attendance: "Name, Date1, Date2, Date3\nJOEVILLANCE OWEN JEREMY, 2026-07-11, 2026-07-18, 2026-07-25\nJESEBEL OLUMIS, 2026-07-11, 2026-07-18",
             Payments:   "Name, Month, Day, Method\nAisyah Binti Karim, June, 6, Cash\nDaniel Lim, July, 12, Online"
         },
         savedAnalyticsMessage: "Digital Signature Confirmed. Repertoire matrix snapshot securely saved to Google Sheets."
@@ -299,7 +299,7 @@ const APP_CONFIG = {
                         </div>
                     </div>
                     <div id="admin-actions-card" data-pdf-omit class="bg-surface-800 border border-surface-700/60 rounded-xl p-5 flex flex-col justify-center items-start shadow-md hidden">
-                        <p class="text-xs text-surface-400 mb-3">Sync global attendance roster via text or CSV import.</p>
+                        <p class="text-xs text-surface-400 mb-3">Sync attendance from text (Name, Date1, Date2...).</p>
                         <button onclick="openBulkImportModal('Attendance')" class="w-full bg-secondary-600 hover:bg-secondary-700 text-white font-medium py-2.5 px-4 rounded-xl text-xs transition-all flex items-center justify-center gap-2 shadow-lg shadow-secondary-600/10">
                             <i data-lucide="file-spreadsheet" class="w-4 h-4"></i> Bulk Import Attendance
                         </button>
@@ -1916,8 +1916,54 @@ const APP_CONFIG = {
                     });
                     if (backendRows.length > 0) await executePostPayload({ action: "bulkImportStudents", data: backendRows });
                 } else if (currentImportContext === "Attendance") {
-                    await executePostPayload({ action: "bulkImportAttendance", month: document.getElementById('config-month').value, dates: activeLessonDates.join(",") });
-                    rowsProcessed = studentsState.length * activeLessonDates.length;
+                    const currentMonth = document.getElementById('config-month').value;
+                    const attendanceRows = [];
+                    const skipped = [];
+                    const importedDatesSet = new Set();
+
+                    rows.forEach(row => {
+                        if (row.length < 1) return;
+                        const rawName = row[0];
+                        if (!rawName || rawName.toLowerCase() === "name" || rawName.toLowerCase() === "student name") return;
+
+                        const student = studentsState.find(s => 
+                            (s.name || "").toString().trim().toLowerCase() === rawName.toLowerCase() ||
+                            (s.id || "").toString().trim().toLowerCase() === rawName.toLowerCase()
+                        );
+
+                        if (!student) {
+                            skipped.push(rawName);
+                            return;
+                        }
+
+                        const dates = row.slice(1).map(d => d.trim()).filter(Boolean);
+                        dates.forEach(d => {
+                            importedDatesSet.add(d);
+                            attendanceRows.push([currentMonth, d, student.id, true]);
+                            rowsProcessed++;
+                        });
+                    });
+
+                    // Sync the schedule columns to match these dates
+                    if (importedDatesSet.size > 0) {
+                        const newDates = Array.from(importedDatesSet).sort();
+                        activeLessonDates = newDates;
+                        await executePostPayload({
+                            action: "saveConfig",
+                            month: currentMonth,
+                            dates: activeLessonDates.join(",")
+                        });
+                    }
+
+                    await executePostPayload({
+                        action: "bulkImportAttendance",
+                        month: currentMonth,
+                        data: attendanceRows
+                    });
+
+                    if (skipped.length > 0) {
+                        alert(`Imported ${rowsProcessed} checkmark(s) across ${rows.length - skipped.length} student(s).\n\nSkipped ${skipped.length} unrecognized student(s):\n${skipped.slice(0, 10).join('\n')}`);
+                    }
                 } else if (currentImportContext === "Payments") {
                     const paymentRows = [];
                     const skipped = [];
@@ -2083,7 +2129,7 @@ const APP_CONFIG = {
             document.getElementById('bulk-modal-instructions').innerText = BULK_IMPORT_FORMATS[context] || "";
             const ta = document.getElementById('bulk-import-textarea');
             ta.value = "";
-            ta.required = (context !== "Attendance");
+            ta.required = true;
             document.getElementById('bulk-import-modal').classList.remove('hidden');
             lucide.createIcons();
         }
