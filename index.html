@@ -110,10 +110,12 @@ const APP_CONFIG = {
         ],
 
         reportCard: {
-            attendanceLabel: "Attendance",
-            groupLabel:      "Group Ensemble",
-            solo1Label:      "Solo Test 01",
-            solo2Label:      "Solo Test 02",
+            attendanceLabel:  "Attendance",
+            choralLabel:      "Choral Progress",
+            groupLabel:       "Group Ensemble",
+            solo1Label:       "Solo Test 01",
+            solo2Label:       "Solo Test 02",
+            performanceLabel: "Perf & SCSM Exam",
             bands: [
                 { min: 9.0, label: "Higher Distinction", range: "9.0 – 10.0", classes: "text-emerald-400 bg-emerald-500/10 border-emerald-500/30" },
                 { min: 8.0, label: "Distinction",        range: "8.0 – 8.9",  classes: "text-teal-300 bg-teal-500/10 border-teal-500/30" },
@@ -162,7 +164,7 @@ const APP_CONFIG = {
             Attendance: "Name, Date1, Date2, Date3\nJOEVILLANCE OWEN JEREMY, 2026-07-11, 2026-07-18, 2026-07-25\nJESEBEL OLUMIS, 2026-07-11, 2026-07-18",
             Payments:   "Name, Month, Day, Method\nAisyah Binti Karim, June, 6, Cash\nDaniel Lim, July, 12, Online"
         },
-        savedAnalyticsMessage: "Digital Signature Confirmed. Repertoire matrix snapshot securely saved to Google Sheets."
+        savedAnalyticsMessage: "Digital Signature Confirmed. Repertoire, Sectional & Performance matrices securely saved to Google Sheets."
     }
 };
     </script>
@@ -433,6 +435,7 @@ const APP_CONFIG = {
                     </div>
                 </div>
 
+                <!-- 1. OVERALL CHOIR REPERTOIRE PROGRESS -->
                 <div class="bg-surface-800 border border-surface-700 rounded-xl shadow-md overflow-hidden">
                     <div class="bg-surface-900/60 p-4 border-b border-surface-700 flex justify-between items-center">
                         <div>
@@ -454,12 +457,40 @@ const APP_CONFIG = {
                             <span id="repertoire-aggregated-raw" class="text-sm font-mono font-bold text-brand-500">0 / 0 Pts</span>
                         </div>
                         <div class="flex items-center gap-2">
-                            <span class="text-xs font-bold text-surface-400 uppercase tracking-wider">Scaled Total Progress:</span>
-                            <span id="repertoire-aggregated-percent" class="text-sm font-mono font-bold text-secondary-400">0%</span>
+                            <span class="text-xs font-bold text-surface-400 uppercase tracking-wider">Scaled Total Progress (/10):</span>
+                            <span id="repertoire-aggregated-scale" class="text-sm font-mono font-bold text-brand-400">0.0 / 10</span>
+                            <span class="text-xs text-surface-500">(<span id="repertoire-aggregated-percent">0%</span>)</span>
                         </div>
                     </div>
                 </div>
 
+                <!-- 2. LIVE PERFORMANCE & SCSM EXAM LEDGER (NEW) -->
+                <div class="bg-surface-800 border border-surface-700 rounded-xl shadow-md overflow-hidden">
+                    <div class="bg-surface-900/60 p-4 border-b border-surface-700 flex justify-between items-center">
+                        <div>
+                            <h3 class="text-xs font-bold text-surface-300 uppercase tracking-wider flex items-center gap-2">
+                                <i data-lucide="award" class="w-4 h-4 text-brand-500"></i> Performance & SCSM Examination Assessment Ledger
+                            </h3>
+                            <p class="text-[10px] text-surface-400 mt-0.5">Record SCSM board examination scores, integrity choir competitions, and live performance showcases</p>
+                        </div>
+                        <button onclick="openAddPerformanceModal()" class="text-xs bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-600 hover:text-white px-3 py-1.5 rounded-lg transition-all font-semibold flex items-center gap-1.5">
+                            <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i> + Add Performance / Exam
+                        </button>
+                    </div>
+                    <div id="performances-container" class="p-5"></div>
+                    <div class="bg-surface-900/80 p-4 border-t border-surface-700/60 flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-5">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-bold text-surface-400 uppercase tracking-wider">Total Evaluated Events:</span>
+                            <span id="performance-events-count" class="text-sm font-mono font-bold text-surface-200">0 Events</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-bold text-surface-400 uppercase tracking-wider">Aggregated Performance Score:</span>
+                            <span id="performance-aggregated-score" class="text-sm font-mono font-bold text-emerald-400">0.0 / 10</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. SECTIONAL GROUP PROGRESS LEDGER -->
                 <div class="bg-surface-800 border border-surface-700 rounded-xl shadow-md overflow-hidden">
                     <div class="bg-surface-900/60 p-4 border-b border-surface-700">
                         <h3 class="text-xs font-bold text-surface-300 uppercase tracking-wider">Sectional Group Progress Ledger</h3>
@@ -470,6 +501,7 @@ const APP_CONFIG = {
                     <div class="p-5 grid grid-cols-1 md:grid-cols-2 gap-6" id="section-comments-container"></div>
                 </div>
 
+                <!-- 4. SECTION BREAKDOWN & HIGHLIGHTS -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div class="lg:col-span-2 bg-surface-800 border border-surface-700 rounded-xl shadow-md overflow-hidden">
                         <div class="bg-surface-900/60 p-4 border-b border-surface-700 flex justify-between items-center">
@@ -522,7 +554,7 @@ const APP_CONFIG = {
                         <h2 class="text-xl font-bold text-surface-100 uppercase tracking-widest flex items-center gap-2">
                             <i data-lucide="clipboard-list" class="w-6 h-6 text-brand-500"></i> <span data-brand="vocabulary.sectionTitles.reportcard">Student Report Card</span>
                         </h2>
-                        <p class="text-[11px] text-surface-400 mt-1">Aggregated 10-point assessment · Attendance · Group Ensemble · Solo Assessments</p>
+                        <p class="text-[11px] text-surface-400 mt-1">Aggregated 10-point assessment · Attendance · Choral Repertoire · Group Ensemble · Solo Tests · Performance &amp; Exams</p>
                     </div>
                     <div class="flex gap-2">
                         <button id="reportcard-save-btn" onclick="saveReportCardMarks()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-4 py-2 rounded-xl text-xs transition-all flex items-center gap-1.5 shadow-md shadow-emerald-600/20 hidden">
@@ -536,28 +568,28 @@ const APP_CONFIG = {
 
                 <div class="bg-surface-800 border border-surface-700 rounded-xl px-5 py-3 shadow-md">
                     <p class="text-[10px] text-surface-400 uppercase tracking-widest font-mono">
-                        <span class="font-bold text-surface-300">Scoring Model:</span>
+                        <span class="font-bold text-surface-300">Fair Scoring Model:</span>
                         Each component is scaled to <span class="text-brand-500 font-bold">/10</span>.
-                        Overall = average of <span class="text-secondary-400 font-semibold">Attendance</span>,
-                        <span class="text-emerald-400 font-semibold">Group Ensemble</span> and
-                        <span class="text-purple-400 font-semibold">Solo</span> (mean of Test 01 &amp; Test 02).
-                        Enter test marks (0&ndash;10) as each assessment is completed.
+                        Overall marks are calculated by dynamically averaging <strong class="text-surface-200">only active columns containing completed marks</strong>. 
+                        Pending/unassessed components are excluded to ensure zero distortion for students with high marks.
                     </p>
                 </div>
 
                 <div class="bg-surface-800 border border-surface-700/60 rounded-xl shadow-lg overflow-hidden">
                     <div class="overflow-x-auto">
-                        <table class="w-full min-w-[820px] text-left text-sm">
+                        <table class="w-full min-w-[980px] text-left text-sm">
                             <thead class="text-[10px] text-surface-400 uppercase bg-surface-900/40 border-b border-surface-700/40">
                                 <tr>
                                     <th data-brand="labels.memberName" class="px-5 py-3.5 font-semibold">Student Name</th>
-                                    <th data-brand="vocabulary.groupSingular" class="px-4 py-3.5 font-semibold">Section</th>
-                                    <th data-brand="vocabulary.reportCard.attendanceLabel" data-brand-keep-child class="px-4 py-3.5 text-center font-semibold text-secondary-400">Attendance<br><span class="text-[9px] text-surface-500 normal-case">/10</span></th>
-                                    <th data-brand="vocabulary.reportCard.groupLabel" data-brand-keep-child class="px-4 py-3.5 text-center font-semibold text-emerald-400">Group Ensemble<br><span class="text-[9px] text-surface-500 normal-case">/10</span></th>
-                                    <th data-brand="vocabulary.reportCard.solo1Label" data-brand-keep-child class="px-4 py-3.5 text-center font-semibold text-purple-400">Solo Test 01<br><span class="text-[9px] text-surface-500 normal-case">/10</span></th>
-                                    <th data-brand="vocabulary.reportCard.solo2Label" data-brand-keep-child class="px-4 py-3.5 text-center font-semibold text-purple-400">Solo Test 02<br><span class="text-[9px] text-surface-500 normal-case">/10</span></th>
+                                    <th data-brand="vocabulary.groupSingular" class="px-3 py-3.5 font-semibold">Section</th>
+                                    <th data-brand="vocabulary.reportCard.attendanceLabel" data-brand-keep-child class="px-3 py-3.5 text-center font-semibold text-secondary-400">Attendance<br><span class="text-[9px] text-surface-500 normal-case">/10</span></th>
+                                    <th data-brand="vocabulary.reportCard.choralLabel" data-brand-keep-child class="px-3 py-3.5 text-center font-semibold text-amber-400">Choral Progress<br><span class="text-[9px] text-surface-500 normal-case">/10</span></th>
+                                    <th data-brand="vocabulary.reportCard.groupLabel" data-brand-keep-child class="px-3 py-3.5 text-center font-semibold text-emerald-400">Group Ensemble<br><span class="text-[9px] text-surface-500 normal-case">/10</span></th>
+                                    <th data-brand="vocabulary.reportCard.solo1Label" data-brand-keep-child class="px-3 py-3.5 text-center font-semibold text-purple-400">Solo Test 01<br><span class="text-[9px] text-surface-500 normal-case">/10</span></th>
+                                    <th data-brand="vocabulary.reportCard.solo2Label" data-brand-keep-child class="px-3 py-3.5 text-center font-semibold text-purple-400">Solo Test 02<br><span class="text-[9px] text-surface-500 normal-case">/10</span></th>
+                                    <th data-brand="vocabulary.reportCard.performanceLabel" data-brand-keep-child class="px-3 py-3.5 text-center font-semibold text-cyan-400">Perf &amp; SCSM Exam<br><span class="text-[9px] text-surface-500 normal-case">/10</span></th>
                                     <th class="px-4 py-3.5 text-center font-semibold text-brand-500">Overall<br><span class="text-[9px] text-surface-500 normal-case">/10</span></th>
-                                    <th class="px-5 py-3.5 text-center font-semibold">Grade Band</th>
+                                    <th class="px-4 py-3.5 text-center font-semibold">Grade Band</th>
                                 </tr>
                             </thead>
                             <tbody id="reportcard-table-body" class="divide-y divide-surface-700/40"></tbody>
@@ -671,6 +703,53 @@ const APP_CONFIG = {
                     <button type="button" onclick="closeAddLogModal()" class="px-4 py-2 rounded-lg text-xs font-medium bg-surface-700 hover:bg-surface-600">Cancel</button>
                     <button type="submit" class="px-4 py-2 rounded-lg text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-500 flex items-center gap-1.5">
                         <i data-lucide="check-circle" class="w-4 h-4"></i> Save Feedback Entry
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 4: ADD PERFORMANCE / SCSM EXAM (NEW) -->
+    <div id="add-performance-modal" class="fixed inset-0 bg-surface-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-surface-800 border border-surface-700 rounded-2xl w-full max-w-lg p-6 space-y-4 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-surface-700/60 pb-3">
+                <h3 class="text-sm font-bold text-brand-500 uppercase tracking-wide flex items-center gap-2">
+                    <i data-lucide="award" class="w-4 h-4"></i> Record Live Performance / SCSM Exam
+                </h3>
+                <button onclick="closeAddPerformanceModal()" class="text-surface-400 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button>
+            </div>
+            <form id="add-performance-form" onsubmit="handleAddPerformanceSubmit(event)" class="space-y-4">
+                <div>
+                    <label class="block text-[11px] font-bold text-surface-400 uppercase mb-1">Event / Exam Title</label>
+                    <input id="perf-title" type="text" required placeholder="e.g. SCSM Int'l Exam 2026 or Hari Kebangsaan Showcase" class="w-full bg-surface-900 border border-surface-700 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-brand-500 text-surface-200">
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-bold text-surface-400 uppercase mb-1">Category Type</label>
+                        <select id="perf-type" class="w-full bg-surface-900 border border-surface-700 rounded-lg px-2.5 py-2 text-xs focus:outline-none focus:border-brand-500 text-surface-200">
+                            <option value="SCSM Exam">SCSM Board Exam</option>
+                            <option value="Live Performance">Live Performance</option>
+                            <option value="Choir Competition">Choir Competition</option>
+                            <option value="Showcase">Showcase / Recital</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-surface-400 uppercase mb-1">Event Date</label>
+                        <input id="perf-date" type="text" required placeholder="e.g. 21 Nov 2026" class="w-full bg-surface-900 border border-surface-700 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-brand-500 text-surface-200">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-emerald-400 uppercase mb-1">Score (0 – 10)</label>
+                        <input id="perf-score" type="number" min="0" max="10" step="0.1" required value="8.5" class="w-full bg-surface-900 border border-surface-700 rounded-lg px-3 py-2 text-xs font-bold text-emerald-400 text-center focus:outline-none focus:border-emerald-500">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-surface-400 uppercase mb-1">Adjudicator / Performance Feedback Notes</label>
+                    <textarea id="perf-notes" required rows="3" placeholder="Enter examiner feedback, vocal dynamics on stage, or adjudication comments..." class="w-full bg-surface-900 border border-surface-700 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-brand-500 text-surface-200 resize-y"></textarea>
+                </div>
+                <div class="flex items-center justify-end gap-2 pt-2 border-t border-surface-700/60">
+                    <button type="button" onclick="closeAddPerformanceModal()" class="px-4 py-2 rounded-lg text-xs font-medium bg-surface-700 hover:bg-surface-600">Cancel</button>
+                    <button type="submit" class="px-4 py-2 rounded-lg text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-500 flex items-center gap-1.5">
+                        <i data-lucide="check-circle" class="w-4 h-4"></i> Save Performance Record
                     </button>
                 </div>
             </form>
@@ -835,15 +914,16 @@ const APP_CONFIG = {
         let selectedSectionDateIndex = {};
         GROUP_NAMES.forEach(g => { selectedSectionDateIndex[g] = 0; });
 
-        let analyticsPayload = { songs: [], sections: {} };
+        let analyticsPayload = { songs: [], sections: {}, performances: [] };
         GROUP_NAMES.forEach(g => { analyticsPayload.sections[g] = { logs: [] }; });
 
         const MACRO_ENDPOINT_URL = CFG.backend.endpointUrl;
         const AUTHORIZED_ADMINS = CFG.backend.admins;
 
         function ensureAnalyticsLogsStructure() {
-            if (!analyticsPayload) return;
+            if (!analyticsPayload) analyticsPayload = { songs: [], sections: {}, performances: [] };
             if (!analyticsPayload.songs) analyticsPayload.songs = [];
+            if (!analyticsPayload.performances) analyticsPayload.performances = [];
             
             analyticsPayload.songs.forEach(song => {
                 if (!song.logs || !Array.isArray(song.logs) || song.logs.length === 0) {
@@ -977,64 +1057,70 @@ const APP_CONFIG = {
         function renderAnalyticsUI() {
             ensureAnalyticsLogsStructure();
             
+            // Render Songs
             const songsContainer = document.getElementById('songs-container');
-            songsContainer.innerHTML = analyticsPayload.songs.map((song, songIndex) => {
-                const latestLog = song.logs[0];
-                const latestTotalPts = calculateSingleSongTotal(latestLog.scores);
-                const historyCount = song.logs.length - 1;
+            songsContainer.innerHTML = analyticsPayload.songs.length === 0 
+                ? `<div class="text-center p-6 text-xs text-surface-500 italic">No repertoire tracks logged. Click "+ Add Song Track" to create one.</div>`
+                : analyticsPayload.songs.map((song, songIndex) => {
+                    const latestLog = song.logs[0];
+                    const latestTotalPts = calculateSingleSongTotal(latestLog.scores);
+                    const historyCount = song.logs.length - 1;
 
-                return `
-                <div class="p-5 bg-surface-900/50 border border-surface-700/60 rounded-xl space-y-4 shadow-sm">
-                    <div class="flex flex-wrap justify-between items-center gap-3">
-                        <input type="text" value="${song.title}" onchange="updateSongTitle(${songIndex}, this.value)" ${!isAdmin ? 'disabled' : ''} class="bg-transparent border-b border-surface-700 focus:border-brand-500 focus:outline-none text-base text-surface-100 font-bold py-0.5 transition-colors max-w-xs sm:max-w-md">
-                        <div class="flex items-center gap-2">
-                            <span class="text-xs font-mono font-bold text-brand-500 bg-brand-500/10 border border-brand-500/20 px-2.5 py-1 rounded-lg" id="song-total-${songIndex}">${latestTotalPts}/${MAX_ITEM_POINTS} Pts</span>
-                            ${isAdmin ? `<button onclick="openAddLogModal('song', ${songIndex})" class="text-xs bg-brand-500 hover:bg-brand-600 text-surface-950 px-3 py-1 rounded-lg font-bold flex items-center gap-1 transition-all"><i data-lucide="plus-circle" class="w-3.5 h-3.5"></i> Add Report</button>` : ''}
-                            ${isAdmin ? `<button onclick="removeSong(${songIndex})" class="text-rose-500 hover:text-rose-400 p-1.5"><i data-lucide="trash-2" class="w-4 h-4"></i></button>` : ''}
-                        </div>
-                    </div>
-
-                    <div class="bg-surface-950/80 border border-surface-800 rounded-xl p-4 space-y-3">
-                        <div class="flex justify-between items-center border-b border-surface-800 pb-2">
-                            <span class="text-[10px] font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
-                                <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Active Report
-                            </span>
-                            <span class="text-[10px] font-mono text-surface-400">${latestLog.date}</span>
-                        </div>
-                        <div class="grid gap-2" style="grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));">
-                            ${CFG.vocabulary.criteria.map(c => renderMetricPill(c.label, latestLog.scores[c.key])).join('')}
-                        </div>
-                        <p class="text-xs text-surface-200 italic leading-relaxed pt-1">${latestLog.comment || 'No notes logged.'}</p>
-                    </div>
-
-                    ${historyCount > 0 ? `
-                        <div>
-                            <button onclick="toggleSongHistoryAccordion(${songIndex})" class="text-xs text-secondary-400 hover:text-secondary-300 font-semibold flex items-center gap-1.5 transition-colors">
-                                <i data-lucide="history" class="w-3.5 h-3.5"></i> 
-                                <span id="accordion-btn-text-${songIndex}">View Past Session Reports (${historyCount})</span>
-                                <i data-lucide="chevron-down" id="accordion-icon-${songIndex}" class="w-3.5 h-3.5 transition-transform"></i>
-                            </button>
-                            <div id="song-history-accordion-${songIndex}" class="hidden space-y-3 pt-3 pl-2 border-l-2 border-surface-800 mt-2">
-                                ${song.logs.slice(1).map((log) => `
-                                    <div class="bg-surface-950/40 border border-surface-800 rounded-lg p-3 space-y-2">
-                                        <div class="flex justify-between items-center text-[10px] font-mono text-surface-400">
-                                            <span>Date: <strong class="text-surface-200">${log.date}</strong></span>
-                                            <span class="text-brand-500 font-bold">${calculateSingleSongTotal(log.scores)}/${MAX_ITEM_POINTS} Pts</span>
-                                        </div>
-                                        <div class="grid gap-1 text-[9px] font-mono" style="grid-template-columns: repeat(auto-fit, minmax(56px, 1fr));">
-                                            ${CFG.vocabulary.criteria.map(c => `<span class="bg-surface-900 p-1 rounded text-center">${c.short}: ${log.scores[c.key]}</span>`).join('')}
-                                        </div>
-                                        <p class="text-xs text-surface-300 italic">${log.comment}</p>
-                                    </div>
-                                `).join('')}
+                    return `
+                    <div class="p-5 bg-surface-900/50 border border-surface-700/60 rounded-xl space-y-4 shadow-sm">
+                        <div class="flex flex-wrap justify-between items-center gap-3">
+                            <input type="text" value="${song.title}" onchange="updateSongTitle(${songIndex}, this.value)" ${!isAdmin ? 'disabled' : ''} class="bg-transparent border-b border-surface-700 focus:border-brand-500 focus:outline-none text-base text-surface-100 font-bold py-0.5 transition-colors max-w-xs sm:max-w-md">
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs font-mono font-bold text-brand-500 bg-brand-500/10 border border-brand-500/20 px-2.5 py-1 rounded-lg" id="song-total-${songIndex}">${latestTotalPts}/${MAX_ITEM_POINTS} Pts</span>
+                                ${isAdmin ? `<button onclick="openAddLogModal('song', ${songIndex})" class="text-xs bg-brand-500 hover:bg-brand-600 text-surface-950 px-3 py-1 rounded-lg font-bold flex items-center gap-1 transition-all"><i data-lucide="plus-circle" class="w-3.5 h-3.5"></i> Add Report</button>` : ''}
+                                ${isAdmin ? `<button onclick="removeSong(${songIndex})" class="text-rose-500 hover:text-rose-400 p-1.5"><i data-lucide="trash-2" class="w-4 h-4"></i></button>` : ''}
                             </div>
                         </div>
-                    ` : ''}
-                </div>`;
-            }).join('');
 
+                        <div class="bg-surface-950/80 border border-surface-800 rounded-xl p-4 space-y-3">
+                            <div class="flex justify-between items-center border-b border-surface-800 pb-2">
+                                <span class="text-[10px] font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+                                    <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Active Report
+                                </span>
+                                <span class="text-[10px] font-mono text-surface-400">${latestLog.date}</span>
+                            </div>
+                            <div class="grid gap-2" style="grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));">
+                                ${CFG.vocabulary.criteria.map(c => renderMetricPill(c.label, latestLog.scores[c.key])).join('')}
+                            </div>
+                            <p class="text-xs text-surface-200 italic leading-relaxed pt-1">${latestLog.comment || 'No notes logged.'}</p>
+                        </div>
+
+                        ${historyCount > 0 ? `
+                            <div>
+                                <button onclick="toggleSongHistoryAccordion(${songIndex})" class="text-xs text-secondary-400 hover:text-secondary-300 font-semibold flex items-center gap-1.5 transition-colors">
+                                    <i data-lucide="history" class="w-3.5 h-3.5"></i> 
+                                    <span id="accordion-btn-text-${songIndex}">View Past Session Reports (${historyCount})</span>
+                                    <i data-lucide="chevron-down" id="accordion-icon-${songIndex}" class="w-3.5 h-3.5 transition-transform"></i>
+                                </button>
+                                <div id="song-history-accordion-${songIndex}" class="hidden space-y-3 pt-3 pl-2 border-l-2 border-surface-800 mt-2">
+                                    ${song.logs.slice(1).map((log) => `
+                                        <div class="bg-surface-950/40 border border-surface-800 rounded-lg p-3 space-y-2">
+                                            <div class="flex justify-between items-center text-[10px] font-mono text-surface-400">
+                                                <span>Date: <strong class="text-surface-200">${log.date}</strong></span>
+                                                <span class="text-brand-500 font-bold">${calculateSingleSongTotal(log.scores)}/${MAX_ITEM_POINTS} Pts</span>
+                                            </div>
+                                            <div class="grid gap-1 text-[9px] font-mono" style="grid-template-columns: repeat(auto-fit, minmax(56px, 1fr));">
+                                                ${CFG.vocabulary.criteria.map(c => `<span class="bg-surface-900 p-1 rounded text-center">${c.short}: ${log.scores[c.key]}</span>`).join('')}
+                                            </div>
+                                            <p class="text-xs text-surface-300 italic">${log.comment}</p>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+                    </div>`;
+                }).join('');
+
+            // Render Performance & SCSM Exam Ledger (NEW)
+            renderPerformancesUI();
+
+            // Render Section Comments
             const sectionContainer = document.getElementById('section-comments-container');
-
             sectionContainer.innerHTML = GROUP_NAMES.map(sec => {
                 const secObj = analyticsPayload.sections[sec];
                 const logs = secObj.logs || [];
@@ -1081,6 +1167,100 @@ const APP_CONFIG = {
             calculateRepertoireMastery();
         }
 
+        function renderPerformancesUI() {
+            const container = document.getElementById('performances-container');
+            const perfs = analyticsPayload.performances || [];
+
+            if (perfs.length === 0) {
+                container.innerHTML = `<div class="text-center p-6 text-xs text-surface-500 italic">No live performance or SCSM examination assessments recorded yet. Click "+ Add Performance / Exam" to add one.</div>`;
+                document.getElementById('performance-events-count').innerText = "0 Events";
+                document.getElementById('performance-aggregated-score').innerText = "0.0 / 10";
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    ${perfs.map((p, idx) => `
+                        <div class="bg-surface-950/70 border border-surface-700/70 rounded-xl p-4 space-y-2.5">
+                            <div class="flex items-start justify-between gap-2 border-b border-surface-800 pb-2">
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${p.type === 'SCSM Exam' ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30' : 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'}">${p.type || 'Showcase'}</span>
+                                        <span class="text-[11px] font-mono text-surface-400">${p.date}</span>
+                                    </div>
+                                    <h4 class="text-sm font-bold text-surface-100 mt-1">${p.title}</h4>
+                                </div>
+                                <div class="flex items-center gap-1.5">
+                                    <span class="text-xs font-mono font-extrabold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-lg">${parseFloat(p.score).toFixed(1)} / 10</span>
+                                    ${isAdmin ? `<button onclick="removePerformance(${idx})" class="text-rose-500 hover:text-rose-400 p-1 ml-1" title="Delete record"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>` : ''}
+                                </div>
+                            </div>
+                            <p class="text-xs text-surface-300 italic leading-relaxed">${p.notes || 'No adjudication notes logged.'}</p>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+
+            const validScores = perfs.map(p => parseFloat(p.score)).filter(s => !isNaN(s));
+            const avg = validScores.length ? (validScores.reduce((a, b) => a + b, 0) / validScores.length) : 0;
+            document.getElementById('performance-events-count').innerText = `${perfs.length} Event(s)`;
+            document.getElementById('performance-aggregated-score').innerText = `${avg.toFixed(1)} / 10`;
+        }
+
+        function openAddPerformanceModal() {
+            if (!isAdmin) {
+                alert("Please login with admin credentials to add performance assessments.");
+                return;
+            }
+            document.getElementById('perf-title').value = '';
+            document.getElementById('perf-date').value = new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric'});
+            document.getElementById('perf-score').value = '8.5';
+            document.getElementById('perf-notes').value = '';
+            document.getElementById('add-performance-modal').classList.remove('hidden');
+        }
+
+        function closeAddPerformanceModal() {
+            document.getElementById('add-performance-modal').classList.add('hidden');
+        }
+
+        function handleAddPerformanceSubmit(e) {
+            e.preventDefault();
+            if (!isAdmin) return;
+
+            const title = document.getElementById('perf-title').value.trim();
+            const type = document.getElementById('perf-type').value;
+            const date = document.getElementById('perf-date').value.trim();
+            const score = parseFloat(document.getElementById('perf-score').value) || 0;
+            const notes = document.getElementById('perf-notes').value.trim();
+
+            if (!analyticsPayload.performances) analyticsPayload.performances = [];
+            analyticsPayload.performances.unshift({
+                id: "perf-" + Date.now(),
+                title: title,
+                type: type,
+                date: date,
+                score: Math.max(0, Math.min(10, score)),
+                notes: notes
+            });
+
+            closeAddPerformanceModal();
+            renderAnalyticsUI();
+            if (!document.getElementById('view-reportcard').classList.contains('hidden')) {
+                renderReportCard();
+            }
+        }
+
+        function removePerformance(index) {
+            if (!isAdmin) return;
+            if (confirm("Remove this performance assessment entry?")) {
+                analyticsPayload.performances.splice(index, 1);
+                renderAnalyticsUI();
+                if (!document.getElementById('view-reportcard').classList.contains('hidden')) {
+                    renderReportCard();
+                }
+            }
+        }
+
         function selectSectionDate(section, index) {
             selectedSectionDateIndex[section] = index;
             renderAnalyticsUI();
@@ -1125,6 +1305,7 @@ const APP_CONFIG = {
             if (totalSongs === 0) {
                 document.getElementById('kpi-repertoire').innerText = "0%";
                 document.getElementById('repertoire-aggregated-raw').innerText = "0 / 0 Pts";
+                document.getElementById('repertoire-aggregated-scale').innerText = "0.0 / 10";
                 document.getElementById('repertoire-aggregated-percent').innerText = "0%";
                 return;
             }
@@ -1135,9 +1316,11 @@ const APP_CONFIG = {
                 totalPoints += calculateSingleSongTotal(latestLog ? latestLog.scores : null); 
             });
             const percentage = Math.round((totalPoints / maxPoints) * 100);
+            const scaledTen = ((totalPoints / maxPoints) * 10).toFixed(1);
             
             document.getElementById('kpi-repertoire').innerText = `${percentage}%`;
             document.getElementById('repertoire-aggregated-raw').innerText = `${totalPoints} / ${maxPoints} Pts`;
+            document.getElementById('repertoire-aggregated-scale').innerText = `${scaledTen} / 10`;
             document.getElementById('repertoire-aggregated-percent').innerText = `${percentage}%`;
         }
 
@@ -1816,11 +1999,24 @@ const APP_CONFIG = {
 
         function computeAttendanceScore(student) {
             const totalSessions = globalTotalSessions > 0 ? globalTotalSessions : activeLessonDates.length;
-            if (!totalSessions) return 0;
+            if (!totalSessions || totalSessions === 0) return null;
             const attended = (typeof student.cumulativeChecks === 'number')
                 ? student.cumulativeChecks
                 : (Array.isArray(student.attendance) ? student.attendance.filter(Boolean).length : 0);
             return round1(Math.min(attended / totalSessions, 1) * 10);
+        }
+
+        // Compute Choral Marks scaled /10 from all Repertoire tracks
+        function computeChoralScore() {
+            if (!analyticsPayload || !Array.isArray(analyticsPayload.songs) || analyticsPayload.songs.length === 0) return null;
+            let totalPoints = 0;
+            const maxPoints = analyticsPayload.songs.length * MAX_ITEM_POINTS;
+            if (maxPoints === 0) return null;
+            analyticsPayload.songs.forEach(song => {
+                const latestLog = (song.logs && song.logs.length > 0) ? song.logs[0] : null;
+                totalPoints += calculateSingleSongTotal(latestLog ? latestLog.scores : null);
+            });
+            return round1((totalPoints / maxPoints) * 10);
         }
 
         function computeGroupScore(student) {
@@ -1830,6 +2026,17 @@ const APP_CONFIG = {
             const latest = secObj.logs[0];
             const val = parseFloat(latest.score);
             return isNaN(val) ? null : round1(val);
+        }
+
+        // Compute Performance Marks scaled /10 from SCSM exams & live shows
+        function computePerformanceScore() {
+            if (!analyticsPayload || !Array.isArray(analyticsPayload.performances) || analyticsPayload.performances.length === 0) return null;
+            const valid = analyticsPayload.performances
+                .map(p => parseFloat(p.score))
+                .filter(s => !isNaN(s) && s !== null && s >= 0);
+            if (valid.length === 0) return null;
+            const avg = valid.reduce((a, b) => a + b, 0) / valid.length;
+            return round1(avg);
         }
 
         function clampSolo(v) {
@@ -1862,52 +2069,70 @@ const APP_CONFIG = {
             }
 
             if (studentsState.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-xs text-surface-500 italic">No students available to score.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="10" class="p-6 text-center text-xs text-surface-500 italic">No students available to score.</td></tr>`;
                 lucide.createIcons();
                 return;
             }
 
             const disabledAttr = !isAdmin ? 'disabled' : '';
+            const choral = computeChoralScore();
+            const perf = computePerformanceScore();
+
             tbody.innerHTML = studentsState.map(student => {
                 const att = computeAttendanceScore(student);
                 const grp = computeGroupScore(student);
                 const t1 = (typeof student.soloTest01 === 'number') ? student.soloTest01 : null;
                 const t2 = (typeof student.soloTest02 === 'number') ? student.soloTest02 : null;
 
-                const soloVals = [t1, t2].filter(v => v !== null);
-                const soloAvg = soloVals.length ? soloVals.reduce((a, b) => a + b, 0) / soloVals.length : null;
+                // Dynamically collect ONLY active columns with real numbers
+                const activeScores = [];
+                if (att !== null && !isNaN(att)) activeScores.push(att);
+                if (choral !== null && !isNaN(choral)) activeScores.push(choral);
+                if (grp !== null && !isNaN(grp)) activeScores.push(grp);
+                if (t1 !== null && !isNaN(t1)) activeScores.push(t1);
+                if (t2 !== null && !isNaN(t2)) activeScores.push(t2);
+                if (perf !== null && !isNaN(perf)) activeScores.push(perf);
 
-                const cats = [att];
-                if (grp !== null) cats.push(grp);
-                if (soloAvg !== null) cats.push(soloAvg);
-                const overall = round1(cats.reduce((a, b) => a + b, 0) / cats.length);
+                const overall = activeScores.length > 0 
+                    ? round1(activeScores.reduce((a, b) => a + b, 0) / activeScores.length) 
+                    : 0.0;
                 const band = getReportCardBand(overall);
 
+                const choralDisplay = choral === null
+                    ? `<span class="text-surface-500 italic text-[10px]">Pending</span>`
+                    : `<span class="font-mono font-bold text-amber-400">${choral.toFixed(1)}</span>`;
+
                 const grpDisplay = grp === null
-                    ? `<span class="text-surface-500 italic text-[10px]">No section log</span>`
+                    ? `<span class="text-surface-500 italic text-[10px]">Pending</span>`
                     : `<span class="font-mono font-bold text-emerald-400">${grp.toFixed(1)}</span>`;
+
+                const perfDisplay = perf === null
+                    ? `<span class="text-surface-500 italic text-[10px]">Pending</span>`
+                    : `<span class="font-mono font-bold text-cyan-400">${perf.toFixed(1)}</span>`;
 
                 const badgeClass = groupBadgeClasses(student.section);
 
                 return `
                     <tr class="hover:bg-surface-700/20 transition-colors">
                         <td class="px-5 py-3.5 font-medium text-surface-200 whitespace-nowrap">${student.name || "Unknown"}</td>
-                        <td class="px-4 py-3.5"><span class="${badgeClass} border text-[10px] px-2 py-0.5 rounded-full font-medium">${student.section || 'N/A'}</span></td>
-                        <td class="px-4 py-3.5 text-center font-mono font-bold text-secondary-400">${att.toFixed(1)}</td>
-                        <td class="px-4 py-3.5 text-center">${grpDisplay}</td>
-                        <td class="px-4 py-3.5 text-center">
+                        <td class="px-3 py-3.5"><span class="${badgeClass} border text-[10px] px-2 py-0.5 rounded-full font-medium">${student.section || 'N/A'}</span></td>
+                        <td class="px-3 py-3.5 text-center font-mono font-bold text-secondary-400">${att !== null ? att.toFixed(1) : '—'}</td>
+                        <td class="px-3 py-3.5 text-center">${choralDisplay}</td>
+                        <td class="px-3 py-3.5 text-center">${grpDisplay}</td>
+                        <td class="px-3 py-3.5 text-center">
                             <input type="number" min="0" max="10" step="0.1" value="${t1 === null ? '' : t1.toFixed(1)}" placeholder="—" ${disabledAttr}
                                 onchange="updateSoloMark('${student.id}', 'soloTest01', this.value)"
-                                class="w-16 bg-surface-900 border border-surface-700 rounded-lg px-2 py-1 text-xs text-center font-mono text-purple-300 focus:outline-none focus:border-purple-500 ${!isAdmin ? 'cursor-not-allowed opacity-70' : ''}">
+                                class="w-14 bg-surface-900 border border-surface-700 rounded-lg px-1.5 py-1 text-xs text-center font-mono text-purple-300 focus:outline-none focus:border-purple-500 ${!isAdmin ? 'cursor-not-allowed opacity-70' : ''}">
                         </td>
-                        <td class="px-4 py-3.5 text-center">
+                        <td class="px-3 py-3.5 text-center">
                             <input type="number" min="0" max="10" step="0.1" value="${t2 === null ? '' : t2.toFixed(1)}" placeholder="—" ${disabledAttr}
                                 onchange="updateSoloMark('${student.id}', 'soloTest02', this.value)"
-                                class="w-16 bg-surface-900 border border-surface-700 rounded-lg px-2 py-1 text-xs text-center font-mono text-purple-300 focus:outline-none focus:border-purple-500 ${!isAdmin ? 'cursor-not-allowed opacity-70' : ''}">
+                                class="w-14 bg-surface-900 border border-surface-700 rounded-lg px-1.5 py-1 text-xs text-center font-mono text-purple-300 focus:outline-none focus:border-purple-500 ${!isAdmin ? 'cursor-not-allowed opacity-70' : ''}">
                         </td>
+                        <td class="px-3 py-3.5 text-center">${perfDisplay}</td>
                         <td class="px-4 py-3.5 text-center font-mono font-extrabold text-brand-500 text-base">${overall.toFixed(1)}</td>
-                        <td class="px-5 py-3.5 text-center">
-                            <span class="inline-block border text-[10px] font-semibold px-2.5 py-1 rounded-full ${band.classes}">${band.label}</span>
+                        <td class="px-4 py-3.5 text-center">
+                            <span class="inline-block border text-[10px] font-semibold px-2 py-1 rounded-full ${band.classes}">${band.label}</span>
                         </td>
                     </tr>
                 `;
@@ -2095,6 +2320,7 @@ const APP_CONFIG = {
                     globalCompletedSessions = jsonPayload.globalCompletedSessions || 0;
                     if (jsonPayload.analyticsPayload) {
                         analyticsPayload = jsonPayload.analyticsPayload;
+                        ensureAnalyticsLogsStructure();
                     }
 
                     paymentsMatrix = {};
