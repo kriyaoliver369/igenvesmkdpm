@@ -131,7 +131,17 @@ const APP_CONFIG = {
     /* ---------------------------------------------------------------- 5 */
     calendar: {
         year: 2026,
-        months: [
+        // Attendance begins strictly in July so June is never logged or factored into attendance percentages
+        attendanceMonths: [
+            { key: "July",      short: "Jul", monthIndex: 6  },
+            { key: "August",    short: "Aug", monthIndex: 7  },
+            { key: "September", short: "Sep", monthIndex: 8  },
+            { key: "October",   short: "Oct", monthIndex: 9  },
+            { key: "November",  short: "Nov", monthIndex: 10 },
+            { key: "December",  short: "Dec", monthIndex: 11 }
+        ],
+        // Financial Ledger retains June so previous payments can still be entered, checked, and tracked
+        paymentMonths: [
             { key: "June",      short: "Jun", monthIndex: 5  },
             { key: "July",      short: "Jul", monthIndex: 6  },
             { key: "August",    short: "Aug", monthIndex: 7  },
@@ -502,7 +512,7 @@ const APP_CONFIG = {
                     </div>
                 </div>
 
-                <!-- 3. SECTIONAL GROUP PROGRESS LEDGER (UPDATED TO 0 - 20 MARKS) -->
+                <!-- 3. SECTIONAL GROUP PROGRESS LEDGER (0 - 20 MARKS) -->
                 <div class="bg-surface-800 border border-surface-700 rounded-xl shadow-md overflow-hidden">
                     <div class="bg-surface-900/60 p-4 border-b border-surface-700">
                         <h3 class="text-xs font-bold text-surface-300 uppercase tracking-wider">Sectional Group Progress Ledger</h3>
@@ -683,7 +693,7 @@ const APP_CONFIG = {
         </div>
     </div>
 
-    <!-- MODAL 3: ADD NEW REPORT / LOG ENTRY (UPDATED TO 0 - 20 MARKS) -->
+    <!-- MODAL 3: ADD NEW REPORT / LOG ENTRY (0 - 20 MARKS) -->
     <div id="add-log-modal" class="fixed inset-0 bg-surface-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-surface-800 border border-surface-700 rounded-2xl w-full max-w-lg p-6 space-y-4 shadow-2xl">
             <div class="flex items-center justify-between border-b border-surface-700/60 pb-3">
@@ -889,7 +899,9 @@ const APP_CONFIG = {
         function renderMonthOptions() {
             const sel = document.getElementById('config-month');
             if (!sel) return;
-            sel.innerHTML = CFG.calendar.months
+            // Attendance strictly loads from July onwards
+            const monthsList = CFG.calendar.attendanceMonths;
+            sel.innerHTML = monthsList
                 .map(m => `<option value="${m.key} ${CFG.calendar.year}">${m.key} ${CFG.calendar.year}</option>`)
                 .join('');
         }
@@ -978,12 +990,9 @@ const APP_CONFIG = {
                         break;
                     }
                 }
-                if (!exists) {
-                    const opt = document.createElement('option');
-                    opt.value = currentMonthYear;
-                    opt.innerText = currentMonthYear;
-                    opt.selected = true;
-                    selectEl.appendChild(opt);
+                // Fallback to July if current month is earlier than July
+                if (!exists && selectEl.options.length > 0) {
+                    selectEl.selectedIndex = 0;
                 }
             }
         }
@@ -1129,7 +1138,7 @@ const APP_CONFIG = {
 
             renderPerformancesUI();
 
-            // Render Section Comments with updated /20 scale readout
+            // Render Section Comments with /20 scale readout
             const sectionContainer = document.getElementById('section-comments-container');
             sectionContainer.innerHTML = GROUP_NAMES.map(sec => {
                 const secObj = analyticsPayload.sections[sec];
@@ -1612,7 +1621,8 @@ const APP_CONFIG = {
         }
 
         const PAYMENT_YEAR = CFG.calendar.year;
-        const PAYMENT_MONTHS = CFG.calendar.months;
+        // The Financial Ledger explicitly uses paymentMonths (which includes June)
+        const PAYMENT_MONTHS = CFG.calendar.paymentMonths;
         const DEFAULT_PAYMENT_METHOD = "Cash";
 
         let paymentsMatrix = {};
@@ -1876,6 +1886,7 @@ const APP_CONFIG = {
                 note.innerText = `Roster synced automatically from the Master Roster — ${studentsState.length} student(s) across ${totalMonths} billing month(s).`;
             }
 
+            // Pinned Left Student Name Column + Sticky Top Header Row
             headRow.innerHTML =
                 `<th class="px-5 py-3.5 font-semibold sticky top-0 left-0 z-30 bg-surface-900 border-b border-r border-surface-700/60 shadow-[2px_0_6px_-1px_rgba(0,0,0,0.5)] min-w-[200px]">Student Name</th>
                  <th class="px-4 py-3.5 font-semibold sticky top-0 z-20 bg-surface-900 border-b border-surface-700/60 min-w-[110px]">Section</th>` +
@@ -2451,8 +2462,11 @@ const APP_CONFIG = {
 
         async function fetchDashboardData() {
             try {
+                const defaultMonthKey = (CFG.calendar.attendanceMonths && CFG.calendar.attendanceMonths[0])
+                    ? CFG.calendar.attendanceMonths[0].key
+                    : "July";
                 const chosenMonth = document.getElementById('config-month').value
-                    || `${CFG.calendar.months[0].key} ${CFG.calendar.year}`;
+                    || `${defaultMonthKey} ${CFG.calendar.year}`;
                 const response = await fetch(MACRO_ENDPOINT_URL + "?action=getDashboard&month=" + encodeURIComponent(chosenMonth));
                 const text = await response.text();
                 
