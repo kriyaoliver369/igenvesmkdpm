@@ -131,7 +131,6 @@ const APP_CONFIG = {
     /* ---------------------------------------------------------------- 5 */
     calendar: {
         year: 2026,
-        // Attendance begins strictly in July so June is never logged or factored into attendance percentages
         attendanceMonths: [
             { key: "July",      short: "Jul", monthIndex: 6  },
             { key: "August",    short: "Aug", monthIndex: 7  },
@@ -140,7 +139,6 @@ const APP_CONFIG = {
             { key: "November",  short: "Nov", monthIndex: 10 },
             { key: "December",  short: "Dec", monthIndex: 11 }
         ],
-        // Financial Ledger retains June so previous payments can still be entered, checked, and tracked
         paymentMonths: [
             { key: "June",      short: "Jun", monthIndex: 5  },
             { key: "July",      short: "Jul", monthIndex: 6  },
@@ -188,6 +186,7 @@ const APP_CONFIG = {
             tailwind.config = {
                 theme: {
                     extend: {
+                        screens: { 'xs': '480px' },
                         colors: APP_CONFIG.theme.palette,
                         fontFamily: { sans: [APP_CONFIG.theme.fontFamily, 'sans-serif'] }
                     }
@@ -388,34 +387,44 @@ const APP_CONFIG = {
                     </div>
                 </div>
 
-                <div data-pdf-omit class="bg-surface-800 border border-surface-700 rounded-xl px-5 py-3 shadow-md flex flex-wrap items-center justify-between gap-3">
+                <div data-pdf-omit class="bg-surface-800 border border-surface-700 rounded-xl px-4 py-3 shadow-md flex flex-col md:flex-row md:items-center justify-between gap-3">
                     <p class="text-[10px] text-surface-400 uppercase tracking-widest font-mono">
                         <span class="font-bold text-surface-300">How to record:</span>
-                        Pick or enter the <span class="text-brand-500 font-bold">exact payment date</span> in any month's column
-                        (e.g. paying June fees on <span class="text-brand-500 font-bold">14 Sep 2026</span>),
-                        then select <span class="text-emerald-400 font-semibold">Cash</span> or
-                        <span class="text-secondary-400 font-semibold">Online</span>. Clear the date input to mark unpaid.
+                        Pick <span class="text-brand-500 font-bold">exact payment date</span> in any column
+                        (e.g. paying June fees on <span class="text-brand-500 font-bold">14 Sep</span>),
+                        then pick <span class="text-emerald-400 font-semibold">Cash</span> or
+                        <span class="text-secondary-400 font-semibold">Online</span>. Clear date to mark unpaid.
                     </p>
-                    <div class="flex items-center gap-1.5 text-xs font-semibold">
-                        <span class="text-[10px] text-surface-400 uppercase tracking-wider font-mono mr-1">Quick Scroll:</span>
-                        <button onclick="scrollPaymentsTable(-450)" class="bg-surface-700 hover:bg-surface-600 text-surface-200 px-2.5 py-1 rounded-lg transition-all flex items-center gap-1 border border-surface-600 active:scale-95 text-[11px]" title="Slide left to early months">
-                            <i data-lucide="chevron-left" class="w-3.5 h-3.5"></i> June – Aug
+                    <div class="flex flex-wrap items-center gap-2 self-start md:self-auto">
+                        <!-- Toggle button to lock or unlock the student name column -->
+                        <button id="btn-toggle-pin" onclick="toggleColumnPin()" class="bg-surface-700 hover:bg-surface-600 px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all flex items-center gap-1.5 border border-surface-600 active:scale-95 shadow-sm">
+                            <i data-lucide="pin" class="w-3.5 h-3.5 text-surface-400"></i>
+                            <span>Freeze Names</span>
                         </button>
-                        <button onclick="scrollPaymentsTable(450)" class="bg-surface-700 hover:bg-surface-600 text-brand-400 px-2.5 py-1 rounded-lg transition-all flex items-center gap-1 border border-surface-600 active:scale-95 text-[11px]" title="Slide right to end months">
-                            Oct – Dec <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
-                        </button>
+                        <!-- Quick scroll jump buttons for mobile -->
+                        <div class="flex items-center gap-1 text-xs font-semibold">
+                            <button onclick="scrollPaymentsTable('start')" class="bg-surface-700 hover:bg-surface-600 text-surface-200 px-2 py-1 rounded-lg transition-all flex items-center gap-1 border border-surface-600 active:scale-95 text-[11px]" title="Slide to June">
+                                <i data-lucide="chevrons-left" class="w-3.5 h-3.5"></i> Jun–Jul
+                            </button>
+                            <button onclick="scrollPaymentsTable('mid')" class="bg-surface-700 hover:bg-surface-600 text-surface-200 px-2 py-1 rounded-lg transition-all flex items-center gap-1 border border-surface-600 active:scale-95 text-[11px]" title="Slide to August/September">
+                                Aug–Sep
+                            </button>
+                            <button onclick="scrollPaymentsTable('end')" class="bg-surface-700 hover:bg-surface-600 text-brand-400 px-2 py-1 rounded-lg transition-all flex items-center gap-1 border border-surface-600 active:scale-95 text-[11px]" title="Slide to October–December">
+                                Oct–Dec <i data-lucide="chevrons-right" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Constrained viewport container so header and horizontal scrollbar are always in view -->
+                <!-- Ledger viewport with smooth touch panning -->
                 <div class="bg-surface-800 border border-surface-700/60 rounded-xl shadow-lg overflow-hidden flex flex-col">
-                    <div id="payments-scroll-container" class="overflow-auto max-h-[580px] relative scrollbar-thin">
-                        <table class="w-full min-w-[1350px] text-left text-sm border-separate border-spacing-0">
-                            <thead class="text-xs text-surface-400 uppercase sticky top-0 z-20 shadow-sm">
+                    <div id="payments-scroll-container" class="overflow-auto max-h-[580px] relative scrollbar-thin touch-pan-x touch-pan-y" style="-webkit-overflow-scrolling: touch;">
+                        <table class="w-full min-w-[1280px] text-left text-sm border-separate border-spacing-0">
+                            <thead class="text-xs text-surface-400 uppercase">
                                 <tr id="payments-head-row"></tr>
                             </thead>
                             <tbody id="payments-table-body" class="divide-y divide-surface-700/40"></tbody>
-                            <tfoot class="font-bold text-xs sticky bottom-0 z-20 shadow-inner">
+                            <tfoot class="font-bold text-xs">
                                 <tr id="payments-foot-row"></tr>
                                 <tr id="payments-unpaid-row"></tr>
                             </tfoot>
@@ -569,7 +578,6 @@ const APP_CONFIG = {
                 </div>
             </section>
 
-            <!-- STUDENT REPORT CARD SECTION -->
             <section id="view-reportcard" class="tab-content space-y-6 hidden">
                 <div class="flex flex-wrap justify-between items-end border-b border-surface-700 pb-2 gap-4">
                     <div>
@@ -899,7 +907,6 @@ const APP_CONFIG = {
         function renderMonthOptions() {
             const sel = document.getElementById('config-month');
             if (!sel) return;
-            // Attendance strictly loads from July onwards
             const monthsList = CFG.calendar.attendanceMonths;
             sel.innerHTML = monthsList
                 .map(m => `<option value="${m.key} ${CFG.calendar.year}">${m.key} ${CFG.calendar.year}</option>`)
@@ -990,7 +997,6 @@ const APP_CONFIG = {
                         break;
                     }
                 }
-                // Fallback to July if current month is earlier than July
                 if (!exists && selectEl.options.length > 0) {
                     selectEl.selectedIndex = 0;
                 }
@@ -1138,7 +1144,6 @@ const APP_CONFIG = {
 
             renderPerformancesUI();
 
-            // Render Section Comments with /20 scale readout
             const sectionContainer = document.getElementById('section-comments-container');
             sectionContainer.innerHTML = GROUP_NAMES.map(sec => {
                 const secObj = analyticsPayload.sections[sec];
@@ -1621,16 +1626,30 @@ const APP_CONFIG = {
         }
 
         const PAYMENT_YEAR = CFG.calendar.year;
-        // The Financial Ledger explicitly uses paymentMonths (which includes June)
         const PAYMENT_MONTHS = CFG.calendar.paymentMonths;
         const DEFAULT_PAYMENT_METHOD = "Cash";
 
         let paymentsMatrix = {};
 
-        function scrollPaymentsTable(offset) {
+        // Smart responsive freeze state: Unpinned by default on mobile phones (<768px) to prevent screen blocking
+        let isColumnPinned = window.innerWidth >= 768;
+
+        function toggleColumnPin() {
+            isColumnPinned = !isColumnPinned;
+            renderPayments();
+        }
+
+        function scrollPaymentsTable(target) {
             const container = document.getElementById('payments-scroll-container');
-            if (container) {
-                container.scrollBy({ left: offset, behavior: 'smooth' });
+            if (!container) return;
+            if (target === 'start') {
+                container.scrollTo({ left: 0, behavior: 'smooth' });
+            } else if (target === 'end') {
+                container.scrollTo({ left: container.scrollWidth, behavior: 'smooth' });
+            } else if (target === 'mid') {
+                container.scrollTo({ left: container.scrollWidth / 2.5, behavior: 'smooth' });
+            } else if (typeof target === 'number') {
+                container.scrollBy({ left: target, behavior: 'smooth' });
             }
         }
 
@@ -1878,6 +1897,7 @@ const APP_CONFIG = {
             const footRow = document.getElementById('payments-foot-row');
             const unpaidRow = document.getElementById('payments-unpaid-row');
             const note = document.getElementById('payments-roster-note');
+            const pinBtn = document.getElementById('btn-toggle-pin');
             if (!headRow || !tbody || !footRow || !unpaidRow) return;
 
             const totalMonths = PAYMENT_MONTHS.length;
@@ -1886,9 +1906,31 @@ const APP_CONFIG = {
                 note.innerText = `Roster synced automatically from the Master Roster — ${studentsState.length} student(s) across ${totalMonths} billing month(s).`;
             }
 
-            // Pinned Left Student Name Column + Sticky Top Header Row
+            if (pinBtn) {
+                pinBtn.innerHTML = isColumnPinned
+                    ? `<i data-lucide="pin-off" class="w-3.5 h-3.5 text-brand-400"></i><span class="hidden xs:inline">Unfreeze Names</span><span class="xs:hidden">Unpin</span>`
+                    : `<i data-lucide="pin" class="w-3.5 h-3.5 text-surface-400"></i><span class="hidden xs:inline">Freeze Names</span><span class="xs:hidden">Pin</span>`;
+            }
+
+            // Adaptive classes: On mobile when pinned, keep width compact (125px). When unpinned on mobile, let the entire table swipe freely.
+            const nameThClass = isColumnPinned
+                ? "px-4 py-3.5 font-semibold sticky top-0 left-0 z-30 bg-surface-900 border-b border-r border-surface-700/60 shadow-[2px_0_6px_-1px_rgba(0,0,0,0.5)] max-w-[125px] md:max-w-none md:min-w-[200px] truncate"
+                : "px-5 py-3.5 font-semibold sticky top-0 z-20 bg-surface-900 border-b border-r border-surface-700/60 min-w-[140px] md:min-w-[200px] whitespace-nowrap";
+
+            const nameTdClass = isColumnPinned
+                ? "px-4 py-3 font-medium text-surface-200 sticky left-0 z-10 bg-surface-800 group-hover:bg-[#1a233b] border-r border-surface-700/60 shadow-[2px_0_6px_-1px_rgba(0,0,0,0.5)] max-w-[125px] md:max-w-none md:min-w-[200px] truncate"
+                : "px-5 py-3 font-medium text-surface-200 bg-surface-800 group-hover:bg-[#1a233b] border-r border-surface-700/60 whitespace-nowrap";
+
+            const summTdClass = isColumnPinned
+                ? "px-4 py-3 text-surface-200 sticky left-0 z-20 bg-surface-900 border-r border-t border-surface-600 shadow-[2px_0_6px_-1px_rgba(0,0,0,0.5)] max-w-[125px] md:max-w-none font-bold truncate"
+                : "px-5 py-3 text-surface-200 bg-surface-900 border-r border-t border-surface-600 font-bold whitespace-nowrap";
+
+            const unpaidTdClass = isColumnPinned
+                ? "px-4 py-3 text-surface-200 sticky left-0 z-20 bg-surface-900 border-r border-t border-surface-700/80 shadow-[2px_0_6px_-1px_rgba(0,0,0,0.5)] max-w-[125px] md:max-w-none align-top"
+                : "px-5 py-3 text-surface-200 bg-surface-900 border-r border-t border-surface-700/80 align-top";
+
             headRow.innerHTML =
-                `<th class="px-5 py-3.5 font-semibold sticky top-0 left-0 z-30 bg-surface-900 border-b border-r border-surface-700/60 shadow-[2px_0_6px_-1px_rgba(0,0,0,0.5)] min-w-[200px]">Student Name</th>
+                `<th class="${nameThClass}">Student Name</th>
                  <th class="px-4 py-3.5 font-semibold sticky top-0 z-20 bg-surface-900 border-b border-surface-700/60 min-w-[110px]">Section</th>` +
                 PAYMENT_MONTHS.map(m => `
                     <th class="px-3 py-3 text-center font-semibold sticky top-0 z-20 bg-surface-900 border-b border-surface-700/60 min-w-[160px]">
@@ -1969,7 +2011,7 @@ const APP_CONFIG = {
 
                 return `
                     <tr class="group hover:bg-surface-700/25 transition-colors">
-                        <td class="px-5 py-3 font-medium text-surface-200 whitespace-nowrap sticky left-0 z-10 bg-surface-800 group-hover:bg-[#1a233b] border-r border-surface-700/60 shadow-[2px_0_6px_-1px_rgba(0,0,0,0.5)]">
+                        <td class="${nameTdClass}" title="${student.name || 'Unknown'}">
                             ${student.name || "Unknown"}
                         </td>
                         <td class="px-4 py-3 whitespace-nowrap"><span class="${badgeClass} border text-[10px] px-2 py-0.5 rounded-full font-medium">${student.section || 'N/A'}</span></td>
@@ -2005,7 +2047,7 @@ const APP_CONFIG = {
             }).length;
 
             footRow.innerHTML =
-                `<td class="px-5 py-3 text-surface-200 sticky left-0 z-30 bg-surface-900 border-r border-t border-surface-600 shadow-[2px_0_6px_-1px_rgba(0,0,0,0.5)] font-bold whitespace-nowrap">Collection Summary</td>` +
+                `<td class="${summTdClass}">Collection Summary</td>` +
                 `<td class="px-4 py-3 bg-surface-900 border-t border-surface-600"></td>` +
                 monthTotals +
                 `<td class="px-5 py-3 text-center text-secondary-400 font-mono bg-surface-900 border-t border-surface-600">${fullyPaid}/${studentsState.length} fully settled</td>`;
@@ -2066,17 +2108,17 @@ const APP_CONFIG = {
             }).join('');
 
             unpaidRow.innerHTML =
-                `<td class="px-5 py-3 text-surface-200 sticky left-0 z-30 bg-surface-900 border-r border-t border-surface-700/80 shadow-[2px_0_6px_-1px_rgba(0,0,0,0.5)] align-top">
+                `<td class="${unpaidTdClass}">
                     <div class="flex items-center gap-1.5 text-rose-400 font-bold uppercase text-[10px] tracking-wider">
                         <i data-lucide="alert-circle" class="w-3.5 h-3.5 flex-shrink-0"></i>
-                        <span>Unpaid Students</span>
+                        <span class="truncate">Unpaid</span>
                     </div>
-                    <p class="text-[9px] text-surface-400 font-normal normal-case mt-0.5">Continuous list by month</p>
+                    <p class="text-[9px] text-surface-400 font-normal normal-case mt-0.5 hidden xs:block">Continuous list</p>
                  </td>` +
                 `<td class="px-4 py-3 bg-surface-900 border-t border-surface-700/80"></td>` +
                 unpaidMonthCells +
                 `<td class="px-5 py-3 text-center align-top bg-surface-900 border-t border-surface-700/80">
-                    <div class="text-[10px] text-surface-400 font-mono font-normal">Auto-synced with dates</div>
+                    <div class="text-[10px] text-surface-400 font-mono font-normal">Auto-synced</div>
                  </td>`;
 
             lucide.createIcons();
@@ -2186,7 +2228,6 @@ const APP_CONFIG = {
             return round1((totalPoints / maxPoints) * 10);
         }
 
-        // Returns raw Group Ensemble score out of 20
         function computeGroupScore(student) {
             const sec = student.section || "";
             const secObj = analyticsPayload && analyticsPayload.sections ? analyticsPayload.sections[sec] : null;
@@ -2206,7 +2247,6 @@ const APP_CONFIG = {
             return round1(avg);
         }
 
-        // Clamps solo marks between 0 and 20
         function clampSolo(v) {
             const n = parseFloat(v);
             if (isNaN(n)) return null;
@@ -2252,11 +2292,9 @@ const APP_CONFIG = {
                 const t1 = (typeof student.soloTest01 === 'number') ? student.soloTest01 : null;
                 const t2 = (typeof student.soloTest02 === 'number') ? student.soloTest02 : null;
 
-                // Dynamically collect active columns scaled to 10-point basis for fair overall scoring
                 const activeScores = [];
                 if (att !== null && !isNaN(att)) activeScores.push(att);
                 if (choral !== null && !isNaN(choral)) activeScores.push(choral);
-                // Group Ensemble & Solo Tests scaled from /20 to /10
                 if (grp !== null && !isNaN(grp)) activeScores.push(round1((grp / 20) * 10));
                 if (t1 !== null && !isNaN(t1)) activeScores.push(round1((t1 / 20) * 10));
                 if (t2 !== null && !isNaN(t2)) activeScores.push(round1((t2 / 20) * 10));
