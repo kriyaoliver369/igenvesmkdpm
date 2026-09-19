@@ -162,7 +162,7 @@ const APP_CONFIG = {
         bulkImportFormats: {
             Students:   "Name, Grade, Section\nAisyah Binti Karim, Intermediate, Soprano\nDaniel Lim, CC1, Tenor",
             Attendance: "Name, Date1, Date2, Date3\nJOEVILLANCE OWEN JEREMY, 2026-07-11, 2026-07-18, 2026-07-25\nJESEBEL OLUMIS, 2026-07-11, 2026-07-18",
-            Payments:   "Name, Month, Day, Method\nAisyah Binti Karim, June, 6, Cash\nDaniel Lim, July, 12, Online"
+            Payments:   "Name, Month, Date, Method\nAisyah Binti Karim, June, 2026-09-14, Cash\nDaniel Lim, July, 2026-10-09, Online"
         },
         savedAnalyticsMessage: "Digital Signature Confirmed. Repertoire, Sectional & Performance matrices securely saved to Google Sheets."
     }
@@ -193,6 +193,7 @@ const APP_CONFIG = {
             '::-webkit-scrollbar { width: 6px; height: 6px; }' +
             '::-webkit-scrollbar-track { background: ' + APP_CONFIG.theme.scrollbarTrack + '; }' +
             '::-webkit-scrollbar-thumb { background: ' + APP_CONFIG.theme.scrollbarThumb + '; border-radius: 3px; }' +
+            'input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.85); cursor: pointer; }' +
             '</style>'
         );
         document.title = APP_CONFIG.identity.documentTitle;
@@ -379,16 +380,16 @@ const APP_CONFIG = {
                 <div data-pdf-omit class="bg-surface-800 border border-surface-700 rounded-xl px-5 py-3 shadow-md">
                     <p class="text-[10px] text-surface-400 uppercase tracking-widest font-mono">
                         <span class="font-bold text-surface-300">How to record:</span>
-                        Enter only the <span class="text-brand-500 font-bold">day of the month</span> in a column
-                        (e.g. <span class="text-brand-500 font-bold">6</span> under June &rarr; paid on 6 June 2026),
-                        then pick <span class="text-emerald-400 font-semibold">Cash</span> or
-                        <span class="text-secondary-400 font-semibold">Online</span>. Clear the day to mark a month unpaid.
+                        Pick or enter the <span class="text-brand-500 font-bold">exact payment date</span> in any month's column
+                        (e.g. paying June fees on <span class="text-brand-500 font-bold">14 Sep 2026</span>),
+                        then select <span class="text-emerald-400 font-semibold">Cash</span> or
+                        <span class="text-secondary-400 font-semibold">Online</span>. Clear the date input to mark that month unpaid.
                     </p>
                 </div>
 
                 <div class="bg-surface-800 border border-surface-700/60 rounded-xl shadow-lg overflow-hidden">
                     <div class="overflow-x-auto">
-                        <table class="w-full min-w-[900px] text-left text-sm">
+                        <table class="w-full min-w-[1250px] text-left text-sm">
                             <thead class="text-xs text-surface-400 uppercase bg-surface-900/40 border-b border-surface-700/40">
                                 <tr id="payments-head-row"></tr>
                             </thead>
@@ -464,7 +465,7 @@ const APP_CONFIG = {
                     </div>
                 </div>
 
-                <!-- 2. LIVE PERFORMANCE & SCSM EXAM LEDGER (NEW) -->
+                <!-- 2. LIVE PERFORMANCE & SCSM EXAM LEDGER -->
                 <div class="bg-surface-800 border border-surface-700 rounded-xl shadow-md overflow-hidden">
                     <div class="bg-surface-900/60 p-4 border-b border-surface-700 flex justify-between items-center">
                         <div>
@@ -709,7 +710,7 @@ const APP_CONFIG = {
         </div>
     </div>
 
-    <!-- MODAL 4: ADD PERFORMANCE / SCSM EXAM (NEW) -->
+    <!-- MODAL 4: ADD PERFORMANCE / SCSM EXAM -->
     <div id="add-performance-modal" class="fixed inset-0 bg-surface-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-surface-800 border border-surface-700 rounded-2xl w-full max-w-lg p-6 space-y-4 shadow-2xl">
             <div class="flex items-center justify-between border-b border-surface-700/60 pb-3">
@@ -1057,7 +1058,6 @@ const APP_CONFIG = {
         function renderAnalyticsUI() {
             ensureAnalyticsLogsStructure();
             
-            // Render Songs
             const songsContainer = document.getElementById('songs-container');
             songsContainer.innerHTML = analyticsPayload.songs.length === 0 
                 ? `<div class="text-center p-6 text-xs text-surface-500 italic">No repertoire tracks logged. Click "+ Add Song Track" to create one.</div>`
@@ -1116,10 +1116,8 @@ const APP_CONFIG = {
                     </div>`;
                 }).join('');
 
-            // Render Performance & SCSM Exam Ledger (NEW)
             renderPerformancesUI();
 
-            // Render Section Comments
             const sectionContainer = document.getElementById('section-comments-container');
             sectionContainer.innerHTML = GROUP_NAMES.map(sec => {
                 const secObj = analyticsPayload.sections[sec];
@@ -1607,8 +1605,70 @@ const APP_CONFIG = {
 
         let paymentsMatrix = {};
 
-        function daysInPaymentMonth(monthIndex) {
-            return new Date(PAYMENT_YEAR, monthIndex + 1, 0).getDate();
+        function toISODate(dateVal, fallbackMonthKey, fallbackYear) {
+            if (!dateVal) return "";
+            const str = String(dateVal).trim();
+            if (!str || str === "—" || str === "-" || str === "null" || str === "undefined") return "";
+
+            const isoMatch = str.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+            if (isoMatch) {
+                const y = isoMatch[1];
+                const m = String(isoMatch[2]).padStart(2, '0');
+                const d = String(isoMatch[3]).padStart(2, '0');
+                return `${y}-${m}-${d}`;
+            }
+
+            const namedMatch = str.match(/^(\d{1,2})\s*[-\/\s]\s*([A-Za-z]{3,})\s*[-\/\s]?\s*(\d{4})?/);
+            if (namedMatch) {
+                const day = String(namedMatch[1]).padStart(2, '0');
+                const monthToken = namedMatch[2].toLowerCase().slice(0, 3);
+                const y = namedMatch[3] || (fallbackYear || PAYMENT_YEAR);
+                const monthsArr = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
+                const mIdx = monthsArr.indexOf(monthToken);
+                if (mIdx !== -1) {
+                    return `${y}-${String(mIdx + 1).padStart(2, '0')}-${day}`;
+                }
+            }
+
+            const dmyMatch = str.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+            if (dmyMatch) {
+                const day = String(dmyMatch[1]).padStart(2, '0');
+                const m = String(dmyMatch[2]).padStart(2, '0');
+                const y = dmyMatch[3];
+                return `${y}-${m}-${day}`;
+            }
+
+            const dayNum = parseInt(str, 10);
+            if (!isNaN(dayNum) && dayNum >= 1 && dayNum <= 31 && fallbackMonthKey) {
+                const mObj = PAYMENT_MONTHS.find(m => m.key.toLowerCase() === fallbackMonthKey.toLowerCase());
+                const mIdx = mObj ? mObj.monthIndex : 0;
+                const y = fallbackYear || PAYMENT_YEAR;
+                return `${y}-${String(mIdx + 1).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`;
+            }
+
+            const d = new Date(str);
+            if (!isNaN(d.getTime())) {
+                const y = d.getFullYear();
+                const m = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                return `${y}-${m}-${day}`;
+            }
+
+            return "";
+        }
+
+        function formatDisplayDate(isoDate) {
+            if (!isoDate || isoDate === "—") return "";
+            const parts = String(isoDate).split('-');
+            if (parts.length >= 3) {
+                const y = parts[0];
+                const mIdx = parseInt(parts[1], 10) - 1;
+                const day = parseInt(parts[2], 10);
+                const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                const mName = monthNames[mIdx] || parts[1];
+                return `${day} ${mName} ${y}`;
+            }
+            return isoDate;
         }
 
         function getPaymentEntry(studentId, monthKey) {
@@ -1636,10 +1696,6 @@ const APP_CONFIG = {
             }).length;
         }
 
-        function formatPaymentDate(day, month) {
-            return `${day} ${month.short} ${PAYMENT_YEAR}`;
-        }
-
         function seedPaymentsMatrixFromLedger() {
             if (!Array.isArray(paymentsState) || paymentsState.length === 0) return;
             paymentsState.forEach(pay => {
@@ -1649,7 +1705,10 @@ const APP_CONFIG = {
                 const parsed = parseLegacyPaymentDate(pay.date);
                 if (!parsed) return;
                 if (getPaymentEntry(student.id, parsed.month.key)) return;
+                const iso = toISODate(pay.date, parsed.month.key, PAYMENT_YEAR) ||
+                            toISODate(parsed.day, parsed.month.key, PAYMENT_YEAR);
                 setPaymentEntry(student.id, parsed.month.key, {
+                    date: iso,
                     day: parsed.day,
                     method: normalizePaymentMethod(pay.method)
                 });
@@ -1689,31 +1748,32 @@ const APP_CONFIG = {
             return null;
         }
 
-        function updatePaymentDay(studentId, monthKey, rawValue) {
+        function updatePaymentDate(studentId, monthKey, rawValue) {
             if (!isAdmin) return;
-            const month = PAYMENT_MONTHS.find(m => m.key === monthKey);
-            if (!month) return;
-
             const trimmed = (rawValue || "").toString().trim();
             if (trimmed === "") {
                 setPaymentEntry(studentId, monthKey, null);
-                persistPaymentEntry(studentId, monthKey, "", "");
+                persistPaymentEntry(studentId, monthKey, "", "", "");
                 renderPayments();
                 calculateAnalyticsMetrics();
                 return;
             }
 
-            let day = parseInt(trimmed, 10);
-            if (isNaN(day)) { renderPayments(); return; }
-            day = Math.max(1, Math.min(daysInPaymentMonth(month.monthIndex), day));
+            const isoDate = toISODate(trimmed, monthKey, PAYMENT_YEAR);
+            if (!isoDate) {
+                renderPayments();
+                return;
+            }
+            const day = parseInt(isoDate.split('-')[2], 10) || "";
 
             const existing = getPaymentEntry(studentId, monthKey);
             const method = (existing && existing.method !== "N/A") ? existing.method : DEFAULT_PAYMENT_METHOD;
-            setPaymentEntry(studentId, monthKey, { day: day, method: method });
-            persistPaymentEntry(studentId, monthKey, day, method);
+            setPaymentEntry(studentId, monthKey, { date: isoDate, day: day, method: method });
+            persistPaymentEntry(studentId, monthKey, isoDate, day, method);
             renderPayments();
             calculateAnalyticsMetrics();
         }
+        const updatePaymentDay = updatePaymentDate;
 
         function updatePaymentMethod(studentId, monthKey, method) {
             if (!isAdmin) return;
@@ -1721,8 +1781,8 @@ const APP_CONFIG = {
             const existing = getPaymentEntry(studentId, monthKey);
 
             if (clean === "N/A") {
-                setPaymentEntry(studentId, monthKey, { day: "—", method: "N/A" });
-                persistPaymentEntry(studentId, monthKey, "—", "N/A");
+                setPaymentEntry(studentId, monthKey, { date: "—", day: "—", method: "N/A" });
+                persistPaymentEntry(studentId, monthKey, "—", "—", "N/A");
                 renderPayments();
                 calculateAnalyticsMetrics();
                 return;
@@ -1737,7 +1797,7 @@ const APP_CONFIG = {
             }
 
             existing.method = clean;
-            persistPaymentEntry(studentId, monthKey, existing.day, clean);
+            persistPaymentEntry(studentId, monthKey, existing.date, existing.day, clean);
             renderPayments();
             calculateAnalyticsMetrics();
         }
@@ -1763,22 +1823,23 @@ const APP_CONFIG = {
             affected.forEach(s => {
                 const entry = getPaymentEntry(s.id, monthKey);
                 entry.method = clean;
-                persistPaymentEntry(s.id, monthKey, entry.day, clean);
+                persistPaymentEntry(s.id, monthKey, entry.date, entry.day, clean);
             });
             renderPayments();
         }
 
-        function persistPaymentEntry(studentId, monthKey, day, method) {
+        function persistPaymentEntry(studentId, monthKey, isoDate, day, method) {
             const student = studentsState.find(s => s.id === studentId);
+            const displayDate = isoDate && isoDate !== "—" ? formatDisplayDate(isoDate) : (isoDate === "—" ? "—" : "");
             executePostPayload({
                 action: "updatePayment",
                 id: studentId,
                 name: student ? student.name : "",
                 month: monthKey,
                 year: PAYMENT_YEAR,
-                day: day,
+                day: day || "",
                 method: method,
-                date: day === "" ? "" : `${day} ${monthKey} ${PAYMENT_YEAR}`
+                date: displayDate
             });
         }
 
@@ -1801,7 +1862,7 @@ const APP_CONFIG = {
                 PAYMENT_MONTHS.map(m => `
                     <th class="px-3 py-3 text-center font-semibold">
                         <div>${m.key} ${PAYMENT_YEAR}</div>
-                        <div class="text-[9px] normal-case tracking-normal text-surface-500 font-normal mt-0.5">day &middot; method</div>
+                        <div class="text-[9px] normal-case tracking-normal text-surface-500 font-normal mt-0.5">date &middot; method</div>
                         ${isAdmin ? `
                         <select data-pdf-omit onchange="setColumnPaymentMethod('${m.key}', this.value); this.selectedIndex=0;" class="mt-1.5 bg-surface-950 border border-surface-700 rounded px-1 py-0.5 text-[9px] text-surface-400 normal-case font-normal focus:outline-none focus:border-brand-500">
                             <option value="">Set all…</option>
@@ -1832,24 +1893,26 @@ const APP_CONFIG = {
                 const monthCells = PAYMENT_MONTHS.map(m => {
                     const entry = getPaymentEntry(student.id, m.key);
                     const isExempt = entry && entry.method === "N/A";
-                    const dayVal = isExempt ? '' : (entry ? entry.day : '');
+                    const dateVal = isExempt ? '' : (entry ? (entry.date || '') : '');
                     const methodVal = entry ? entry.method : pendingMethodFor(student.id, m.key);
                     const methodColor = methodVal === "Online" ? "text-secondary-400" : (methodVal === "N/A" ? "text-surface-500" : "text-emerald-400");
+
+                    const formattedDisplay = entry && entry.date ? formatDisplayDate(entry.date) : (entry && entry.day ? `${entry.day} ${m.short} ${PAYMENT_YEAR}` : '');
 
                     const caption = isExempt
                         ? `<div class="text-[9px] font-mono mt-1 text-surface-500 font-semibold">Exempt (N/A)</div>`
                         : (entry
-                            ? `<div class="text-[9px] font-mono mt-1 ${methodColor}">${formatPaymentDate(entry.day, m)} &middot; ${entry.method}</div>`
+                            ? `<div class="text-[9px] font-mono mt-1 ${methodColor}">${formattedDisplay} &middot; ${entry.method}</div>`
                             : `<div class="text-[9px] font-mono mt-1 text-surface-600">Unpaid</div>`);
 
                     return `
                         <td class="px-3 py-3 text-center align-top ${isExempt ? 'bg-surface-950/20' : ''}">
-                            <div data-pdf-omit class="flex items-center justify-center gap-1">
-                                <input type="number" min="1" max="${daysInPaymentMonth(m.monthIndex)}" step="1"
-                                    value="${dayVal}" placeholder="${isExempt ? '—' : '—'}" ${disabledAttr || isExempt ? 'disabled' : ''}
-                                    onchange="updatePaymentDay('${student.id}', '${m.key}', this.value)"
-                                    title="Day of ${m.key} ${PAYMENT_YEAR}"
-                                    class="w-12 bg-surface-900 border ${entry && !isExempt ? 'border-emerald-600/50' : 'border-surface-700'} rounded-lg px-1.5 py-1 text-xs text-center font-mono text-surface-100 focus:outline-none focus:border-brand-500 ${isExempt ? 'opacity-30 cursor-not-allowed' : lockedCls}">
+                            <div data-pdf-omit class="flex items-center justify-center gap-1.5">
+                                <input type="date"
+                                    value="${dateVal}" ${disabledAttr || isExempt ? 'disabled' : ''}
+                                    onchange="updatePaymentDate('${student.id}', '${m.key}', this.value)"
+                                    title="Payment date for ${m.key} fee"
+                                    class="w-[126px] bg-surface-900 border ${entry && !isExempt ? 'border-emerald-600/50 text-surface-100' : 'border-surface-700 text-surface-400'} rounded-lg px-2 py-1 text-[11px] font-mono text-center focus:outline-none focus:border-brand-500 ${isExempt ? 'opacity-30 cursor-not-allowed' : lockedCls}">
                                 <select ${disabledAttr}
                                     onchange="updatePaymentMethod('${student.id}', '${m.key}', this.value)"
                                     class="bg-surface-900 border border-surface-700 rounded-lg px-1 py-1 text-[10px] ${methodColor} focus:outline-none focus:border-brand-500 ${lockedCls}">
@@ -2006,7 +2069,6 @@ const APP_CONFIG = {
             return round1(Math.min(attended / totalSessions, 1) * 10);
         }
 
-        // Compute Choral Marks scaled /10 from all Repertoire tracks
         function computeChoralScore() {
             if (!analyticsPayload || !Array.isArray(analyticsPayload.songs) || analyticsPayload.songs.length === 0) return null;
             let totalPoints = 0;
@@ -2028,7 +2090,6 @@ const APP_CONFIG = {
             return isNaN(val) ? null : round1(val);
         }
 
-        // Compute Performance Marks scaled /10 from SCSM exams & live shows
         function computePerformanceScore() {
             if (!analyticsPayload || !Array.isArray(analyticsPayload.performances) || analyticsPayload.performances.length === 0) return null;
             const valid = analyticsPayload.performances
@@ -2084,7 +2145,6 @@ const APP_CONFIG = {
                 const t1 = (typeof student.soloTest01 === 'number') ? student.soloTest01 : null;
                 const t2 = (typeof student.soloTest02 === 'number') ? student.soloTest02 : null;
 
-                // Dynamically collect ONLY active columns with real numbers
                 const activeScores = [];
                 if (att !== null && !isNaN(att)) activeScores.push(att);
                 if (choral !== null && !isNaN(choral)) activeScores.push(choral);
@@ -2250,7 +2310,7 @@ const APP_CONFIG = {
                     const skipped = [];
                     rows.forEach(row => {
                         if (row.length < 3) return;
-                        const [rawName, rawMonth, rawDay, rawMethod] = row;
+                        const [rawName, rawMonth, rawDayOrDate, rawMethod] = row;
                         if ((rawName || "").toLowerCase() === "name") return;
 
                         const student = studentsState.find(s =>
@@ -2261,13 +2321,13 @@ const APP_CONFIG = {
                         const month = PAYMENT_MONTHS.find(m => m.key.toLowerCase().startsWith(token));
                         if (!month) { skipped.push(`${rawName} (${rawMonth})`); return; }
 
-                        let day = parseInt(rawDay, 10);
-                        if (isNaN(day)) { skipped.push(`${rawName} (${rawMonth} day)`); return; }
-                        day = Math.max(1, Math.min(daysInPaymentMonth(month.monthIndex), day));
+                        const iso = toISODate(rawDayOrDate, month.key, PAYMENT_YEAR);
+                        if (!iso) { skipped.push(`${rawName} (${rawMonth} date)`); return; }
+                        const day = parseInt(iso.split('-')[2], 10) || "";
 
                         const method = normalizePaymentMethod(rawMethod);
-                        setPaymentEntry(student.id, month.key, { day: day, method: method });
-                        paymentRows.push([student.id, student.name, month.key, PAYMENT_YEAR, day, method]);
+                        setPaymentEntry(student.id, month.key, { date: iso, day: day, method: method });
+                        paymentRows.push([student.id, student.name, month.key, PAYMENT_YEAR, day, method, formatDisplayDate(iso)]);
                         rowsProcessed++;
                     });
                     if (paymentRows.length > 0) await executePostPayload({ action: "bulkImportPayments", data: paymentRows });
@@ -2331,11 +2391,13 @@ const APP_CONFIG = {
                             if (!month) return;
                             const methodClean = normalizePaymentMethod(rec.method);
                             if (methodClean === "N/A") {
-                                setPaymentEntry(rec.id, month.key, { day: "—", method: "N/A" });
+                                setPaymentEntry(rec.id, month.key, { date: "—", day: "—", method: "N/A" });
                             } else {
-                                const day = parseInt(rec.day, 10);
-                                if (!isNaN(day)) {
-                                    setPaymentEntry(rec.id, month.key, { day: day, method: methodClean });
+                                const rawVal = rec.date || rec.day;
+                                const iso = toISODate(rawVal, month.key, rec.year || PAYMENT_YEAR);
+                                const day = iso ? parseInt(iso.split('-')[2], 10) : parseInt(rec.day, 10);
+                                if (iso || !isNaN(day)) {
+                                    setPaymentEntry(rec.id, month.key, { date: iso, day: day, method: methodClean });
                                 }
                             }
                         });
@@ -2510,6 +2572,8 @@ const APP_CONFIG = {
                         span.textContent = (opt && opt.value) ? opt.text : '—';
                     } else if (tag === 'input' && live.type === 'checkbox') {
                         span.textContent = live.checked ? 'Present' : '—';
+                    } else if (tag === 'input' && live.type === 'date') {
+                        span.textContent = live.value !== "" ? formatDisplayDate(live.value) : '—';
                     } else {
                         span.textContent = live.value !== "" ? live.value : '—';
                     }
