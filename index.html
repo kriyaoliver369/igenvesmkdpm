@@ -397,7 +397,7 @@ const APP_CONFIG = {
                     </div>
                 </div>
 
-                <!-- Constrained viewport container so the bottom horizontal scrollbar is always visible without scrolling down rows -->
+                <!-- Constrained viewport container so header and horizontal scrollbar are always in view -->
                 <div class="bg-surface-800 border border-surface-700/60 rounded-xl shadow-lg overflow-hidden flex flex-col">
                     <div id="payments-scroll-container" class="overflow-auto max-h-[580px] relative scrollbar-thin">
                         <table class="w-full min-w-[1350px] text-left text-sm border-separate border-spacing-0">
@@ -407,6 +407,7 @@ const APP_CONFIG = {
                             <tbody id="payments-table-body" class="divide-y divide-surface-700/40"></tbody>
                             <tfoot class="font-bold text-xs sticky bottom-0 z-20 shadow-inner">
                                 <tr id="payments-foot-row"></tr>
+                                <tr id="payments-unpaid-row"></tr>
                             </tfoot>
                         </table>
                     </div>
@@ -721,7 +722,7 @@ const APP_CONFIG = {
     <div id="add-performance-modal" class="fixed inset-0 bg-surface-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-surface-800 border border-surface-700 rounded-2xl w-full max-w-lg p-6 space-y-4 shadow-2xl">
             <div class="flex items-center justify-between border-b border-surface-700/60 pb-3">
-                <h3 class="text-sm font-bold text-brand-500 uppercase tracking-wide flex items-center gap-2">
+                <h3 id="add-perf-title" class="text-sm font-bold text-brand-500 uppercase tracking-wide flex items-center gap-2">
                     <i data-lucide="award" class="w-4 h-4"></i> Record Live Performance / SCSM Exam
                 </h3>
                 <button onclick="closeAddPerformanceModal()" class="text-surface-400 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button>
@@ -1699,7 +1700,7 @@ const APP_CONFIG = {
         function countPaidMonths(studentId) {
             return PAYMENT_MONTHS.filter(m => {
                 const e = getPaymentEntry(studentId, m.key);
-                return e && e.method !== "N/A";
+                return e && e.method !== "N/A" && (e.date || e.day);
             }).length;
         }
 
@@ -1861,8 +1862,9 @@ const APP_CONFIG = {
             const headRow = document.getElementById('payments-head-row');
             const tbody = document.getElementById('payments-table-body');
             const footRow = document.getElementById('payments-foot-row');
+            const unpaidRow = document.getElementById('payments-unpaid-row');
             const note = document.getElementById('payments-roster-note');
-            if (!headRow || !tbody || !footRow) return;
+            if (!headRow || !tbody || !footRow || !unpaidRow) return;
 
             const totalMonths = PAYMENT_MONTHS.length;
 
@@ -1895,6 +1897,7 @@ const APP_CONFIG = {
                         ${isAdmin ? `<button data-pdf-omit onclick="switchTab('students'); openAddStudentModal();" class="mt-3 bg-brand-500 hover:bg-brand-600 text-surface-950 font-semibold px-3 py-1.5 rounded-lg text-[11px] transition-all not-italic">Add a student</button>` : ''}
                     </td></tr>`;
                 footRow.innerHTML = '';
+                unpaidRow.innerHTML = '';
                 lucide.createIcons();
                 return;
             }
@@ -1963,6 +1966,7 @@ const APP_CONFIG = {
                     </tr>`;
             }).join('');
 
+            // ROW 1 OF FOOTER: Collection Summary Totals
             const monthTotals = PAYMENT_MONTHS.map(m => {
                 let cash = 0, online = 0, exempt = 0;
                 studentsState.forEach(s => {
@@ -1991,6 +1995,79 @@ const APP_CONFIG = {
                 `<td class="px-4 py-3 bg-surface-900 border-t border-surface-600"></td>` +
                 monthTotals +
                 `<td class="px-5 py-3 text-center text-secondary-400 font-mono bg-surface-900 border-t border-surface-600">${fullyPaid}/${studentsState.length} fully settled</td>`;
+
+            // ROW 2 OF FOOTER: Synchronized Unpaid Students Summary Box
+            const unpaidMonthCells = PAYMENT_MONTHS.map(m => {
+                // Count paid entries for this month
+                const paidCount = studentsState.filter(s => {
+                    const e = getPaymentEntry(s.id, m.key);
+                    return e && e.method !== "N/A" && (e.date || e.day);
+                }).length;
+
+                // Month is triggered only when at least 1 student has paid
+                const isTriggered = paidCount > 0;
+
+                if (!isTriggered) {
+                    return `
+                        <td class="px-3 py-3 align-top bg-surface-900 border-t border-surface-700/80">
+                            <div class="bg-surface-950/40 border border-surface-700/40 rounded-xl p-2.5 text-center">
+                                <span class="text-[10px] text-surface-500 italic block">Awaiting 1st payment</span>
+                                <span class="text-[9px] text-surface-600 font-mono mt-0.5 block">(Not triggered)</span>
+                            </div>
+                        </td>`;
+                }
+
+                // Filter out students who haven't paid and are not exempt
+                const unpaidStudents = studentsState.filter(s => {
+                    const e = getPaymentEntry(s.id, m.key);
+                    const isExempt = e && e.method === "N/A";
+                    const hasPaid = e && e.method !== "N/A" && (e.date || e.day);
+                    return !isExempt && !hasPaid;
+                });
+
+                if (unpaidStudents.length === 0) {
+                    return `
+                        <td class="px-3 py-3 align-top bg-surface-900 border-t border-surface-700/80">
+                            <div class="bg-emerald-950/30 border border-emerald-500/30 rounded-xl p-2.5 text-center">
+                                <span class="text-emerald-400 font-bold text-[10px] flex items-center justify-center gap-1">
+                                    <i data-lucide="check-circle" class="w-3.5 h-3.5"></i> All Settled
+                                </span>
+                                <span class="text-[9px] text-emerald-400/80 font-mono mt-0.5 block">0 Unpaid</span>
+                            </div>
+                        </td>`;
+                }
+
+                // Format as a continuous comma-separated sentence
+                const namesSentence = unpaidStudents.map(s => s.name || "Unknown").join(', ');
+
+                return `
+                    <td class="px-3 py-3 align-top bg-surface-900 border-t border-surface-700/80 min-w-[160px]">
+                        <div class="bg-rose-950/40 border border-rose-500/30 rounded-xl p-2.5 text-left max-h-[140px] overflow-y-auto scrollbar-thin shadow-sm">
+                            <div class="flex items-center justify-between pb-1 mb-1.5 border-b border-rose-500/20">
+                                <span class="text-[9px] font-bold uppercase tracking-wider text-rose-400 flex items-center gap-1">
+                                    <i data-lucide="user-x" class="w-3 h-3"></i> Unpaid (${unpaidStudents.length})
+                                </span>
+                            </div>
+                            <p class="text-[11px] text-rose-200/90 leading-relaxed font-normal normal-case break-words">
+                                ${namesSentence}
+                            </p>
+                        </div>
+                    </td>`;
+            }).join('');
+
+            unpaidRow.innerHTML =
+                `<td class="px-5 py-3 text-surface-200 sticky left-0 z-30 bg-surface-900 border-r border-t border-surface-700/80 shadow-[2px_0_6px_-1px_rgba(0,0,0,0.5)] align-top">
+                    <div class="flex items-center gap-1.5 text-rose-400 font-bold uppercase text-[10px] tracking-wider">
+                        <i data-lucide="alert-circle" class="w-3.5 h-3.5 flex-shrink-0"></i>
+                        <span>Unpaid Students</span>
+                    </div>
+                    <p class="text-[9px] text-surface-400 font-normal normal-case mt-0.5">Continuous list by month</p>
+                 </td>` +
+                `<td class="px-4 py-3 bg-surface-900 border-t border-surface-700/80"></td>` +
+                unpaidMonthCells +
+                `<td class="px-5 py-3 text-center align-top bg-surface-900 border-t border-surface-700/80">
+                    <div class="text-[10px] text-surface-400 font-mono font-normal">Auto-synced with dates</div>
+                 </td>`;
 
             lucide.createIcons();
         }
