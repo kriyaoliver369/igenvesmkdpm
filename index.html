@@ -476,6 +476,7 @@ const APP_CONFIG = {
                     </div>
                 </div>
 
+                <!-- 2. LIVE PERFORMANCE & SCSM EXAM LEDGER -->
                 <div class="bg-surface-800 border border-surface-700 rounded-xl shadow-md overflow-hidden">
                     <div class="bg-surface-900/60 p-4 border-b border-surface-700 flex justify-between items-center">
                         <div>
@@ -501,11 +502,12 @@ const APP_CONFIG = {
                     </div>
                 </div>
 
+                <!-- 3. SECTIONAL GROUP PROGRESS LEDGER (UPDATED TO 0 - 20 MARKS) -->
                 <div class="bg-surface-800 border border-surface-700 rounded-xl shadow-md overflow-hidden">
                     <div class="bg-surface-900/60 p-4 border-b border-surface-700">
                         <h3 class="text-xs font-bold text-surface-300 uppercase tracking-wider">Sectional Group Progress Ledger</h3>
                         <p class="text-[10px] text-surface-400 uppercase tracking-widest font-mono mt-1">
-                            <span class="font-bold text-surface-300">Section Score Metric Scale:</span> 0-4 (Needs Work) | 5-7 (Developing) | 8-10 (Performance Ready)
+                            <span class="font-bold text-surface-300">Section Score Metric Scale:</span> 0-8 (Needs Work) | 9-14 (Developing) | 15-20 (Performance Ready)
                         </p>
                     </div>
                     <div class="p-5 grid grid-cols-1 md:grid-cols-2 gap-6" id="section-comments-container"></div>
@@ -557,13 +559,14 @@ const APP_CONFIG = {
                 </div>
             </section>
 
+            <!-- STUDENT REPORT CARD SECTION -->
             <section id="view-reportcard" class="tab-content space-y-6 hidden">
                 <div class="flex flex-wrap justify-between items-end border-b border-surface-700 pb-2 gap-4">
                     <div>
                         <h2 class="text-xl font-bold text-surface-100 uppercase tracking-widest flex items-center gap-2">
                             <i data-lucide="clipboard-list" class="w-6 h-6 text-brand-500"></i> <span data-brand="vocabulary.sectionTitles.reportcard">Student Report Card</span>
                         </h2>
-                        <p class="text-[11px] text-surface-400 mt-1">Aggregated 10-point assessment · Attendance · Choral Repertoire · Group Ensemble · Solo Tests · Performance &amp; Exams</p>
+                        <p class="text-[11px] text-surface-400 mt-1">Aggregated 10-point assessment · Attendance (/10) · Choral Repertoire (/10) · Group Ensemble (/20) · Solo Tests (/20) · Performance &amp; Exams (/10)</p>
                     </div>
                     <div class="flex gap-2">
                         <button id="reportcard-save-btn" onclick="saveReportCardMarks()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-4 py-2 rounded-xl text-xs transition-all flex items-center gap-1.5 shadow-md shadow-emerald-600/20 hidden">
@@ -578,7 +581,7 @@ const APP_CONFIG = {
                 <div class="bg-surface-800 border border-surface-700 rounded-xl px-5 py-3 shadow-md">
                     <p class="text-[10px] text-surface-400 uppercase tracking-widest font-mono">
                         <span class="font-bold text-surface-300">Fair Scoring Model:</span>
-                        Each component is scaled to <span class="text-brand-500 font-bold">/10</span>.
+                        All components are normalized to <span class="text-brand-500 font-bold">/10</span> (Group Ensemble &amp; Solo Tests scaled proportionally from <span class="text-secondary-400 font-bold">/20</span>).
                         Overall marks are calculated by dynamically averaging <strong class="text-surface-200">only active columns containing completed marks</strong>. 
                         Pending/unassessed components are excluded to ensure zero distortion for students with high marks.
                     </p>
@@ -593,9 +596,9 @@ const APP_CONFIG = {
                                     <th data-brand="vocabulary.groupSingular" class="px-3 py-3.5 font-semibold">Section</th>
                                     <th data-brand="vocabulary.reportCard.attendanceLabel" data-brand-keep-child class="px-3 py-3.5 text-center font-semibold text-secondary-400">Attendance<br><span class="text-[9px] text-surface-500 normal-case">/10</span></th>
                                     <th data-brand="vocabulary.reportCard.choralLabel" data-brand-keep-child class="px-3 py-3.5 text-center font-semibold text-amber-400">Choral Progress<br><span class="text-[9px] text-surface-500 normal-case">/10</span></th>
-                                    <th data-brand="vocabulary.reportCard.groupLabel" data-brand-keep-child class="px-3 py-3.5 text-center font-semibold text-emerald-400">Group Ensemble<br><span class="text-[9px] text-surface-500 normal-case">/10</span></th>
-                                    <th data-brand="vocabulary.reportCard.solo1Label" data-brand-keep-child class="px-3 py-3.5 text-center font-semibold text-purple-400">Solo Test 01<br><span class="text-[9px] text-surface-500 normal-case">/10</span></th>
-                                    <th data-brand="vocabulary.reportCard.solo2Label" data-brand-keep-child class="px-3 py-3.5 text-center font-semibold text-purple-400">Solo Test 02<br><span class="text-[9px] text-surface-500 normal-case">/10</span></th>
+                                    <th data-brand="vocabulary.reportCard.groupLabel" data-brand-keep-child class="px-3 py-3.5 text-center font-semibold text-emerald-400">Group Ensemble<br><span class="text-[9px] text-surface-500 normal-case">/20</span></th>
+                                    <th data-brand="vocabulary.reportCard.solo1Label" data-brand-keep-child class="px-3 py-3.5 text-center font-semibold text-purple-400">Solo Test 01<br><span class="text-[9px] text-surface-500 normal-case">/20</span></th>
+                                    <th data-brand="vocabulary.reportCard.solo2Label" data-brand-keep-child class="px-3 py-3.5 text-center font-semibold text-purple-400">Solo Test 02<br><span class="text-[9px] text-surface-500 normal-case">/20</span></th>
                                     <th data-brand="vocabulary.reportCard.performanceLabel" data-brand-keep-child class="px-3 py-3.5 text-center font-semibold text-cyan-400">Perf &amp; SCSM Exam<br><span class="text-[9px] text-surface-500 normal-case">/10</span></th>
                                     <th class="px-4 py-3.5 text-center font-semibold text-brand-500">Overall<br><span class="text-[9px] text-surface-500 normal-case">/10</span></th>
                                     <th class="px-4 py-3.5 text-center font-semibold">Grade Band</th>
@@ -680,7 +683,7 @@ const APP_CONFIG = {
         </div>
     </div>
 
-    <!-- MODAL 3: ADD NEW REPORT / LOG ENTRY -->
+    <!-- MODAL 3: ADD NEW REPORT / LOG ENTRY (UPDATED TO 0 - 20 MARKS) -->
     <div id="add-log-modal" class="fixed inset-0 bg-surface-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-surface-800 border border-surface-700 rounded-2xl w-full max-w-lg p-6 space-y-4 shadow-2xl">
             <div class="flex items-center justify-between border-b border-surface-700/60 pb-3">
@@ -699,8 +702,8 @@ const APP_CONFIG = {
                 <div id="add-log-song-scores" class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 bg-surface-900/50 p-3 rounded-xl border border-surface-700/50 hidden"></div>
 
                 <div id="add-log-section-score" class="hidden">
-                    <label data-brand="labels.groupScore" class="block text-[11px] font-bold text-surface-400 uppercase mb-1">Section Score (0 - 10 Marks)</label>
-                    <input id="log-score-sec" type="number" min="0" max="10" value="6" class="w-24 bg-surface-900 border border-surface-700 rounded-lg px-3 py-1.5 text-xs font-bold text-brand-500 text-center">
+                    <label data-brand="labels.groupScore" class="block text-[11px] font-bold text-surface-400 uppercase mb-1">Section Score (0 - 20 Marks)</label>
+                    <input id="log-score-sec" type="number" min="0" max="20" value="14" class="w-24 bg-surface-900 border border-surface-700 rounded-lg px-3 py-1.5 text-xs font-bold text-brand-500 text-center">
                 </div>
 
                 <div>
@@ -772,7 +775,7 @@ const APP_CONFIG = {
             memberName:          CFG.vocabulary.memberSingular + " Name",
             memberGroup:         CFG.vocabulary.groupSingular,
             registerMember:      "Register New " + CFG.vocabulary.memberSingular,
-            groupScore:          CFG.vocabulary.groupSingular + " Score (0 - 10 Marks)",
+            groupScore:          CFG.vocabulary.groupSingular + " Score (0 - 20 Marks)",
             groupBreakdownTitle: CFG.vocabulary.groupSingular + " Breakdown Table",
             addItem:             "+ Add " + CFG.vocabulary.itemSingular + " Track",
             itemProgress:        CFG.vocabulary.itemCollection + " Progress",
@@ -1126,6 +1129,7 @@ const APP_CONFIG = {
 
             renderPerformancesUI();
 
+            // Render Section Comments with updated /20 scale readout
             const sectionContainer = document.getElementById('section-comments-container');
             sectionContainer.innerHTML = GROUP_NAMES.map(sec => {
                 const secObj = analyticsPayload.sections[sec];
@@ -1160,7 +1164,7 @@ const APP_CONFIG = {
                             <div>
                                 <div class="flex justify-between items-center mb-1">
                                     <span class="text-[10px] font-mono text-brand-400 font-bold">${activeLog.date} Log</span>
-                                    <span class="text-xs font-mono font-bold bg-brand-500/10 text-brand-500 border border-brand-500/20 px-2 py-0.5 rounded">Score: ${activeLog.score} / 10</span>
+                                    <span class="text-xs font-mono font-bold bg-brand-500/10 text-brand-500 border border-brand-500/20 px-2 py-0.5 rounded">Score: ${activeLog.score} / 20</span>
                                 </div>
                                 <p class="text-xs text-surface-200 leading-relaxed italic pt-1">${activeLog.comment || 'No feedback logged for this date.'}</p>
                             </div>
@@ -1872,7 +1876,6 @@ const APP_CONFIG = {
                 note.innerText = `Roster synced automatically from the Master Roster — ${studentsState.length} student(s) across ${totalMonths} billing month(s).`;
             }
 
-            // Pinned Left Student Name Column + Sticky Top Header Row
             headRow.innerHTML =
                 `<th class="px-5 py-3.5 font-semibold sticky top-0 left-0 z-30 bg-surface-900 border-b border-r border-surface-700/60 shadow-[2px_0_6px_-1px_rgba(0,0,0,0.5)] min-w-[200px]">Student Name</th>
                  <th class="px-4 py-3.5 font-semibold sticky top-0 z-20 bg-surface-900 border-b border-surface-700/60 min-w-[110px]">Section</th>` +
@@ -1998,13 +2001,11 @@ const APP_CONFIG = {
 
             // ROW 2 OF FOOTER: Synchronized Unpaid Students Summary Box
             const unpaidMonthCells = PAYMENT_MONTHS.map(m => {
-                // Count paid entries for this month
                 const paidCount = studentsState.filter(s => {
                     const e = getPaymentEntry(s.id, m.key);
                     return e && e.method !== "N/A" && (e.date || e.day);
                 }).length;
 
-                // Month is triggered only when at least 1 student has paid
                 const isTriggered = paidCount > 0;
 
                 if (!isTriggered) {
@@ -2017,7 +2018,6 @@ const APP_CONFIG = {
                         </td>`;
                 }
 
-                // Filter out students who haven't paid and are not exempt
                 const unpaidStudents = studentsState.filter(s => {
                     const e = getPaymentEntry(s.id, m.key);
                     const isExempt = e && e.method === "N/A";
@@ -2037,7 +2037,6 @@ const APP_CONFIG = {
                         </td>`;
                 }
 
-                // Format as a continuous comma-separated sentence
                 const namesSentence = unpaidStudents.map(s => s.name || "Unknown").join(', ');
 
                 return `
@@ -2176,13 +2175,14 @@ const APP_CONFIG = {
             return round1((totalPoints / maxPoints) * 10);
         }
 
+        // Returns raw Group Ensemble score out of 20
         function computeGroupScore(student) {
             const sec = student.section || "";
             const secObj = analyticsPayload && analyticsPayload.sections ? analyticsPayload.sections[sec] : null;
             if (!secObj || !Array.isArray(secObj.logs) || secObj.logs.length === 0) return null;
             const latest = secObj.logs[0];
             const val = parseFloat(latest.score);
-            return isNaN(val) ? null : round1(val);
+            return isNaN(val) ? null : round1(Math.max(0, Math.min(20, val)));
         }
 
         function computePerformanceScore() {
@@ -2195,10 +2195,11 @@ const APP_CONFIG = {
             return round1(avg);
         }
 
+        // Clamps solo marks between 0 and 20
         function clampSolo(v) {
             const n = parseFloat(v);
             if (isNaN(n)) return null;
-            return Math.max(0, Math.min(10, n));
+            return Math.max(0, Math.min(20, n));
         }
 
         function updateSoloMark(studentId, testKey, value) {
@@ -2240,12 +2241,14 @@ const APP_CONFIG = {
                 const t1 = (typeof student.soloTest01 === 'number') ? student.soloTest01 : null;
                 const t2 = (typeof student.soloTest02 === 'number') ? student.soloTest02 : null;
 
+                // Dynamically collect active columns scaled to 10-point basis for fair overall scoring
                 const activeScores = [];
                 if (att !== null && !isNaN(att)) activeScores.push(att);
                 if (choral !== null && !isNaN(choral)) activeScores.push(choral);
-                if (grp !== null && !isNaN(grp)) activeScores.push(grp);
-                if (t1 !== null && !isNaN(t1)) activeScores.push(t1);
-                if (t2 !== null && !isNaN(t2)) activeScores.push(t2);
+                // Group Ensemble & Solo Tests scaled from /20 to /10
+                if (grp !== null && !isNaN(grp)) activeScores.push(round1((grp / 20) * 10));
+                if (t1 !== null && !isNaN(t1)) activeScores.push(round1((t1 / 20) * 10));
+                if (t2 !== null && !isNaN(t2)) activeScores.push(round1((t2 / 20) * 10));
                 if (perf !== null && !isNaN(perf)) activeScores.push(perf);
 
                 const overall = activeScores.length > 0 
@@ -2275,12 +2278,12 @@ const APP_CONFIG = {
                         <td class="px-3 py-3.5 text-center">${choralDisplay}</td>
                         <td class="px-3 py-3.5 text-center">${grpDisplay}</td>
                         <td class="px-3 py-3.5 text-center">
-                            <input type="number" min="0" max="10" step="0.1" value="${t1 === null ? '' : t1.toFixed(1)}" placeholder="—" ${disabledAttr}
+                            <input type="number" min="0" max="20" step="0.1" value="${t1 === null ? '' : t1.toFixed(1)}" placeholder="—" ${disabledAttr}
                                 onchange="updateSoloMark('${student.id}', 'soloTest01', this.value)"
                                 class="w-14 bg-surface-900 border border-surface-700 rounded-lg px-1.5 py-1 text-xs text-center font-mono text-purple-300 focus:outline-none focus:border-purple-500 ${!isAdmin ? 'cursor-not-allowed opacity-70' : ''}">
                         </td>
                         <td class="px-3 py-3.5 text-center">
-                            <input type="number" min="0" max="10" step="0.1" value="${t2 === null ? '' : t2.toFixed(1)}" placeholder="—" ${disabledAttr}
+                            <input type="number" min="0" max="20" step="0.1" value="${t2 === null ? '' : t2.toFixed(1)}" placeholder="—" ${disabledAttr}
                                 onchange="updateSoloMark('${student.id}', 'soloTest02', this.value)"
                                 class="w-14 bg-surface-900 border border-surface-700 rounded-lg px-1.5 py-1 text-xs text-center font-mono text-purple-300 focus:outline-none focus:border-purple-500 ${!isAdmin ? 'cursor-not-allowed opacity-70' : ''}">
                         </td>
